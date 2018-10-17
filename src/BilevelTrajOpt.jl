@@ -1,18 +1,15 @@
 module BilevelTrajOpt
 
-export contact_basis,
-       contact_distance,
-       contact_velocity
+export 
 
 using StaticArrays
 using ForwardDiff
+using Ipopt
 using Rotations
 using RigidBodyDynamics
 using RigidBodyDynamics.Contact
 using RigidBodyTreeInspector
 using DrakeVisualizer
-using JuMP
-using Ipopt
 
 include("contact.jl")
 
