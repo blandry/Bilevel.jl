@@ -37,42 +37,50 @@ function contact_constraints(q0,v0)
     return eval_g, eval_jac_g
 end
 
-function complementarity_constraint(a,b,ϵ=1e-6)
-    a + b - sqrt(a^2 + b^2 + ϵ)
-end
-
-function augmented_lagrangian(x,μ,λ,ϕ)
-    constraint_val = complementarity_constraint(ϕ,x[1])
-    .5 * μ * constraint_val^2 + λ * constraint_val
-end
-
-function ∇augmented_lagrangian(x,μ,λ,ϕ)
-    ForwardDiff.gradient(x̃ -> augmented_lagrangian(x̃,μ,λ,ϕ),x)
-end
-
-function Haugmented_lagrangian(x,μ,λ,ϕ)
-    ForwardDiff.jacobian(x̃ -> ∇augmented_lagrangian(x̃,μ,λ,ϕ),x)    
-end
-
-function newton_contact_forces(ϕ,λ0)
-    N = 10
-    α = .95
+function newton_contact_forces(h,M,G,C,q0,v0,λ0,qn,vn)
+    x = [λ0]
+    λ = 1.
     μ = 1.
-    I = 1e-16
+    c = 1.
     
-    x = [0.] # [λ0] # contact force
-    λ = 0. # lagrange multiplier
+    q = -2.*(M*(vn[2] - v0[2])/h - M*G[2])
+    
+    f = x -> x' * x + q * x
+    h = x -> (C' * qn) .* x
+    g = x -> -x
+    gp = (x,μ,c) -> max.(g(x), [-μ/c])
+
+    L = (x,λ,μ,c) -> (f(x) + λ*h(x) + .5*c*h(x)'*h(x) + 1./(2.*c)*(max.([0.],μ+c*g(x))'*max.([0.],μ+c*g(x)) - μ^2))[1]
+    ∇xL = (x,λ,μ,c) -> ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c),x)
+    HxL = (x,λ,μ,c) -> ForwardDiff.jacobian(x̃ -> ∇xL(x̃,λ,μ,c),x)
+    
+    N = 10
+    α = 1.
+    I = 1e-14
     
     for i = 1:N
-        ∇al = ∇augmented_lagrangian(x,μ,λ,ϕ)
-        Hal = Haugmented_lagrangian(x,μ,λ,ϕ)
+        gL = ∇xL(x,λ,μ,c)
+        HL = HxL(x,λ,μ,c)
         
-        x = x - α^i .* ((Hal + I) \ ∇al)
-        λ = λ + μ .* complementarity_constraint(ϕ,x[1])
-        μ = μ * 5.
+        dx = (HL + I) \ gL
+        x = x - α .* dx
+        
+        λ = λ + c * h(x)[1]
+        μ = μ + c * gp(x,μ,c)[1]
+        
+        c = 2. * c
     end
     
     x[1]
+end
+
+function dnewton_contact_forces(h,M,G,C,q0,v0,λ0,qn,vn)
+    num_q = length(q0)
+    num_v = length(v0)
+    
+    dλn = ForwardDiff.gradient(x̃ -> newton_contact_forces(h,M,G,C,q0,v0,λ0,x̃[1:num_q],x̃[num_q+1:num_q+num_v]),vcat(qn,vn))
+
+    dλn
 end
 
 function contact_forces(h,M,G,C,q0,v0,qn,vn)
@@ -89,9 +97,7 @@ function contact_forces(h,M,G,C,q0,v0,qn,vn)
     results.x, results.y
 end
 
-function dcontact_forces(hn,M,G,C,q0,v0,qn,vn,F,Fy)
-    # dλ = ForwardDiff.gradient(x̃ -> contact_forces(q0,v0,x̃[1:length(q0)],x̃[length(q0)+1:length(q0)+length(v0)]),vcat(q,v))
-    
+function dcontact_forces(hn,M,G,C,q0,v0,qn,vn,F,Fy)    
     # using the KKT conditions to provide a gradient        
     Q = sparse([1],[1],2.)
     q = [-2.*(M*(vn[2] - v0[2])/hn - M*G[2])]
@@ -157,7 +163,8 @@ function contact_constraints_implicit(h, M, G, C, q0, v0, λ0)
         q = x[1:num_q]
         v = x[num_q+1:end]
         
-        F,Fy = contact_forces(h,M,G,C,q0,v0,q,v)
+        # F,Fy = contact_forces(h,M,G,C,q0,v0,q,v)
+        F = [newton_contact_forces(h,M,G,C,q0,v0,λ0,q,v)]
         
         g[1:num_v] = M * (v - v0) .- h * F[1] .* C .- h * M .* G
         g[num_v+1:num_v+num_q] = q .- q0 .- h .* v
@@ -180,8 +187,9 @@ function contact_constraints_implicit(h, M, G, C, q0, v0, λ0)
             
             q = x[1:num_q]
             v = x[num_q+1:end]
-            F,Fy = contact_forces(h,M,G,C,q0,v0,q,v) # should be caching this
-            dF = dcontact_forces(h,M,G,C,q0,v0,q,v,F,Fy)
+            # F,Fy = contact_forces(h,M,G,C,q0,v0,q,v) # should be caching this
+            # dF = dcontact_forces(h,M,G,C,q0,v0,q,v,F,Fy)
+            dF = dnewton_contact_forces(h,M,G,C,q0,v0,λ0,q,v)
             
             values[1] = 0.
             values[2] = 0.

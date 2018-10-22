@@ -74,10 +74,9 @@ function simulate_implicit(h, M, G, C, q0, v0, N)
            
         println(Ipopt.ApplicationReturnStatus[status])
     
-        # qnext = prob.x[1:length(q0)]
-        # ϕnext = n_c' * qnext
-        # λnext = newton_contact_forces(ϕnext,λ0)
-        λnext = 0.
+        qnext = prob.x[1:num_q]
+        vnext = prob.x[num_q+1:num_q+num_v]
+        λnext = newton_contact_forces(h,M,G,C,q0,v0,λ0,qnext,vnext)
         
         results = hcat(results,vcat(prob.x,λnext))
     end

@@ -5,7 +5,9 @@ export contact_constraints,
         simulate,
         simulate_implicit,
         contact_forces,
-        dcontact_forces
+        dcontact_forces,
+        newton_contact_forces,
+        dnewton_contact_forces
 
 using StaticArrays
 using ForwardDiff
