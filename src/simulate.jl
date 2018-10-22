@@ -1,27 +1,30 @@
-function simulate(q0, v0, N)
+function simulate(h, M, G, C, q0, v0, N)
     results = vcat(q0,v0,0.)
-    n = length(q0) + length(v0) + 1
-    m = n
+    num_q = length(q0)
+    num_v = length(v0)
+    num_x = num_q + num_v + 1
+    num_g = num_q + num_v + 1
     
     function eval_f(x)
         return 0.
     end
     function eval_grad_f(x, grad_f)
-        grad_f[:] = zeros(n)
+        grad_f[:] = zeros(num_x)
     end
     
     for i in 1:N
-        x_L = -1000. * ones(n)
-        x_U = 1000. * ones(n)
+        x_L = -1000. * ones(num_x)
+        x_U = 1000. * ones(num_x)
     
-        g_L = zeros(m)
-        g_U = zeros(m)
+        g_L = zeros(num_g)
+        g_U = zeros(num_g)
         
-        q = results[1:length(q0),end]
-        v = results[length(q0)+1:length(q0)+length(v0),end]
-        eval_g, eval_jac_g = contact_constraints(q,v)
+        q0 = results[1:num_q,end]
+        v0 = results[num_q+1:num_q+num_v,end]
+        λ0 = results[num_q+num_v+1,end]
+        eval_g, eval_jac_g = contact_constraints(h,M,G,C,q0,v0,λ0)
         
-        prob = createProblem(n, x_L, x_U, m, g_L, g_U, n*m, 0, eval_f, eval_g, eval_grad_f, eval_jac_g)
+        prob = createProblem(num_x,x_L,x_U,num_g,g_L,g_U,num_x*num_g,0,eval_f,eval_g,eval_grad_f, eval_jac_g)
         
         prob.x = copy(results[:,end])
     

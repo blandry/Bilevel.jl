@@ -1,34 +1,32 @@
-function contact_constraints(q0,v0)
-    h = 0.05
-    n_c = [0, 1]
-    mass = 1.0
-    G = [0, -9.81]
-
-    n = length(q0)
+function contact_constraints(h, M, G, C, q0, v0, λ0)
+    num_q = length(q0)
+    num_v = length(v0)
+    num_x = num_q + num_v + 1
+    num_g = num_q + num_v + 1  
     
     function eval_g(x, g)
-        q = x[1:n]
-        v = x[n+1:2*n]
-        λ = x[2*n+1]
+        q = x[1:num_q]
+        v = x[num_q+1:num_q+num_v]
+        λ = x[num_q+num_v+1]
         
-        ϕ = n_c' * q 
+        ϕ = C' * q 
         
-        g[1:n] = mass * (v - v0) .- h * λ * n_c .- h * mass * G
-        g[n+1:2*n] = q .- q0 .- h .* v
-        g[2*n+1] = λ + ϕ - sqrt(λ^2 + ϕ^2)
+        g[1:num_q] = M * (v - v0) .- h * λ * C .- h * M * G
+        g[num_q+1:num_q+num_v] = q .- q0 .- h .* v
+        g[num_q+num_v+1] = λ + ϕ - sqrt(λ^2 + ϕ^2)
     end
     
     function eval_jac_g(x, mode, rows, cols, values)
         if mode == :Structure
             # for now just assume dense jac
-            for i = 1:(2*n+1)
-                for j = 1:(2*n+1)
-                    rows[(i-1)*(2*n+1)+j] = i
-                    cols[(i-1)*(2*n+1)+j] = j
+            for i = 1:num_g
+                for j = 1:num_x
+                    rows[(i-1)*num_x+j] = i
+                    cols[(i-1)*num_x+j] = j
                 end
             end
         else
-            g = zeros(2*n+1)
+            g = zeros(num_q+num_v+1)
             J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
             values[:] = J'[:]
         end
