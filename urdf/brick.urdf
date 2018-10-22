@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<robot name="Brick">
+
+  <link name="brick">
+  <visual>
+    <geometry>
+      <box size="1. 1. 1."/>
+    </geometry>
+    <origin xyz="0 0 0"/>
+    <material name="green">
+      <color rgba="0 0.8 .8 .75"/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="1."/>
+    <inertia ixx="1." ixy="0." ixz="0." iyy="1." iyz="0." izz="1."/>
+  </inertial>
+  </link>
+  
+  <link name="contact1">
+  <visual>
+    <geometry>
+      <sphere radius=".05"/>
+    </geometry>
+    <origin xyz="0. 0. 0."/>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="1e-12"/>
+    <inertia ixx="1e-12" ixy="0." ixz="0." iyy="1e-12" iyz="0." izz="1e-12"/>
+  </inertial>
+  </link>
+  <joint name="contact1_to_brick" type="fixed">
+    <!-- <origin xyz=".5 .5 -.5"/> -->
+    <origin xyz="0. 0. -.5"/>
+    <parent link="brick"/>
+    <child link="contact1"/>
+  </joint>
+  
+  <!-- <link name="contact2">
+  <visual>
+    <geometry>
+      <sphere radius=".05"/>
+    </geometry>
+    <origin xyz="0. 0. 0."/>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="1e-12"/>
+    <inertia ixx="1e-12" ixy="0." ixz="0." iyy="1e-12" iyz="0." izz="1e-12"/>
+  </inertial>
+  </link>
+  <joint name="contact2_to_brick" type="fixed">
+    <origin xyz=".5 -.5 -.5"/>
+    <parent link="brick"/>
+    <child link="contact2"/>
+  </joint>
+  
+  <link name="contact3">
+  <visual>
+    <geometry>
+      <sphere radius=".05"/>
+    </geometry>
+    <origin xyz="0. 0. 0."/>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="1e-12"/>
+    <inertia ixx="1e-12" ixy="0." ixz="0." iyy="1e-12" iyz="0." izz="1e-12"/>
+  </inertial>
+  </link>
+  <joint name="contact3_to_brick" type="fixed">
+    <origin xyz="-.5 -.5 -.5"/>
+    <parent link="brick"/>
+    <child link="contact3"/>
+  </joint>
+  
+  <link name="contact4">
+  <visual>
+    <geometry>
+      <sphere radius=".05"/>
+    </geometry>
+    <origin xyz="0. 0. 0."/>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="1e-12"/>
+    <inertia ixx="1e-12" ixy="0." ixz="0." iyy="1e-12" iyz="0." izz="1e-12"/>
+  </inertial>
+  </link>
+  <joint name="contact4_to_brick" type="fixed">
+    <origin xyz="-.5 .5 -.5"/>
+    <parent link="brick"/>
+    <child link="contact4"/>
+  </joint> -->
+
+</robot>
