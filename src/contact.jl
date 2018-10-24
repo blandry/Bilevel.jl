@@ -35,16 +35,21 @@ function contact_constraints(h, M, G, C, q0, v0, λ0)
     return eval_g, eval_jac_g
 end
 
-function newton_contact_forces(h,M,G,C,q0,v0,λ0,qn,vn)
+function newton_contact_forces(Δt,M,G,C,q0,v0,λ0,qn,vn)
     x = [λ0]
     λ = 1.
     μ = 1.
-    c = 1.
+    c = .01
     
-    q = -2.*(M*(vn[2] - v0[2])/h - M*G[2])
+    # manipulator eq in the objective
+    # q = -2.*(M*(vn[2] - v0[2])/Δt - M*G[2])
+    # f = x -> x' * x + q * x
+    # h = x -> (C' * qn) .* x
     
-    f = x -> x' * x + q * x
-    h = x -> (C' * qn) .* x
+    # complementarity in the objective
+    f = x -> ((C' * qn) .* x)'*((C' * qn) .* x)
+    h = x -> M*(vn[2] - v0[2]) - Δt*x - Δt*M*G[2]
+    
     g = x -> -x
     gp = (x,μ,c) -> max.(g(x), [-μ/c])
 
@@ -52,16 +57,16 @@ function newton_contact_forces(h,M,G,C,q0,v0,λ0,qn,vn)
     ∇xL = (x,λ,μ,c) -> ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c),x)
     HxL = (x,λ,μ,c) -> ForwardDiff.jacobian(x̃ -> ∇xL(x̃,λ,μ,c),x)
     
-    N = 10
+    N = 6
     α = 1.
-    I = 1e-14
+    I = 1e-10
     
     for i = 1:N
         gL = ∇xL(x,λ,μ,c)
         HL = HxL(x,λ,μ,c)
         
         dx = (HL + I) \ gL
-        x = x - α .* dx
+        x = x - α^i .* dx
         
         λ = λ + c * h(x)[1]
         μ = μ + c * gp(x,μ,c)[1]
