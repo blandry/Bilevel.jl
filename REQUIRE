@@ -1,1 +1,8 @@
 julia 0.6
+StaticArrays
+RigidBodyDynamics 0.3
+Rotations
+MechanismGeometries
+GeometryTypes
+CoordinateTransformations
+ForwardDiff 0.5
