@@ -39,11 +39,11 @@ function τ_total(x_sol::AbstractArray{T},num_v,num_contacts,β_dim,bodies,conta
     τ_external_wrenches
 end
 
-function f_contact(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
+function f_contact(x::AbstractArray{T},x_slack::T,ϕs::AbstractArray{M},μs,Dtv,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
     # complementarity constraints
     
     # dist * c_n = 0
-    vx = ϕs .* x[c_n_selector]
+    vx = ϕs .* x[c_n_selector] - x_slack^2
     
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
@@ -51,11 +51,11 @@ function f_contact(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,β_selector
     β_all = reshape(x[β_selector],β_dim,num_contacts)    
     for i = 1:num_contacts
         # push!(vx, dot(λpDtv[:,i],β_all[:,i]))
-        vx = vcat(vx, λpDtv[:,i] .* β_all[:,i])
+        vx = vcat(vx, λpDtv[:,i] .* β_all[:,i] - x_slack^2)
     end
     
     # (μ * c_n - sum(β)) * λ = 0
-    vx = vcat(vx, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector])
+    vx = vcat(vx, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] - x_slack^2)
     
     #return dot(vx,vx)
     vx

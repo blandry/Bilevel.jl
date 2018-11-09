@@ -56,7 +56,7 @@ function update_constraints(sim_data,q0,v0,u0)
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         dyn_bias = dynamics_bias(xnext)
-        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+1:end],
+        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],
                                  sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
                                  sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
         bias = dyn_bias + contact_bias
@@ -64,13 +64,15 @@ function update_constraints(sim_data,q0,v0,u0)
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (u0 .- bias) # == 0
                 
+        # note how the complementarity consraints are relaxed
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] = 
-            f_contact(x[sim_data.num_q+sim_data.num_v+1:end],ϕs,sim_data.μs,Dtv,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.β_dim,sim_data.num_contacts) # <= 0
+            f_contact(x[sim_data.num_q+sim_data.num_v+2:end],x[sim_data.num_q+sim_data.num_v+1],ϕs,sim_data.μs,
+                        Dtv,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.β_dim,sim_data.num_contacts) # <= 0
             
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0        
         
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] = 
-                g_contact(x[sim_data.num_q+sim_data.num_v+1:end],
+                g_contact(x[sim_data.num_q+sim_data.num_v+2:end],
                       sim_data.num_contacts,sim_data.β_dim,
                       sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
                       Dtv,sim_data.μs) # <= 0
@@ -107,7 +109,7 @@ function simulate(state0::MechanismState{T, M},
     num_contacts = length(env.contacts)
     β_dim = length(contact_basis(env.contacts[1][3]))
     # x = [q, v, β1, λ1, c_n1, β2, λ2, c_n2...]
-    num_x = num_q + num_v + num_contacts*(2+β_dim)
+    num_x = num_q + num_v + 1 + num_contacts*(2+β_dim)
     num_h = num_q + num_v
     num_g = num_contacts + num_contacts*(5+3*β_dim)
     
@@ -150,13 +152,13 @@ function simulate(state0::MechanismState{T, M},
     x_U = 1e19 * ones(num_x)
     
     g_L = vcat(0. * ones(num_h), -1e19 * ones(num_g))
-    g_U = vcat(0. * ones(num_h),  1e-6 * ones(num_g)) 
+    g_U = vcat(0. * ones(num_h),    0. * ones(num_g)) 
 
     # null costs for simulation
-    eval_f = x -> 0.
-    eval_grad_f = (x, grad_f) -> grad_f[:] = 0.
+    eval_f = x -> .5*x[num_q + num_v + 1]^2
+    eval_grad_f = (x, grad_f) -> grad_f[:] = x[num_q + num_v + 1]
 
-    results = vcat(configuration(state0),velocity(state0),zeros(2+β_dim))
+    results = vcat(configuration(state0),velocity(state0),zeros(3+β_dim))
     
     for i in 1:N
       x = results[:,end]
@@ -175,16 +177,16 @@ function simulate(state0::MechanismState{T, M},
       prob.x[:] = results[:,end][:]
       
       addOption(prob, "hessian_approximation", "limited-memory")
-      # addOption(prob, "print_level", 0)              
+      addOption(prob, "print_level", 0)              
       
       status = solveProblem(prob)
-      # println(Ipopt.ApplicationReturnStatus[status])
+      println(Ipopt.ApplicationReturnStatus[status])
       
       results = hcat(results,prob.x)
       
-      g_tmp = zeros(num_h + num_g)
-      eval_g(x, g_tmp)
-      println(g_tmp)
+      # g_tmp = zeros(num_h + num_g)
+      # eval_g(x, g_tmp)
+      # println(g_tmp)
     end
 
     results
