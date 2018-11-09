@@ -87,39 +87,40 @@ function pos_contact_constraints(x::AbstractArray{T},num_contacts,β_dim,β_sele
     pos_con
 end
 
-function τ_contact_wrenches(env,mechanism,bodies,contact_points,obstacles,Δt,
-                            num_v,num_contacts,β_dim,β_selector,λ_selector,c_n_selector,
-                            contact_bases,μs,ϕs,Ds,Dtv,world_frame,total_weight,
-                            rel_transforms,geo_jacobians,
-                            config_derivative,HΔv,dyn_bias,
-                            q0::AbstractArray{M},v0::AbstractArray{M},u0::AbstractArray{M},
-                            qnext::AbstractArray{T},vnext::AbstractArray{T}) where {M, T}
+function solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,dyn_bias,
+                                  q0::AbstractArray{M},v0::AbstractArray{M},u0::AbstractArray{M},
+                                  qnext::AbstractArray{T},vnext::AbstractArray{T}) where {M, T}
 
-    num_x = num_contacts*(β_dim+2)
+    num_x_contact = 1+sim_data.num_contacts*(sim_data.β_dim+2)
 
-    # x := [β,λ,c_n,β2,λ2,c_n2,...]    
-    x0 = zeros(T,num_x)
+    # x := [slack,β1,λ1,c_n1,β2,λ2,c_n2,...]    
+    x0 = zeros(T,num_x_contact)
 
-    f = x̃ -> f_contact(x̃,ϕs,μs,Dtv,β_selector,λ_selector,c_n_selector,β_dim,num_contacts)
-    h = x̃ -> h_contact(x̃,HΔv,Δt,u0,dyn_bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-                       world_frame,total_weight,rel_transforms,geo_jacobians)
-    g = x̃ -> g_contact(x̃,num_contacts,β_dim,β_selector,λ_selector,c_n_selector,Dtv,μs)
+    f = x̃ -> begin
+        comp_con = complementarity_contact_constraints(x̃,ϕs,sim_data.μs,Dtv,
+                                                       sim_data.slack_selector,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
+                                                       sim_data.β_dim,sim_data.num_contacts)
+        comp_con'*comp_con + x̃[sim_data.slack_selector]'*x̃[sim_data.slack_selector]
+    end
+    h = x̃ -> dynamics_contact_constraints(x̃,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,HΔv,sim_data.Δt,u0,dyn_bias,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,
+                                          sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
+                                          sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
+    g = x̃ -> pos_contact_constraints(x̃,sim_data.num_contacts,sim_data.β_dim,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,Dtv,sim_data.μs)
     
-    num_h = num_v
-    num_g = num_contacts*(β_dim+2) + β_dim*num_contacts + num_contacts
+    num_h = sim_data.num_v
+    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3)
     
     # parameters of the augmented lagrangian method
     N = 5
     α_vect = [1.^i for i in 1:N]
     c_vect = [2.^i for i in 1:N]
-    I = eye(num_x)
+    I = eye(num_x_contact)
     
-    x = augmented_lagrangian_method(x0,f,h,g,num_h,num_g,α_vect,c_vect,I)
-    # J = ForwardDiff.jacobian(z̃ -> augmented_lagrangian_method(x0,f,h,g,num_h,num_g,z̃[1:N],z̃[N+1:2*N],I), vcat(α_vect,c_vect))
-    # show(STDOUT, "text/plain", J); println("")
+    x = auglag_solve(x0,f,h,g,num_h,num_g,α_vect,c_vect,I)
 
-    # x = ipopt_solve(x0,f,h,g,num_h,num_g)
+    # TODO update this to new constraints 
+    # x = ip_solve(x0,f,h,g,num_h,num_g)
                    
-    return τ_total(x,β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-                   world_frame,total_weight,rel_transforms,geo_jacobians)
+    return τ_total(x,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
+                   sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
 end

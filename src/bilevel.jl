@@ -16,46 +16,41 @@ end
 function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect,c_vect,I) where T
     λ = ones(T,num_h)
     μ = ones(T,num_g)
-    x = zeros(T,length(x0))
+    x = copy(x0)
         
     for i = 1:length(α_vect)
-        f = f_obj(x0)
-        h = h_eq(x0)
-        g = g_ineq(x0)
+        f = f_obj(x)
+        h = h_eq(x)
+        g = g_ineq(x)
         
-        df = ForwardDiff.gradient(f_obj,x0)
-        dh = ForwardDiff.jacobian(h_eq,x0)
-        dg = ForwardDiff.jacobian(g_ineq,x0)        
-        ddf = ForwardDiff.jacobian(x̃ -> ForwardDiff.gradient(f_obj,x̃),x0)
+        df = ForwardDiff.gradient(f_obj,x)
+        dh = ForwardDiff.jacobian(h_eq,x)
+        dg = ForwardDiff.jacobian(g_ineq,x)
+        ddf = ForwardDiff.jacobian(x̃ -> ForwardDiff.gradient(f_obj,x̃),x)
 
         gL = ∇xL(λ,μ,c_vect[i],f,h,g,df,dh,dg)
         HL = ddf
         
-        # println(x0)
-        # show(STDOUT, "text/plain", ddf); println("")
-        # println(gL)
-        # println( (HL + I) \ gL )
-        
-        # x0[:] = (x0 - α_vect[i] .* gL / norm(gL))[:]
-        # x0[:] = (x0 - α_vect[i] .* (HL + I) \ gL)[:]
-        x = x0 - α_vect[i] .* (HL + I) \ gL
+        # x -= α_vect[i] .* gL / norm(gL)
+        x -= α_vect[i] .* (HL + I) \ gL
     
-        λ = λ + c_vect[i] * h_eq(x0)
-        μ = μ + c_vect[i] * max.(g_ineq(x0), -μ./c_vect[i])
+        λ = λ + c_vect[i] * h_eq(x)
+        μ = μ + c_vect[i] * max.(g_ineq(x), -μ./c_vect[i])
     end
     
     x
 end
 
 function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g) where T
+    
+    # TODO update this to new constraints
+    
     num_x = length(x0)
     x_L = -1e19 * ones(num_x)
     x_U = 1e19 * ones(num_x)
-    g_L = zeros(num_h)
-    g_U = zeros(num_h)
-    g_U = vcat(g_U, zeros(num_g))
-    g_L = vcat(g_L, -1e19 * ones(num_g))
-    
+    g_L = vcat(zeros(num_h), -1e19 * ones(num_g))
+    g_U = vcat(zeros(num_h), zeros(num_g))
+
     eval_f = x̃ -> f_obj(x̃)
     eval_grad_f = (x̃,grad_f) -> grad_f[:] = ForwardDiff.gradient(eval_f,x̃)[:]
 
@@ -85,10 +80,6 @@ function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g) where T
     addOption(prob, "print_level", 0)              
     status = solveProblem(prob)
     # println(Ipopt.ApplicationReturnStatus[status])
-    
-    # println("****")
-    # println(prob.x)
-    # println("****")
     
     prob.x
 end

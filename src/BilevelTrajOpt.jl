@@ -7,14 +7,7 @@ export Obstacle,
        parse_contacts,
        auglag_solve,
        ip_solve,
-       f_contact,
-       h_contact,
-       g_contact,
-       τ_contact_wrenches,
-       update_constraints_implicit_contact,
-       simulate,
-       simulate_implicit
-
+       simulate
 
 using StaticArrays
 using Ipopt
