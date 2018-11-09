@@ -1,3 +1,6 @@
+RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
+contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
+
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
                            rel_transform,geo_jacobian)
     # compute force in contact frame (obstacle frame)
@@ -47,13 +50,15 @@ function f_contact(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,β_selector
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)    
     for i = 1:num_contacts
-        push!(vx, dot(λpDtv[:,i],β_all[:,i]))
+        # push!(vx, dot(λpDtv[:,i],β_all[:,i]))
+        vx = vcat(vx, λpDtv[:,i] .* β_all[:,i])
     end
     
     # (μ * c_n - sum(β)) * λ = 0
     vx = vcat(vx, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector])
     
-    return dot(vx,vx)
+    #return dot(vx,vx)
+    vx
 end
 
 function h_contact(x::AbstractArray{T},HΔv,Δt,u0,dyn_bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,

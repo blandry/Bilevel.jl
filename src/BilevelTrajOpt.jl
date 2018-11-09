@@ -4,6 +4,7 @@ export Obstacle,
        Environment,
        planar_obstacle,
        contact_basis,
+       parse_contacts,
        auglag_solve,
        ip_solve,
        f_contact,
@@ -29,8 +30,8 @@ using GeometryTypes: HyperSphere, origin, radius
 using Compat
 
 include("bilevel.jl")
-include("contact.jl")
 include("environments.jl")
+include("contact.jl")
 include("simulation.jl")
 
 end # module
