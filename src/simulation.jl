@@ -21,6 +21,7 @@ struct SimData
     μs
     paths
     Ds
+    slack_selector
     β_selector
     λ_selector
     c_n_selector
@@ -49,14 +50,13 @@ function update_constraints(sim_data,q0,v0,u0)
             sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                           relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
             sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
-            
             ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
         end
         
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         dyn_bias = dynamics_bias(xnext)
-        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],
+        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+1:end],sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
                                  sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
                                  sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
         bias = dyn_bias + contact_bias
@@ -64,18 +64,17 @@ function update_constraints(sim_data,q0,v0,u0)
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (u0 .- bias) # == 0
                 
-        # note how the complementarity consraints are relaxed
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] = 
-            f_contact(x[sim_data.num_q+sim_data.num_v+2:end],x[sim_data.num_q+sim_data.num_v+1],ϕs,sim_data.μs,
-                        Dtv,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.β_dim,sim_data.num_contacts) # <= 0
+            complementarity_contact_constraints(x[sim_data.num_q+sim_data.num_v+1:end],ϕs,sim_data.μs,Dtv,
+                                                  sim_data.slack_selector,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.β_dim,sim_data.num_contacts) # <= 0
             
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0        
         
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] = 
-                g_contact(x[sim_data.num_q+sim_data.num_v+2:end],
-                      sim_data.num_contacts,sim_data.β_dim,
-                      sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
-                      Dtv,sim_data.μs) # <= 0
+            pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+1:end],
+                                      sim_data.num_contacts,sim_data.β_dim,
+                                      sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
+                                      Dtv,sim_data.μs) # <= 0
     end
     
     function eval_jac_g(x, mode, rows, cols, values)
@@ -133,9 +132,10 @@ function simulate(state0::MechanismState{T, M},
         push!(paths, path(mechanism, body, world))
         push!(Ds, contact_basis(obstacle))
     end
-    β_selector = find(repmat(vcat(ones(β_dim),[0,0]),num_contacts))
-    λ_selector = find(repmat(vcat(zeros(β_dim),[1,0]),num_contacts))
-    c_n_selector = find(repmat(vcat(zeros(β_dim),[0,1]),num_contacts))
+    slack_selector = [1]
+    β_selector = find(vcat(0,repmat(vcat(ones(β_dim),[0,0]),num_contacts)))
+    λ_selector = find(vcat(0,repmat(vcat(zeros(β_dim),[1,0]),num_contacts)))
+    c_n_selector = find(vcat(0,repmat(vcat(zeros(β_dim),[0,1]),num_contacts)))
     
     x0 = MechanismState(mechanism)
     rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(num_contacts) # force transform, point transform
@@ -145,7 +145,7 @@ function simulate(state0::MechanismState{T, M},
                        num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
                        world,world_frame,total_weight,
                        bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
-                       β_selector,λ_selector,c_n_selector)
+                       slack_selector,β_selector,λ_selector,c_n_selector)
 
     # optimization bounds
     x_L = -1e19 * ones(num_x)
@@ -183,10 +183,6 @@ function simulate(state0::MechanismState{T, M},
       println(Ipopt.ApplicationReturnStatus[status])
       
       results = hcat(results,prob.x)
-      
-      # g_tmp = zeros(num_h + num_g)
-      # eval_g(x, g_tmp)
-      # println(g_tmp)
     end
 
     results

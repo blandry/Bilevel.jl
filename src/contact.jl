@@ -20,16 +20,17 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     torque(geo_jacobian, w)
 end
 
-function τ_total(x_sol::AbstractArray{T},num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-                 world_frame,total_weight,rel_transforms,geo_jacobians) where T
-                 
-    τ_external_wrenches = zeros(T,num_v)
-    x_sol = reshape(x_sol,β_dim+2,num_contacts)
+function τ_total(x_sol::AbstractArray{T},β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
+                 world_frame,total_weight,rel_transforms,geo_jacobians) where T     
+    β_sol = reshape(x_sol[β_selector],β_dim,num_contacts)
+    λ_sol = x_sol[λ_selector]
+    c_n_sol = x_sol[c_n_selector]
     
+    τ_external_wrenches = zeros(T,num_v)
     for i = 1:num_contacts
-        β = x_sol[1:β_dim,i]
-        λ = x_sol[β_dim+1,i]
-        c_n = x_sol[β_dim+2,i]
+        β = β_sol[:,i]
+        λ = λ_sol[i]
+        c_n = c_n_sol[i]
         τ_external_wrenches += τ_external_wrench(β,λ,c_n,
                                                  bodies[i],contact_points[i],obstacles[i],Ds[i],
                                                  world_frame,total_weight,
@@ -39,57 +40,51 @@ function τ_total(x_sol::AbstractArray{T},num_v,num_contacts,β_dim,bodies,conta
     τ_external_wrenches
 end
 
-function f_contact(x::AbstractArray{T},x_slack::T,ϕs::AbstractArray{M},μs,Dtv,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
-    # complementarity constraints
-    
+function complementarity_contact_constraints(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,slack_selector,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
     # dist * c_n = 0
-    vx = ϕs .* x[c_n_selector] - x_slack^2
+    comp_con = ϕs .* x[c_n_selector] .- x[slack_selector].^2
     
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)    
     for i = 1:num_contacts
-        # push!(vx, dot(λpDtv[:,i],β_all[:,i]))
-        vx = vcat(vx, λpDtv[:,i] .* β_all[:,i] - x_slack^2)
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- x[slack_selector].^2)
     end
     
     # (μ * c_n - sum(β)) * λ = 0
-    vx = vcat(vx, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] - x_slack^2)
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- x[slack_selector].^2)
     
-    #return dot(vx,vx)
-    vx
+    comp_con
 end
 
-function h_contact(x::AbstractArray{T},HΔv,Δt,u0,dyn_bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-                   world_frame,total_weight,rel_transforms,geo_jacobians) where T
-    # equality constraints
-    
+function dynamics_contact_constraints(x::AbstractArray{T},β_selector,λ_selector,c_n_selector,HΔv,Δt,u0,dyn_bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
+                              world_frame,total_weight,rel_transforms,geo_jacobians) where T    
     # manipulator eq constraint
-    bias = dyn_bias + τ_total(x,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
+    bias = dyn_bias + τ_total(x,β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
                               world_frame,total_weight,rel_transforms,geo_jacobians)
     
-    return HΔv .- Δt .* (u0 .- bias)
+    dyn_con = HΔv .- Δt .* (u0 .- bias)
+    
+    dyn_con
 end
 
-function g_contact(x::AbstractArray{T},num_contacts,β_dim,β_selector,λ_selector,c_n_selector,Dtv,μs) where T
-    # non-negativity constraints
-    
-    # c_n >= 0
-    gx1 = -x[c_n_selector]
+function pos_contact_constraints(x::AbstractArray{T},num_contacts,β_dim,β_selector,λ_selector,c_n_selector,Dtv,μs) where T    
     # β >= 0
-    gx2 = -x[β_selector]
+    pos_con = -x[β_selector]
     # λ >= 0 
-    gx3 = -x[λ_selector]
+    pos_con = vcat(pos_con, -x[λ_selector])
+    # c_n >= 0
+    pos_con = vcat(pos_con, -x[c_n_selector])
     
     # λe + D'*v >= 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
-    gx4 = reshape(-(λ_all .+ Dtv),β_dim*num_contacts,1)
+    pos_con = vcat(pos_con, reshape(-(λ_all .+ Dtv),β_dim*num_contacts,1))
     
     # μ*c_n - sum(β) >= 0
-    gx5 = -(μs.*x[c_n_selector] - reshape(x[β_selector],β_dim,num_contacts)'*ones(β_dim))
+    pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - reshape(x[β_selector],β_dim,num_contacts)'*ones(β_dim)))
 
-    return vcat(gx1,gx2,gx3,gx4,gx5)
+    pos_con
 end
 
 function τ_contact_wrenches(env,mechanism,bodies,contact_points,obstacles,Δt,
@@ -124,9 +119,7 @@ function τ_contact_wrenches(env,mechanism,bodies,contact_points,obstacles,Δt,
     # show(STDOUT, "text/plain", J); println("")
 
     # x = ipopt_solve(x0,f,h,g,num_h,num_g)
-    # println(τ_total(x,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-    #                world_frame,total_weight,rel_transforms,geo_jacobians))
                    
-    return τ_total(x,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
+    return τ_total(x,β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
                    world_frame,total_weight,rel_transforms,geo_jacobians)
 end
