@@ -42,6 +42,24 @@ end
 
 function complementarity_contact_constraints(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,slack_selector,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
     # dist * c_n = 0
+    comp_con = ϕs .* x[c_n_selector]
+    
+    # (λe + Dtv)' * β = 0
+    λ_all = repmat(x[λ_selector]',β_dim,1)
+    λpDtv = λ_all .+ Dtv
+    β_all = reshape(x[β_selector],β_dim,num_contacts)    
+    for i = 1:num_contacts
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i])
+    end
+    
+    # (μ * c_n - sum(β)) * λ = 0
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector])
+    
+    comp_con
+end
+
+function complementarity_contact_constraints_relaxed(x::AbstractArray{T},ϕs::AbstractArray{M},μs,Dtv,slack_selector,β_selector,λ_selector,c_n_selector,β_dim,num_contacts) where {T,M}
+    # dist * c_n = 0
     comp_con = ϕs .* x[c_n_selector] .- x[slack_selector].^2
     
     # (λe + Dtv)' * β = 0
@@ -58,13 +76,12 @@ function complementarity_contact_constraints(x::AbstractArray{T},ϕs::AbstractAr
     comp_con
 end
 
-function dynamics_contact_constraints(x::AbstractArray{T},β_selector,λ_selector,c_n_selector,HΔv,Δt,u0,dyn_bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
+function dynamics_contact_constraints(x::AbstractArray{T},β_selector,λ_selector,c_n_selector,HΔv,Δt,bias,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
                               world_frame,total_weight,rel_transforms,geo_jacobians) where T    
     # manipulator eq constraint
-    bias = dyn_bias + τ_total(x,β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,
-                              world_frame,total_weight,rel_transforms,geo_jacobians)
+    τ_contact = τ_total(x,β_selector,λ_selector,c_n_selector,num_v,num_contacts,β_dim,bodies,contact_points,obstacles,Ds,world_frame,total_weight,rel_transforms,geo_jacobians)
     
-    dyn_con = HΔv .- Δt .* (u0 .- bias)
+    dyn_con = HΔv .- Δt .* (bias .- τ_contact)
     
     dyn_con
 end
@@ -87,40 +104,61 @@ function pos_contact_constraints(x::AbstractArray{T},num_contacts,β_dim,β_sele
     pos_con
 end
 
-function solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,dyn_bias,
-                                  q0::AbstractArray{M},v0::AbstractArray{M},u0::AbstractArray{M},
-                                  qnext::AbstractArray{T},vnext::AbstractArray{T}) where {M, T}
-
+function solve_implicit_contact_τ(sim_data,ϕs::AbstractArray{T},Dtv,HΔv,bias,z0;
+                                  ip_method=false,α_vect=[1.,1.],c_vect=[2.,4.],I_vect=1e-6*[1.,1.]) where T
+                                  
     num_x_contact = 1+sim_data.num_contacts*(sim_data.β_dim+2)
-
-    # x := [slack,β1,λ1,c_n1,β2,λ2,c_n2,...]    
-    x0 = zeros(T,num_x_contact)
+    x0 = vcat(0,z0)
 
     f = x̃ -> begin
         comp_con = complementarity_contact_constraints(x̃,ϕs,sim_data.μs,Dtv,
                                                        sim_data.slack_selector,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
                                                        sim_data.β_dim,sim_data.num_contacts)
-        comp_con'*comp_con + x̃[sim_data.slack_selector]'*x̃[sim_data.slack_selector]
+        comp_con'*comp_con
     end
-    h = x̃ -> dynamics_contact_constraints(x̃,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,HΔv,sim_data.Δt,u0,dyn_bias,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,
-                                          sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
-                                          sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
+    h = x̃ -> dynamics_contact_constraints(x̃,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,HΔv,sim_data.Δt,bias,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
     g = x̃ -> pos_contact_constraints(x̃,sim_data.num_contacts,sim_data.β_dim,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,Dtv,sim_data.μs)
     
     num_h = sim_data.num_v
     num_g = sim_data.num_contacts*(2*sim_data.β_dim+3)
-    
-    # parameters of the augmented lagrangian method
-    N = 5
-    α_vect = [1.^i for i in 1:N]
-    c_vect = [2.^i for i in 1:N]
-    I = eye(num_x_contact)
-    
-    x = auglag_solve(x0,f,h,g,num_h,num_g,α_vect,c_vect,I)
 
-    # TODO update this to new constraints 
-    # x = ip_solve(x0,f,h,g,num_h,num_g)
+    if ip_method
+        x = ip_solve(x0,f,h,g,num_h,num_g)
+    else
+        x = auglag_solve(x0,f,h,g,num_h,num_g,α_vect,c_vect,I_vect)
+    end
+
+    τ = τ_total(x,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
                    
-    return τ_total(x,sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,
-                   sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
+    return τ, x
+end
+
+function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false) where T
+    set_configuration!(sim_data.x0,q0)
+    set_velocity!(sim_data.x0,v0)
+    setdirty!(sim_data.x0)
+    H = mass_matrix(sim_data.x0)
+    
+    xnext = MechanismState{T}(sim_data.mechanism)
+    set_configuration!(xnext, qnext)
+    set_velocity!(xnext, vnext)
+
+    ϕs = Vector{T}(sim_data.num_contacts)
+    Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
+    for i = 1:sim_data.num_contacts
+        v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
+        Dtv[:,i] = map(sim_data.contact_bases[i]) do d
+            dot(transform_to_root(xnext, d.frame) * d, v)
+        end
+        sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+        sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+        ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
+    end
+
+    config_derivative = configuration_derivative(xnext)
+    HΔv = H * (vnext - v0)
+    bias = u0 .- dynamics_bias(xnext)
+    τ, x = solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,bias,z0,ip_method=ip_method)
+    
+    return τ, x
 end
