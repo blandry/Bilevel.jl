@@ -8,3 +8,4 @@ GeometryTypes
 CoordinateTransformations
 ForwardDiff 0.5
 Ipopt
+OSQP

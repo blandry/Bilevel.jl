@@ -1,3 +1,6 @@
+# TODO
+# since rel_transform and geo_jacobian can change at each iter
+# we should have a second struct that contains them seperately
 struct SimData
     Δt
     mechanism
@@ -31,7 +34,7 @@ function update_constraints(sim_data,q0,v0,u0)
     set_velocity!(sim_data.x0,v0)
     setdirty!(sim_data.x0)
     H = mass_matrix(sim_data.x0)
-    
+
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
@@ -39,73 +42,7 @@ function update_constraints(sim_data,q0,v0,u0)
         xnext = MechanismState{T}(sim_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
-        
-        ϕs = Vector{T}(sim_data.num_contacts)
-        Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-        for i = 1:sim_data.num_contacts
-            v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
-            Dtv[:,i] = map(sim_data.contact_bases[i]) do d
-                dot(transform_to_root(xnext, d.frame) * d, v)
-            end
-            sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
-            sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
-            ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
-        end
-        
-        config_derivative = configuration_derivative(xnext)
-        HΔv = H * (vnext - v0)
-        bias = u0 .- dynamics_bias(xnext)
-        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
-                                 sim_data.num_v,sim_data.num_contacts,sim_data.β_dim,sim_data.bodies,sim_data.contact_points,sim_data.obstacles,sim_data.Ds,sim_data.world_frame,sim_data.total_weight,sim_data.rel_transforms,sim_data.geo_jacobians)
 
-        g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
-                
-        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] = 
-            complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+2:end],slack,ϕs,sim_data.μs,Dtv,
-                                                        sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,sim_data.β_dim,sim_data.num_contacts) # <= 0
-            
-        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0        
-        
-        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] = 
-            pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+2:end],
-                                      sim_data.num_contacts,sim_data.β_dim,
-                                      sim_data.β_selector,sim_data.λ_selector,sim_data.c_n_selector,
-                                      Dtv,sim_data.μs) # <= 0
-    end
-    
-    function eval_jac_g(x, mode, rows, cols, values)
-        if mode == :Structure
-            # TODO actually figure out the sparsity pattern
-            for i = 1:(sim_data.num_h + sim_data.num_g)
-                for j = 1:sim_data.num_x
-                    rows[(i-1)*sim_data.num_x+j] = i
-                    cols[(i-1)*sim_data.num_x+j] = j
-                end
-            end
-        else
-            g = zeros(sim_data.num_h + sim_data.num_g)
-            J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
-            values[:] = J'[:]
-        end
-    end
-    
-    eval_g, eval_jac_g
-end
-
-function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)    
-    set_configuration!(sim_data.x0,q0)
-    set_velocity!(sim_data.x0,v0)
-    setdirty!(sim_data.x0)
-    H = mass_matrix(sim_data.x0)
-    
-    function eval_g(x::AbstractArray{T}, g) where T
-        qnext = x[1:sim_data.num_q]
-        vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-        xnext = MechanismState{T}(sim_data.mechanism)
-        set_configuration!(xnext, qnext)
-        set_velocity!(xnext, vnext)
-        
         ϕs = Vector{T}(sim_data.num_contacts)
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
@@ -118,18 +55,24 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
             sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
             ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
         end
-        
+
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,bias,z0)
-        
+        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],sim_data)
+
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) + x[sim_data.num_q+sim_data.num_v+1] # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
-        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
+
+        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] =
+            complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+2:end],slack,ϕs,Dtv,sim_data) # <= 0
+
+        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0
+
+        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] =
+            pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+2:end],Dtv,sim_data) # <= 0
     end
-    
+
     function eval_jac_g(x, mode, rows, cols, values)
         if mode == :Structure
             # TODO actually figure out the sparsity pattern
@@ -145,7 +88,63 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
             values[:] = J'[:]
         end
     end
-    
+
+    eval_g, eval_jac_g
+end
+
+function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
+    set_configuration!(sim_data.x0,q0)
+    set_velocity!(sim_data.x0,v0)
+    setdirty!(sim_data.x0)
+    H = mass_matrix(sim_data.x0)
+
+    function eval_g(x::AbstractArray{T}, g) where T
+        qnext = x[1:sim_data.num_q]
+        vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+        xnext = MechanismState{T}(sim_data.mechanism)
+        set_configuration!(xnext, qnext)
+        set_velocity!(xnext, vnext)
+
+        ϕs = Vector{T}(sim_data.num_contacts)
+        Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
+        for i = 1:sim_data.num_contacts
+            v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
+            Dtv[:,i] = map(sim_data.contact_bases[i]) do d
+                dot(transform_to_root(xnext, d.frame) * d, v)
+            end
+            sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+                                          relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+            sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+            ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
+        end
+
+        config_derivative = configuration_derivative(xnext)
+        HΔv = H * (vnext - v0)
+        bias = u0 .- dynamics_bias(xnext)
+        contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,bias,z0)
+
+        g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
+        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) + x[sim_data.num_q+sim_data.num_v+1] # == 0
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
+        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
+    end
+
+    function eval_jac_g(x, mode, rows, cols, values)
+        if mode == :Structure
+            # TODO actually figure out the sparsity pattern
+            for i = 1:(sim_data.num_h + sim_data.num_g)
+                for j = 1:sim_data.num_x
+                    rows[(i-1)*sim_data.num_x+j] = i
+                    cols[(i-1)*sim_data.num_x+j] = j
+                end
+            end
+        else
+            g = zeros(sim_data.num_h + sim_data.num_g)
+            J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
+            values[:] = J'[:]
+        end
+    end
+
     eval_g, eval_jac_g
 end
 
@@ -203,7 +202,7 @@ function get_sim_data(state0::MechanismState{T, M},
                      world,world_frame,total_weight,
                      bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
                      β_selector,λ_selector,c_n_selector)
-                     
+
     sim_data
 end
 
@@ -218,11 +217,11 @@ function simulate(state0::MechanismState{T, M},
     # optimization bounds
     x_L = -1e19 * ones(sim_data.num_x)
     x_U = 1e19 * ones(sim_data.num_x)
-    
+
     # g_L = vcat(-1e-12 * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    # g_U = vcat( 1e-12 * ones(sim_data.num_h),  1e-12 * ones(sim_data.num_g)) 
+    # g_U = vcat( 1e-12 * ones(sim_data.num_h),  1e-12 * ones(sim_data.num_g))
     g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g)) 
+    g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
 
     z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
     results = vcat(configuration(state0),velocity(state0),0.,z0)
@@ -231,13 +230,13 @@ function simulate(state0::MechanismState{T, M},
         grad_f[:] = 0.
         grad_f[sim_data.num_q+sim_data.num_v+1] = x[sim_data.num_q+sim_data.num_v+1]
     end
-    
+
     for i in 1:N
         x = results[:,end]
         q0 = x[1:sim_data.num_q]
         v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
         u0 = zeros(sim_data.num_v) # for now no controller
-        z0 = x[sim_data.num_q+sim_data.num_v+2:end]
+        # z0 = x[sim_data.num_q+sim_data.num_v+2:end]
 
         if implicit_contact
           eval_g, eval_jac_g = update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
@@ -250,11 +249,11 @@ function simulate(state0::MechanismState{T, M},
                            sim_data.num_x*(sim_data.num_h+sim_data.num_g),0,
                            eval_f,eval_g,
                            eval_grad_f,eval_jac_g)
-                           
+
         prob.x[:] = results[1:sim_data.num_x,end][:]
 
         addOption(prob, "hessian_approximation", "limited-memory")
-        addOption(prob, "print_level", 0)              
+        addOption(prob, "print_level", 0)
 
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])

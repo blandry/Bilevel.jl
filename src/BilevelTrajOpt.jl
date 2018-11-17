@@ -10,7 +10,8 @@ export Obstacle,
        simulate,
        get_sim_data,
        separation,
-       solve_implicit_contact_τ
+       solve_implicit_contact_τ,
+       parse_contacts
 
 using StaticArrays
 using Ipopt
