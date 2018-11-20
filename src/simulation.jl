@@ -39,8 +39,8 @@ function update_constraints(sim_data,q0,v0,u0)
         set_velocity!(xnext, vnext)
 
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-        rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(sim_data.num_contacts) # force transform, point transform
-        geo_jacobians = Vector{GeometricJacobian}(sim_data.num_contacts)
+        rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
+        geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
         ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
@@ -101,8 +101,8 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         set_velocity!(xnext, vnext)
 
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-        rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(num_contacts) # force transform, point transform
-        geo_jacobians = Vector{GeometricJacobian}(num_contacts)
+        rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(num_contacts) # force transform, point transform
+        geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(num_contacts)
         ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
@@ -264,8 +264,8 @@ function simulate(state0::MechanismState{T, M},
           xnext = MechanismState(sim_data.mechanism)
           set_configuration!(xnext,qnext)
           set_velocity!(xnext,vnext)
-          rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(sim_data.num_contacts) # force transform, point transform
-          geo_jacobians = Vector{GeometricJacobian}(sim_data.num_contacts)
+          rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
+          geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
           for i = 1:sim_data.num_contacts
               rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                    relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))

@@ -183,8 +183,8 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},
     set_velocity!(xnext, vnext)
 
     Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-    rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(sim_data.num_contacts) # force transform, point transform
-    geo_jacobians = Vector{GeometricJacobian}(sim_data.num_contacts)
+    rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
+    geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
     ϕs = Vector{T}(sim_data.num_contacts)
     for i = 1:sim_data.num_contacts
         v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
