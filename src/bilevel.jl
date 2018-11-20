@@ -13,8 +13,8 @@ function HxL(x,λ,μ,c,f,h,g)
 end
 
 function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect,c_vect,I_vect) where T
-    λ = ones(T,num_h)
-    μ = ones(T,num_g)
+    λ = zeros(T,num_h)
+    μ = zeros(T,num_g)
     I = eye(T,length(x0))
     x = copy(x0)
 

@@ -1,12 +1,7 @@
-# TODO
-# since rel_transform and geo_jacobian can change at each iter
-# we should have a second struct that contains them seperately
 struct SimData
     Δt
     mechanism
     x0
-    rel_transforms
-    geo_jacobians
     num_q
     num_v
     num_contacts
@@ -43,32 +38,32 @@ function update_constraints(sim_data,q0,v0,u0)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
 
-        ϕs = Vector{T}(sim_data.num_contacts)
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
+        rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(sim_data.num_contacts) # force transform, point transform
+        geo_jacobians = Vector{GeometricJacobian}(sim_data.num_contacts)
+        ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
             Dtv[:,i] = map(sim_data.contact_bases[i]) do d
                 dot(transform_to_root(xnext, d.frame) * d, v)
             end
-            sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+            rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                           relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
-            sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+            geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
             ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
         end
 
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],sim_data)
+        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] =
             complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+2:end],slack,ϕs,Dtv,sim_data) # <= 0
-
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0
-
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] =
             pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+2:end],Dtv,sim_data) # <= 0
     end
@@ -105,27 +100,29 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
 
-        ϕs = Vector{T}(sim_data.num_contacts)
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
+        rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(num_contacts) # force transform, point transform
+        geo_jacobians = Vector{GeometricJacobian}(num_contacts)
+        ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
             Dtv[:,i] = map(sim_data.contact_bases[i]) do d
                 dot(transform_to_root(xnext, d.frame) * d, v)
             end
-            sim_data.rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+            rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                           relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
-            sim_data.geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+            geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
             ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
         end
 
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,HΔv,bias,z0)
+        contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) + x[sim_data.num_q+sim_data.num_v+1] # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
+
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
 
@@ -194,11 +191,8 @@ function get_sim_data(state0::MechanismState{T, M},
     c_n_selector = find(repmat(vcat(zeros(β_dim),[0,1]),num_contacts))
 
     x0 = MechanismState(mechanism)
-    rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(num_contacts) # force transform, point transform
-    geo_jacobians = Vector{GeometricJacobian}(num_contacts)
 
-    sim_data = SimData(Δt,mechanism,x0,rel_transforms,geo_jacobians,
-                     num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
+    sim_data = SimData(Δt,mechanism,x0,num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
                      world,world_frame,total_weight,
                      bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
                      β_selector,λ_selector,c_n_selector)
@@ -218,8 +212,6 @@ function simulate(state0::MechanismState{T, M},
     x_L = -1e19 * ones(sim_data.num_x)
     x_U = 1e19 * ones(sim_data.num_x)
 
-    # g_L = vcat(-1e-12 * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    # g_U = vcat( 1e-12 * ones(sim_data.num_h),  1e-12 * ones(sim_data.num_g))
     g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
     g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
 
@@ -263,10 +255,28 @@ function simulate(state0::MechanismState{T, M},
           qnext = prob.x[1:sim_data.num_q]
           vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
           τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
+          display(τ_sol)
+
           results = hcat(results,vcat(prob.x,z_sol))
         else
+          qnext = prob.x[1:sim_data.num_q]
+          vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+          xnext = MechanismState(sim_data.mechanism)
+          set_configuration!(xnext,qnext)
+          set_velocity!(xnext,vnext)
+          rel_transforms = Vector{Tuple{Transform3D, Transform3D}}(sim_data.num_contacts) # force transform, point transform
+          geo_jacobians = Vector{GeometricJacobian}(sim_data.num_contacts)
+          for i = 1:sim_data.num_contacts
+              rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+                                   relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+              geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+          end
+          τ_sol = τ_total(prob.x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
+          display(τ_sol)
+
           results = hcat(results,prob.x)
         end
+        display(prob.x)
     end
 
     results
