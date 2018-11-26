@@ -101,8 +101,8 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         set_velocity!(xnext, vnext)
 
         Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-        rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(num_contacts) # force transform, point transform
-        geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(num_contacts)
+        rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
+        geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
         ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
@@ -212,8 +212,10 @@ function simulate(state0::MechanismState{T, M},
     x_L = -1e19 * ones(sim_data.num_x)
     x_U = 1e19 * ones(sim_data.num_x)
 
-    g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
+    # g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
+    # g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
+    g_L = vcat(1e-12 * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
+    g_U = vcat(1e-12 * ones(sim_data.num_h), 1e-12 * ones(sim_data.num_g))
 
     z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
     results = vcat(configuration(state0),velocity(state0),0.,z0)
@@ -276,7 +278,7 @@ function simulate(state0::MechanismState{T, M},
 
           results = hcat(results,prob.x)
         end
-        display(prob.x)
+        # display(prob.x)
     end
 
     results
