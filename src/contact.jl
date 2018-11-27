@@ -147,6 +147,11 @@ function pos_contact_constraints(x,Dtv,sim_data)
     # μ*c_n - sum(β) >= 0
     pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - reshape(x[β_selector],β_dim,num_contacts)'*ones(β_dim)))
 
+    # upper bounds
+    pos_con = vcat(pos_con, x[β_selector] .- 100.)
+    pos_con = vcat(pos_con, x[λ_selector] .- 100.)
+    pos_con = vcat(pos_con, x[c_n_selector] .- 100.)
+
     pos_con
 end
 
@@ -156,13 +161,13 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     f = x̃ -> begin
         comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
         # comp_con'*comp_con
-        sum(comp_con)
+        sum([1.,1.,1.,1.,2.,2.].*comp_con)
     end
     h = x̃ -> dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
     g = x̃ -> pos_contact_constraints(x̃,Dtv,sim_data)
 
     num_h = sim_data.num_v
-    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3)
+    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3 + sim_data.β_dim+2)
 
     if ip_method
         x = ip_solve(z0,f,h,g,num_h,num_g)
@@ -171,6 +176,8 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     end
 
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
+
+    display(complementarity_contact_constraints(x,ϕs,Dtv,sim_data))
 
     return τ, x
 end

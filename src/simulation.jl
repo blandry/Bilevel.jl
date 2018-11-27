@@ -64,7 +64,7 @@ function update_constraints(sim_data,q0,v0,u0)
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] =
             complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+2:end],slack,ϕs,Dtv,sim_data) # <= 0
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0
-        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)] =
+        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)+sim_data.num_contacts*(2+sim_data.β_dim)] =
             pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+2:end],Dtv,sim_data) # <= 0
     end
 
@@ -162,7 +162,7 @@ function get_sim_data(state0::MechanismState{T, M},
       num_g = num_contacts
     else
       num_x = num_q + num_v + 1 + num_contacts*(2+β_dim)
-      num_g = num_contacts + num_contacts*(5+3*β_dim)
+      num_g = num_contacts + num_contacts*(5+3*β_dim) + num_contacts*(2+β_dim)
     end
     num_h = num_q + num_v
 
@@ -257,25 +257,26 @@ function simulate(state0::MechanismState{T, M},
           qnext = prob.x[1:sim_data.num_q]
           vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
           τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
-          display(τ_sol)
-
+          # display(τ_sol)
+          # display(z_sol)
           results = hcat(results,vcat(prob.x,z_sol))
         else
-          qnext = prob.x[1:sim_data.num_q]
-          vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-          xnext = MechanismState(sim_data.mechanism)
-          set_configuration!(xnext,qnext)
-          set_velocity!(xnext,vnext)
-          rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
-          geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
-          for i = 1:sim_data.num_contacts
-              rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
-                                   relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
-              geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
-          end
-          τ_sol = τ_total(prob.x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
-          display(τ_sol)
-
+          # qnext = prob.x[1:sim_data.num_q]
+          # vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+          # z_sol = prob.x[sim_data.num_q+sim_data.num_v+2:end]
+          # xnext = MechanismState(sim_data.mechanism)
+          # set_configuration!(xnext,qnext)
+          # set_velocity!(xnext,vnext)
+          # rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
+          # geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
+          # for i = 1:sim_data.num_contacts
+          #     rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+          #                          relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+          #     geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+          # end
+          # τ_sol = τ_total(prob.x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
+          # display(τ_sol)
+          # display(z_sol)
           results = hcat(results,prob.x)
         end
         # display(prob.x)
