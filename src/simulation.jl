@@ -95,6 +95,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+        slack = x[sim_data.num_q+sim_data.num_v+1]
         xnext = MechanismState{T}(sim_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
@@ -120,8 +121,8 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
-
+        
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) .- slack*slack # <= 0
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
 
@@ -158,12 +159,13 @@ function get_sim_data(state0::MechanismState{T, M},
     # x = [q, v, slack, β1, λ1, c_n1, β2, λ2, c_n2...]
     if implicit_contact
       num_x = num_q + num_v + 1
-      num_g = num_contacts
+      num_h = num_q
+      num_g = num_v + num_contacts
     else
       num_x = num_q + num_v + 1 + num_contacts*(2+β_dim)
+      num_h = num_q + num_v
       num_g = num_contacts + num_contacts*(5+3*β_dim) + num_contacts*(2+β_dim)
     end
-    num_h = num_q + num_v
 
     # some constants throughout the simulation
     world = root_body(mechanism)
