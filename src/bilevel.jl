@@ -1,12 +1,11 @@
 function softmax(x,y)
-    # log.(exp.(x) + exp.(y))
-    max.(x,y)
+    log.(exp.(x) + exp.(y))
 end
 
 function L(x,λ,μ,c,f,h,g)
     hx = h(x)
-    # mucgx = max.(0.,μ.+c*g(x))
-    mucgx = softmax(0.,μ.+c*g(x))
+    mucgx = max.(0.,μ.+c*g(x))
+    # mucgx = softmax(0.,μ.+c*g(x))
     f(x) + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
 end
 
@@ -29,15 +28,11 @@ function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect
         HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
 
         # x -= α_vect[i] .* gL / norm(gL)
-        display(gL)
-
         x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
 
         λ = λ + c_vect[i] * h_eq(x)
-        # μ = max.(0., μ + c_vect[i] * g_ineq(x))
-        μ = softmax(0., μ + c_vect[i] * g_ineq(x))
-
-        # x = softmax(0.,x)
+        μ = max.(0., μ + c_vect[i] * g_ineq(x))
+        # μ = softmax(0., μ + c_vect[i] * g_ineq(x))
     end
 
     x
@@ -47,8 +42,8 @@ function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g) where T
     num_x = length(x0)
     x_L = -1e19 * ones(num_x)
     x_U = 1e19 * ones(num_x)
-    g_L = vcat(-1e-12 * ones(num_h), -1e19 * ones(num_g))
-    g_U = vcat(1e-12 * ones(num_h), 1e-12 * ones(num_g))
+    g_L = vcat(0. * ones(num_h), -1e19 * ones(num_g))
+    g_U = vcat(0. * ones(num_h), 0. * ones(num_g))
 
     eval_f = x̃ -> f_obj(x̃)
     eval_grad_f = (x̃,grad_f) -> grad_f[:] = ForwardDiff.gradient(eval_f,x̃)[:]

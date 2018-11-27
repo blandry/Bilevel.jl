@@ -1,7 +1,6 @@
 struct SimData
     Δt
     mechanism
-    x0
     num_q
     num_v
     num_contacts
@@ -25,10 +24,10 @@ struct SimData
 end
 
 function update_constraints(sim_data,q0,v0,u0)
-    set_configuration!(sim_data.x0,q0)
-    set_velocity!(sim_data.x0,v0)
-    setdirty!(sim_data.x0)
-    H = mass_matrix(sim_data.x0)
+    x0 = MechanismState(sim_data.mechanism)
+    set_configuration!(x0,q0)
+    set_velocity!(x0,v0)
+    H = mass_matrix(x0)
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -88,10 +87,10 @@ function update_constraints(sim_data,q0,v0,u0)
 end
 
 function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
-    set_configuration!(sim_data.x0,q0)
-    set_velocity!(sim_data.x0,v0)
-    setdirty!(sim_data.x0)
-    H = mass_matrix(sim_data.x0)
+    x0 = MechanismState(sim_data.mechanism)
+    set_configuration!(x0,q0)
+    set_velocity!(x0,v0)
+    H = mass_matrix(x0)
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -190,12 +189,10 @@ function get_sim_data(state0::MechanismState{T, M},
     λ_selector = find(repmat(vcat(zeros(β_dim),[1,0]),num_contacts))
     c_n_selector = find(repmat(vcat(zeros(β_dim),[0,1]),num_contacts))
 
-    x0 = MechanismState(mechanism)
-
-    sim_data = SimData(Δt,mechanism,x0,num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
-                     world,world_frame,total_weight,
-                     bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
-                     β_selector,λ_selector,c_n_selector)
+    sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
+                       world,world_frame,total_weight,
+                       bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
+                       β_selector,λ_selector,c_n_selector)
 
     sim_data
 end
@@ -212,10 +209,8 @@ function simulate(state0::MechanismState{T, M},
     x_L = -1e19 * ones(sim_data.num_x)
     x_U = 1e19 * ones(sim_data.num_x)
 
-    # g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    # g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
-    g_L = vcat(1e-12 * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
-    g_U = vcat(1e-12 * ones(sim_data.num_h), 1e-12 * ones(sim_data.num_g))
+    g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
+    g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
 
     z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
     results = vcat(configuration(state0),velocity(state0),0.,z0)
@@ -239,10 +234,10 @@ function simulate(state0::MechanismState{T, M},
         end
 
         prob = createProblem(sim_data.num_x,x_L,x_U,
-                           sim_data.num_h+sim_data.num_g,g_L,g_U,
-                           sim_data.num_x*(sim_data.num_h+sim_data.num_g),0,
-                           eval_f,eval_g,
-                           eval_grad_f,eval_jac_g)
+                             sim_data.num_h+sim_data.num_g,g_L,g_U,
+                             sim_data.num_x*(sim_data.num_h+sim_data.num_g),0,
+                             eval_f,eval_g,
+                             eval_grad_f,eval_jac_g)
 
         prob.x[:] = results[1:sim_data.num_x,end][:]
 
@@ -257,13 +252,10 @@ function simulate(state0::MechanismState{T, M},
           qnext = prob.x[1:sim_data.num_q]
           vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
           τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
-          # display(τ_sol)
-          # display(z_sol)
           results = hcat(results,vcat(prob.x,z_sol))
         else
           # qnext = prob.x[1:sim_data.num_q]
           # vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-          # z_sol = prob.x[sim_data.num_q+sim_data.num_v+2:end]
           # xnext = MechanismState(sim_data.mechanism)
           # set_configuration!(xnext,qnext)
           # set_velocity!(xnext,vnext)
@@ -276,10 +268,8 @@ function simulate(state0::MechanismState{T, M},
           # end
           # τ_sol = τ_total(prob.x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
           # display(τ_sol)
-          # display(z_sol)
           results = hcat(results,prob.x)
         end
-        # display(prob.x)
     end
 
     results

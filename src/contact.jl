@@ -1,16 +1,6 @@
 RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
 contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
-# global num_steps_default = 5
-# global α_vect_default = [1.^i for i = 1:num_steps_default]
-# global c_vect_default = [10000.+50.^i for i = 1:num_steps_default]
-# global I_vect_default = 1e-10*ones(num_steps_default)
-
-# global num_steps_default = 5
-# global α_vect_default = ones(num_steps_default)
-# global c_vect_default = 0.05*ones(num_steps_default)
-# global I_vect_default = 1e-12*ones(num_steps_default)
-
 global num_steps_default = 3
 global α_vect_default = [.99^i for i in 1:num_steps_default]
 global c_vect_default = [10.^i for i in 1:num_steps_default]
@@ -158,16 +148,17 @@ end
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0;
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
 
+    w_obj = vcat(1.,ones(sim_data.β_dim),1.)
     f = x̃ -> begin
         comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
         # comp_con'*comp_con
-        sum([1.,1.,1.,1.,2.,2.].*comp_con)
+        sum(w_obj.*comp_con)
     end
     h = x̃ -> dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
     g = x̃ -> pos_contact_constraints(x̃,Dtv,sim_data)
 
     num_h = sim_data.num_v
-    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3 + sim_data.β_dim+2)
+    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
 
     if ip_method
         x = ip_solve(z0,f,h,g,num_h,num_g)
@@ -177,18 +168,16 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
 
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
 
-    display(complementarity_contact_constraints(x,ϕs,Dtv,sim_data))
-
     return τ, x
 end
 
 function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},vnext::AbstractArray{T};
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default) where T
 
-    set_configuration!(sim_data.x0,q0)
-    set_velocity!(sim_data.x0,v0)
-    setdirty!(sim_data.x0)
-    H = mass_matrix(sim_data.x0)
+    x0 = MechanismState(sim_data.mechanism)
+    set_configuration!(x0,q0)
+    set_velocity!(x0,v0)
+    H = mass_matrix(x0)
 
     xnext = MechanismState{T}(sim_data.mechanism)
     set_configuration!(xnext, qnext)
