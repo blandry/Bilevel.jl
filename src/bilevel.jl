@@ -1,11 +1,20 @@
+function abse(x,ϵ=1e-12)
+    sqrt.(x.*x .+ ϵ)
+end
+
+function diffmax(x,y)
+    .5*(x .+ y + abse(x .- y))
+end
+
 function softmax(x,y)
-    log.(exp.(x) + exp.(y))
+    log.(exp.(x) .+ exp.(y))
+    # x .+ log.(1. .+ exp.(y .- x))
 end
 
 function L(x,λ,μ,c,f,h,g)
     hx = h(x)
-    mucgx = max.(0.,μ.+c*g(x))
-    # mucgx = softmax(0.,μ.+c*g(x))
+    # mucgx = max.(0.,μ.+c*g(x))
+    mucgx = softmax(0.,μ.+c*g(x))
     f(x) + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
 end
 
@@ -31,8 +40,8 @@ function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect
         x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
 
         λ = λ + c_vect[i] * h_eq(x)
-        μ = max.(0., μ + c_vect[i] * g_ineq(x))
-        # μ = softmax(0., μ + c_vect[i] * g_ineq(x))
+        # μ = max.(0., μ + c_vect[i] * g_ineq(x))
+        μ = softmax(0., μ + c_vect[i] * g_ineq(x))
     end
 
     x

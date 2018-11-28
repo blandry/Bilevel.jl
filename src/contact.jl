@@ -1,9 +1,9 @@
 RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
 contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
-global num_steps_default = 2
+global num_steps_default = 20
 global α_vect_default = [1.^i for i in 1:num_steps_default]
-global c_vect_default = [100.+2.^i for i in 1:num_steps_default]
+global c_vect_default = [100.+min.(2.^i,100) for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
 
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
