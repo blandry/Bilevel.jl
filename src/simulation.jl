@@ -6,6 +6,7 @@ struct SimData
     num_contacts
     β_dim
     num_x
+    num_slack
     num_h
     num_g
     world
@@ -32,7 +33,7 @@ function update_constraints(sim_data,q0,v0,u0)
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-        slack = x[sim_data.num_q+sim_data.num_v+1]
+        slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         xnext = MechanismState{T}(sim_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
@@ -55,16 +56,16 @@ function update_constraints(sim_data,q0,v0,u0)
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
+        contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],rel_transforms,geo_jacobians,sim_data)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] =
-            complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+2:end],slack,ϕs,Dtv,sim_data) # <= 0
+            complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],slack,ϕs,Dtv,sim_data) # <= 0
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)+sim_data.num_contacts*(2+sim_data.β_dim)] =
-            pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+2:end],Dtv,sim_data) # <= 0
+            pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],Dtv,sim_data) # <= 0
     end
 
     function eval_jac_g(x, mode, rows, cols, values)
@@ -95,7 +96,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-        slack = x[sim_data.num_q+sim_data.num_v+1]
+        slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         xnext = MechanismState{T}(sim_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
@@ -119,10 +120,11 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
         contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0)
+        # contact_bias = zeros(sim_data.num_v)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
         
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) .- slack*slack # <= 0
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
 
@@ -158,11 +160,13 @@ function get_sim_data(state0::MechanismState{T, M},
     β_dim = length(contact_basis(env.contacts[1][3]))
     # x = [q, v, slack, β1, λ1, c_n1, β2, λ2, c_n2...]
     if implicit_contact
-      num_x = num_q + num_v + 1
-      num_h = num_q
-      num_g = num_v + num_contacts
+      num_slack = num_v
+      num_x = num_q + num_v + num_slack
+      num_h = num_q + num_v
+      num_g = num_contacts
     else
-      num_x = num_q + num_v + 1 + num_contacts*(2+β_dim)
+      num_slack = 1
+      num_x = num_q + num_v + num_slack + num_contacts*(2+β_dim)
       num_h = num_q + num_v
       num_g = num_contacts + num_contacts*(5+3*β_dim) + num_contacts*(2+β_dim)
     end
@@ -191,7 +195,7 @@ function get_sim_data(state0::MechanismState{T, M},
     λ_selector = find(repmat(vcat(zeros(β_dim),[1,0]),num_contacts))
     c_n_selector = find(repmat(vcat(zeros(β_dim),[0,1]),num_contacts))
 
-    sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,num_x,num_h,num_g,
+    sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,num_x,num_slack,num_h,num_g,
                        world,world_frame,total_weight,
                        bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
                        β_selector,λ_selector,c_n_selector)
@@ -215,11 +219,15 @@ function simulate(state0::MechanismState{T, M},
     g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
 
     z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
-    results = vcat(configuration(state0),velocity(state0),0.,z0)
-    eval_f = x -> .5*x[sim_data.num_q+sim_data.num_v+1]^2
+    results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack),z0)
+    eval_f = x -> begin
+        slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
+        .5*slack'*slack
+    end
     eval_grad_f = (x, grad_f) -> begin
-        grad_f[:] = 0.
-        grad_f[sim_data.num_q+sim_data.num_v+1] = x[sim_data.num_q+sim_data.num_v+1]
+        grad_f[:] = 0
+        slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
+        grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
     end
 
     for i in 1:N

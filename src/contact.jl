@@ -1,7 +1,7 @@
 RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
 contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
-global num_steps_default = 10
+global num_steps_default = 2
 global α_vect_default = [1.^i for i in 1:num_steps_default]
 global c_vect_default = [100.+2.^i for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
@@ -91,18 +91,18 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    comp_con = ϕs .* x[c_n_selector] .- slack*slack
+    comp_con = ϕs .* x[c_n_selector] .- slack'*slack
 
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- slack*slack)
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- slack'*slack)
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- slack*slack)
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- slack'*slack)
 
     comp_con
 end
