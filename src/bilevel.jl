@@ -8,12 +8,10 @@ end
 
 function softmax(x,y)
     log.(exp.(x) .+ exp.(y))
-    # x .+ log.(1. .+ exp.(y .- x))
 end
 
 function L(x,λ,μ,c,f,h,g)
     hx = h(x)
-    # mucgx = max.(0.,μ.+c*g(x))
     mucgx = softmax(0.,μ.+c*g(x))
     f(x) + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
 end
@@ -36,11 +34,8 @@ function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect
         gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
         HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
 
-        # x -= α_vect[i] .* gL / norm(gL)
         x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
-
         λ = λ + c_vect[i] * h_eq(x)
-        # μ = max.(0., μ + c_vect[i] * g_ineq(x))
         μ = softmax(0., μ + c_vect[i] * g_ineq(x))
     end
 

@@ -1,9 +1,9 @@
 RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
 contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
-global num_steps_default = 20
+global num_steps_default = 5
 global α_vect_default = [1.^i for i in 1:num_steps_default]
-global c_vect_default = [100.+min.(2.^i,100) for i in 1:num_steps_default]
+global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
 
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
@@ -151,7 +151,6 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     w_obj = vcat(1.,ones(sim_data.β_dim),1.)
     f = x̃ -> begin
         comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        # comp_con'*comp_con
         sum(w_obj.*comp_con) + x̃'*x̃
     end
     h = x̃ -> dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)

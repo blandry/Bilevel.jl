@@ -124,7 +124,6 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
-        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
@@ -224,13 +223,13 @@ function simulate(state0::MechanismState{T, M},
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         .5*slack'*slack
-        # sum(abs(slack))
+        #sum(abs.(slack)) + .5*slack'*slack
     end
     eval_grad_f = (x, grad_f) -> begin
         grad_f[:] = 0
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
-        # grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = ones(sim_data.num_slack)
+        #grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = sign.(slack) .+ slack
     end
 
     for i in 1:N
@@ -238,7 +237,7 @@ function simulate(state0::MechanismState{T, M},
         q0 = x[1:sim_data.num_q]
         v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
         u0 = zeros(sim_data.num_v) # for now no controller
-        # z0 = x[sim_data.num_q+sim_data.num_v+2:end]
+        #z0 = x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end]
 
         if implicit_contact
           eval_g, eval_jac_g = update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
@@ -256,31 +255,20 @@ function simulate(state0::MechanismState{T, M},
 
         addOption(prob, "hessian_approximation", "limited-memory")
         addOption(prob, "print_level", 0)
-
+        addOption(prob, "tol", 1e-6)
+        addOption(prob, "constr_viol_tol", 1e-3)
+        
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])
 
         if implicit_contact
-          # TODO make this not be computed twice...
+          # TODO make this not have to be computed twice...
           qnext = prob.x[1:sim_data.num_q]
           vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
           τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
           results = hcat(results,vcat(prob.x,z_sol))
+          display(prob.x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack])
         else
-          # qnext = prob.x[1:sim_data.num_q]
-          # vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-          # xnext = MechanismState(sim_data.mechanism)
-          # set_configuration!(xnext,qnext)
-          # set_velocity!(xnext,vnext)
-          # rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
-          # geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
-          # for i = 1:sim_data.num_contacts
-          #     rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
-          #                          relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
-          #     geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
-          # end
-          # τ_sol = τ_total(prob.x[sim_data.num_q+sim_data.num_v+2:end],rel_transforms,geo_jacobians,sim_data)
-          # display(τ_sol)
           results = hcat(results,prob.x)
         end
     end
