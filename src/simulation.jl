@@ -206,7 +206,8 @@ end
 function simulate(state0::MechanismState{T, M},
                   env::Environment,
                   Δt::Real,
-                  N::Integer;
+                  N::Integer,
+                  control!;
                   implicit_contact=true) where {T, M}
 
     sim_data = get_sim_data(state0,env,Δt,implicit_contact)
@@ -232,11 +233,18 @@ function simulate(state0::MechanismState{T, M},
         #grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = sign.(slack) .+ slack
     end
 
+    x_ctrl = MechanismState(sim_data.mechanism)
+    u0 = zeros(sim_data.num_v)
+
     for i in 1:N
         x = results[:,end]
         q0 = x[1:sim_data.num_q]
         v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-        u0 = zeros(sim_data.num_v) # for now no controller
+        # u0 = zeros(sim_data.num_v)
+        set_configuration!(x_ctrl,q0)
+        set_velocity!(x_ctrl,v0)
+        setdirty!(x_ctrl)
+        control!(u0, (i-1)*sim_data.Δt, x_ctrl)
         #z0 = x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end]
 
         if implicit_contact
@@ -257,9 +265,9 @@ function simulate(state0::MechanismState{T, M},
         addOption(prob, "print_level", 0)
         addOption(prob, "tol", 1e-6)
         addOption(prob, "constr_viol_tol", 1e-3)
-        
+
         status = solveProblem(prob)
-        println(Ipopt.ApplicationReturnStatus[status])
+        # println(Ipopt.ApplicationReturnStatus[status])
 
         if implicit_contact
           # TODO make this not have to be computed twice...
