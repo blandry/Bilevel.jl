@@ -148,10 +148,9 @@ end
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0;
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
 
-    w_obj = vcat(1.,ones(sim_data.β_dim),1.)
     f = x̃ -> begin
         comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        sum(w_obj.*comp_con) + x̃'*x̃
+        sum(comp_con) + x̃'*x̃
     end
     h = x̃ -> dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
     g = x̃ -> pos_contact_constraints(x̃,Dtv,sim_data)
