@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="panda">
-  
+
   <link name="floor">
     <visual>
       <origin xyz="4 0 -0.05"/>
@@ -8,70 +8,90 @@
         <box size="10 2 0.1"/>
       </geometry>
     </visual>
-    <collision>
-      <origin xyz="4 0 -0.05"/>
-      <geometry>
-        <box size="10 2 0.1"/>
-        <plane normal="0 0 1"/>
-      </geometry>
-    </collision>
   </link>
-  
+
   <link name="box">
   <visual>
     <geometry>
       <box size=".5 .5 .5"/>
     </geometry>
-    <origin xyz="0 0 0"/>
     <material name="green">
       <color rgba="0 0.8 .8 .8"/>
     </material>
   </visual>
   <inertial>
-    <mass value="1."/>
+    <mass value=".00001"/>
     <inertia ixx="1." ixy="0." ixz="0." iyy="1." iyz="0." izz="1."/>
   </inertial>
-  <collision>
-    <origin xyz="0 0 0"/>
-    <geometry>
-      <box size=".5 .5 .5"/>
-      <plane normal="-1 0 0"/>
-    </geometry>
-  </collision>
-  </link>
-  <joint name="floor_to_box" type="fixed">
-    <parent link="floor"/>
-    <child link="box"/>
-    <origin xyz="1 0 .25"/>
-  </joint>
-  
-  <link name="contact1">
+  <!-- contact points -->
   <visual>
+    <origin xyz="-.25 -.25 -.25"/>
     <geometry>
-      <sphere radius=".05"/>
+      <sphere radius=".025"/>
     </geometry>
-    <origin xyz="0. 0. 0."/>
     <material name="green">
       <color rgba="0 0.1 .2 1."/>
     </material>
   </visual>
-  <inertial>
-    <mass value="1e-12"/>
-    <inertia ixx="1e-12" ixy="0." ixz="0." iyy="1e-12" iyz="0." izz="1e-12"/>
-  </inertial>
   <collision>
-    <origin xyz="0. 0. 0."/>
+    <origin xyz="-.25 -.25 -.25"/>
     <geometry>
       <sphere radius="0"/>
     </geometry>
   </collision>
+  <visual>
+    <origin xyz="-.25 .25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-.25 .25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz=".25 -.25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz=".25 -.25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz=".25 .25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="green">
+      <color rgba="0 0.1 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz=".25 .25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <!-- end of contact point -->
   </link>
-  <joint name="contact1_to_box" type="fixed">
-    <origin xyz="0 0 -.25"/>
-    <parent link="box"/>
-    <child link="contact1"/>
+  <joint name="floor_to_box" type="fixed">
+    <parent link="floor"/>
+    <child link="box"/>
+    <origin xyz="0 0 0"/> <!-- this is important once we make it float -->
   </joint>
-  
+
   <link name="panda_link0">
     <visual>
       <geometry>
@@ -106,7 +126,7 @@
     <child link="panda_link1"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link2">
     <visual>
       <geometry>
@@ -124,7 +144,7 @@
     <child link="panda_link2"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link3">
     <visual>
       <geometry>
@@ -142,7 +162,7 @@
     <child link="panda_link3"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link4">
     <visual>
       <geometry>
@@ -160,7 +180,7 @@
     <child link="panda_link4"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link5">
     <visual>
       <geometry>
@@ -178,7 +198,7 @@
     <child link="panda_link5"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link6">
     <visual>
       <geometry>
@@ -196,7 +216,7 @@
     <child link="panda_link6"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link7">
     <visual>
       <geometry>
@@ -214,7 +234,7 @@
     <child link="panda_link7"/>
     <axis xyz="0 1 0"/>
   </joint>
-  
+
   <link name="panda_link8">
     <visual>
       <geometry>
@@ -229,7 +249,6 @@
       <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
     <collision>
-      <origin xyz="0. 0. 0."/>
       <geometry>
         <sphere radius="0"/>
       </geometry>

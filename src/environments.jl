@@ -83,3 +83,20 @@ function parse_contacts(mechanism, urdf, μ=1.0, motion_type::Symbol=:xyz)
     end)
     Environment(contacts)
 end
+
+function parse_contacts(mechanism, urdf, obstacles)
+    elements = visual_elements(mechanism, URDFVisuals(urdf; tag="collision"))
+    point_elements = filter(e -> e.geometry isa HyperSphere && radius(e.geometry) == 0, elements)
+    points = map(point_elements) do element
+        p = element.transform(SVector(origin(element.geometry)))
+        Point3D(element.frame, p)
+    end
+    contacts = vec(map(Base.Iterators.product(points, obstacles)) do p
+        point, obstacle = p
+        body = body_fixed_frame_to_body(mechanism, point.frame)
+        (body, point, obstacle)
+    end)
+    # TODO do this more elegantly
+    contacts = filter(c -> c[2].frame != c[3].contact_face.outward_normal.frame, contacts)
+    Environment(contacts)
+end

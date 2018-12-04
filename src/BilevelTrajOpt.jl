@@ -23,7 +23,7 @@ using Rotations
 using CoordinateTransformations: transform_deriv
 using ForwardDiff
 using MechanismGeometries
-using GeometryTypes: HyperSphere, origin, radius
+using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using Compat
 
 include("bilevel.jl")

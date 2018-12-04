@@ -267,7 +267,7 @@ function simulate(state0::MechanismState{T, M},
         addOption(prob, "constr_viol_tol", 1e-3)
 
         status = solveProblem(prob)
-        # println(Ipopt.ApplicationReturnStatus[status])
+        println(Ipopt.ApplicationReturnStatus[status])
 
         if implicit_contact
           # TODO make this not have to be computed twice...
