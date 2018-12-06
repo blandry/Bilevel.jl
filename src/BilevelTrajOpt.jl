@@ -22,6 +22,7 @@ using RigidBodyDynamics: HalfSpace3D, separation
 using Rotations
 using CoordinateTransformations: transform_deriv
 using ForwardDiff
+using ReverseDiff
 using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using Compat

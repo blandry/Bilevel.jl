@@ -6,6 +6,8 @@ global α_vect_default = [1.^i for i in 1:num_steps_default]
 global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
 
+Base.:*(rot::T,v::N) where {S<:ForwardDiff.Dual,T<:Rotations.RotMatrix{3,S,9},N<:ReverseDiff.TrackedArray} = begin reshape(collect(map(x->x.value,rot.mat.data)),3,3)*v end
+
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
                            rel_transform,geo_jacobian)
     # compute force in contact frame (obstacle frame)
@@ -16,13 +18,18 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     end
     contact_force = FreeVector3D(n.frame, total_weight * v)
 
-    # transform from obstacle to world frame
     c = transform(contact_force, rel_transform[1])
     p = transform(contact_point, rel_transform[2])
-    w = Wrench(p, c)
-
+    if isa(λ,ReverseDiff.TrackedReal)
+        v = map(x->x.value,p.v)
+        p = Point3D(p.frame,v)
+        geo_jacobian = GeometricJacobian(geo_jacobian.body,geo_jacobian.base,geo_jacobian.frame,map(x->x.value,geo_jacobian.angular),map(x->x.value,geo_jacobian.linear))
+    end
+    w = Wrench(p × c, c)
     # convert wrench in world frame to torque in joint coordinates
-    torque(geo_jacobian, w)
+    τ = torque(geo_jacobian, w)
+
+    τ
 end
 
 function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data) where T

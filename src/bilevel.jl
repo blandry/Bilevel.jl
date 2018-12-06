@@ -12,16 +12,19 @@ end
 
 function L(x,λ,μ,c,f,h,g)
     hx = h(x)
-    mucgx = softmax(0.,μ.+c*g(x))
-    f(x) + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
+    mucgx = zeros(length(μ)) #softmax(0.,μ.+c*g(x))
+    fx = 0. #f(x)
+    fx + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
 end
 
 function ∇xL(x,λ,μ,c,f,h,g)
-    ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    # ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    ReverseDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
 function HxL(x,λ,μ,c,f,h,g)
-    ForwardDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    # ForwardDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    ReverseDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
 function auglag_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,α_vect,c_vect,I_vect) where T
