@@ -15,7 +15,6 @@ struct SimData
     bodies
     contact_points
     obstacles
-    contact_bases
     μs
     paths
     Ds
@@ -44,7 +43,7 @@ function update_constraints(sim_data,q0,v0,u0)
         ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
-            Dtv[:,i] = map(sim_data.contact_bases[i]) do d
+            Dtv[:,i] = map(sim_data.Ds[i]) do d
                 dot(transform_to_root(xnext, d.frame) * d, v)
             end
             rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
@@ -107,7 +106,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         ϕs = Vector{T}(sim_data.num_contacts)
         for i = 1:sim_data.num_contacts
             v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
-            Dtv[:,i] = map(sim_data.contact_bases[i]) do d
+            Dtv[:,i] = map(sim_data.Ds[i]) do d
                 dot(transform_to_root(xnext, d.frame) * d, v)
             end
             rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
@@ -178,7 +177,6 @@ function get_sim_data(state0::MechanismState{T, M},
     bodies = []
     contact_points = []
     obstacles = []
-    contact_bases = []
     μs = []
     paths = []
     Ds = []
@@ -186,7 +184,6 @@ function get_sim_data(state0::MechanismState{T, M},
       push!(bodies, body)
       push!(contact_points, contact_point)
       push!(obstacles, obstacle)
-      push!(contact_bases, contact_basis(obstacle))
       push!(μs, obstacle.μ)
       push!(paths, path(mechanism, body, world))
       push!(Ds, contact_basis(obstacle))
@@ -197,7 +194,7 @@ function get_sim_data(state0::MechanismState{T, M},
 
     sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,num_x,num_slack,num_h,num_g,
                        world,world_frame,total_weight,
-                       bodies,contact_points,obstacles,contact_bases,μs,paths,Ds,
+                       bodies,contact_points,obstacles,μs,paths,Ds,
                        β_selector,λ_selector,c_n_selector)
 
     sim_data
