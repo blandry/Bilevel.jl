@@ -154,14 +154,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
     
     # TODO handle the case where they are note duals
-    if isa(ϕs, Array{T} where T<:Real)
-        ϕs_value = ϕs
-        Dtv_value = Dtv
-        rel_transforms_value = rel_transforms
-        geo_jacobians_value = geo_jacobians
-        HΔv_value = HΔv
-        bias_value = bias
-    else
+    if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
         ϕs_value = map(x->x.value,ϕs)
         Dtv_value = map(x->x.value,Dtv)
         rel_transforms_value = map(rel_transforms) do rt
@@ -173,7 +166,14 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
             GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
         end
         HΔv_value = map(x->x.value,HΔv)
-        bias_value = map(x->x.value,bias)    
+        bias_value = map(x->x.value,bias)  
+    else
+        ϕs_value = ϕs
+        Dtv_value = Dtv
+        rel_transforms_value = rel_transforms
+        geo_jacobians_value = geo_jacobians
+        HΔv_value = HΔv
+        bias_value = bias
     end
     
     f = x̃ -> begin

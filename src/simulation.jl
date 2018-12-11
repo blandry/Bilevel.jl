@@ -259,7 +259,7 @@ function simulate(state0::MechanismState{T, M},
         prob.x[:] = results[1:sim_data.num_x,end][:]
 
         addOption(prob, "hessian_approximation", "limited-memory")
-        addOption(prob, "print_level", 0)
+        addOption(prob, "print_level", 1)
         addOption(prob, "tol", 1e-6)
         addOption(prob, "constr_viol_tol", 1e-3)
 
