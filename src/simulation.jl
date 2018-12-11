@@ -119,7 +119,6 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
         contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0)
-        # contact_bias = zeros(sim_data.num_v)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
@@ -218,16 +217,15 @@ function simulate(state0::MechanismState{T, M},
 
     z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
     results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack),z0)
+
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         .5*slack'*slack
-        #sum(abs.(slack)) + .5*slack'*slack
     end
     eval_grad_f = (x, grad_f) -> begin
         grad_f[:] = 0
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
-        #grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = sign.(slack) .+ slack
     end
 
     x_ctrl = MechanismState(sim_data.mechanism)
@@ -237,11 +235,13 @@ function simulate(state0::MechanismState{T, M},
         x = results[:,end]
         q0 = x[1:sim_data.num_q]
         v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+        
         # u0 = zeros(sim_data.num_v)
         set_configuration!(x_ctrl,q0)
         set_velocity!(x_ctrl,v0)
         setdirty!(x_ctrl)
         control!(u0, (i-1)*sim_data.Δt, x_ctrl)
+        
         #z0 = x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end]
 
         if implicit_contact
@@ -267,12 +267,11 @@ function simulate(state0::MechanismState{T, M},
         println(Ipopt.ApplicationReturnStatus[status])
 
         if implicit_contact
-          # TODO make this not have to be computed twice...
-          qnext = prob.x[1:sim_data.num_q]
-          vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-          τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
+          # qnext = prob.x[1:sim_data.num_q]
+          # vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+          # τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
+          z_sol = z0
           results = hcat(results,vcat(prob.x,z_sol))
-          display(prob.x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack])
         else
           results = hcat(results,prob.x)
         end

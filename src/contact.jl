@@ -1,12 +1,7 @@
-RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
-contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
-
 global num_steps_default = 5
 global α_vect_default = [1.^i for i in 1:num_steps_default]
 global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
-
-# Base.:*(rot::T,v::N) where {S<:ForwardDiff.Dual,T<:Rotations.RotMatrix{3,S,9},N<:ReverseDiff.TrackedArray} = begin reshape(collect(map(x->x.value,rot.mat.data)),3,3)*v end
 
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
                            rel_transform,geo_jacobian)
@@ -14,22 +9,23 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     n = contact_normal(obstacle)
     v = c_n .* n.v
     for i in eachindex(β)
-        v += β[i] .* D[i].v
+        v += β[i] .* Array(D[i].v)
     end
-    contact_force = FreeVector3D(n.frame, total_weight * v)
 
-    c = transform(contact_force, rel_transform[1])
+    contact_force = total_weight * v
+    
+    # convert contact force from surface frame to world frame
+    c = (rel_transform[1].mat * vcat(contact_force,1.))[1:3]
+    
+    # convert contact point from body frame to world frame
     p = transform(contact_point, rel_transform[2])
     
-    # if isa(λ,ReverseDiff.TrackedReal)
-    #     p = Point3D(p.frame,map(x->x.value,p.v))
-    #     geo_jacobian = GeometricJacobian(geo_jacobian.body,geo_jacobian.base,geo_jacobian.frame,map(x->x.value,geo_jacobian.angular),map(x->x.value,geo_jacobian.linear))
-    # end
+    # wrench in world frame
+    w_linear = c
+    w_angular = p.v × c
     
-    w = Wrench(p × c, c)
-    
-    # convert wrench in world frame to torque in joint coordinates
-    τ = torque(geo_jacobian, w)
+    # convert wrench from world frame to torque in joint coordinates
+    τ = geo_jacobian.linear' * w_linear + geo_jacobian.angular' * w_angular
 
     τ
 end
@@ -100,18 +96,18 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    comp_con = ϕs .* x[c_n_selector] .- slack'*slack
+    comp_con = ϕs .* x[c_n_selector] .- dot(slack,slack)
 
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- slack'*slack)
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- dot(slack,slack))
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- slack'*slack)
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- dot(slack,slack))
 
     comp_con
 end
@@ -120,7 +116,7 @@ function dynamics_contact_constraints(x,rel_transforms,geo_jacobians,HΔv,bias,s
     # manipulator eq constraint
     τ_contact = τ_total(x,rel_transforms,geo_jacobians,sim_data)
     dyn_con = HΔv .-  sim_data.Δt .* (bias .- τ_contact)
-
+    
     dyn_con
 end
 
@@ -157,25 +153,51 @@ end
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0;
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
     
-    # to clean
-    
-    # display(sim_data.Ds)
-    # sim_data.Ds
-    # sim_data.obstacles
-    
-    # rel_transforms
-    # geo_jacobian
-    
-    # ϕs
-    # HΔv
-    # bias
-
-    f = x̃ -> begin
-        comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        sum(comp_con) + x̃'*x̃
+    # TODO handle the case where they are note duals
+    if isa(ϕs, Array{T} where T<:Real)
+        ϕs_value = ϕs
+        Dtv_value = Dtv
+        rel_transforms_value = rel_transforms
+        geo_jacobians_value = geo_jacobians
+        HΔv_value = HΔv
+        bias_value = bias
+    else
+        ϕs_value = map(x->x.value,ϕs)
+        Dtv_value = map(x->x.value,Dtv)
+        rel_transforms_value = map(rel_transforms) do rt
+            rt1 = Transform3D(rt[1].from,rt[1].to,Array(map(x->x.value,rt[1].mat)))
+            rt2 = Transform3D(rt[2].from,rt[2].to,Array(map(x->x.value,rt[2].mat)))
+            (rt1, rt2)
+        end
+        geo_jacobians_value = map(geo_jacobians) do gj
+            GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
+        end
+        HΔv_value = map(x->x.value,HΔv)
+        bias_value = map(x->x.value,bias)    
     end
-    h = x̃ -> dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
-    g = x̃ -> pos_contact_constraints(x̃,Dtv,sim_data)
+    
+    f = x̃ -> begin
+        if isa(x̃,ReverseDiff.TrackedArray)
+            comp_con = complementarity_contact_constraints(x̃,ϕs_value,Dtv_value,sim_data)
+        else
+            comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
+        end
+        sum(comp_con) + dot(x̃,x̃)
+    end 
+    h = x̃ -> begin
+        if isa(x̃,ReverseDiff.TrackedArray)
+            dynamics_contact_constraints(x̃,rel_transforms_value,geo_jacobians_value,HΔv_value,bias_value,sim_data)
+        else
+            dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
+        end
+    end
+    g = x̃ -> begin
+        if isa(x̃,ReverseDiff.TrackedArray)
+            pos_contact_constraints(x̃,Dtv_value,sim_data)
+        else
+            pos_contact_constraints(x̃,Dtv,sim_data)
+        end
+    end
 
     num_h = sim_data.num_v
     num_g = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)

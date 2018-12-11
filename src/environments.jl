@@ -1,18 +1,17 @@
-struct Obstacle{T}
-    interior::Vector{HalfSpace3D{T}}
-    contact_face::HalfSpace3D{T}
-    μ::T
-    contact_basis::Vector{FreeVector3D{SVector{3, T}}}
+# to avoid using the one in RBD.jl that uses static arrays
+mutable struct HalfSpace
+    point::Point3D
+    outward_normal::FreeVector3D
+
+    function HalfSpace(point::Point3D, outward_normal::FreeVector3D)
+        @framecheck point.frame outward_normal.frame
+        new(point, normalize(outward_normal))
+    end
 end
 
-function Obstacle(interior::AbstractVector{<:HalfSpace3D}, contact_face::HalfSpace3D, μ, motion_type::Symbol)
-    basis = contact_basis(contact_face, μ, motion_type)
-    Obstacle(interior, contact_face, μ, basis)
-end
+RigidBodyDynamics.separation(halfspace::HalfSpace, p::Point3D) = dot(p - halfspace.point, halfspace.outward_normal)
 
-contact_basis(obs::Obstacle) = obs.contact_basis
-
-function contact_basis(contact_face::HalfSpace3D{T}, μ, motion_type::Symbol) where T
+function contact_basis(contact_face::HalfSpace, μ, motion_type::Symbol)
     a = contact_face.outward_normal.v
     frame = contact_face.outward_normal.frame
     if motion_type == :xz
@@ -31,8 +30,8 @@ function contact_basis(contact_face::HalfSpace3D{T}, μ, motion_type::Symbol) wh
             FreeVector3D(frame, Rotations.RotX(-π/2) * a)
             ]
     elseif motion_type == :xyz
-        R = Rotations.rotation_between(SVector{3, T}(0, 0, 1), a)
-        D = [FreeVector3D(frame, R * RotZ(θ) * SVector(1, 0, 0))
+        R = Rotations.rotation_between([0., 0., 1.], a)
+        D = [FreeVector3D(frame, R * RotZ(θ) * [1., 0., 0.])
                 for θ in 0:π/2:3π/2]
         for i in 1:length(D)
             @assert isapprox(dot(D[i].v, a), 0, atol=1e-15)
@@ -46,49 +45,41 @@ function contact_basis(contact_face::HalfSpace3D{T}, μ, motion_type::Symbol) wh
     end
 end
 
-struct Environment{T}
-    contacts::Vector{Tuple{RigidBody{T}, Point3D{SVector{3, T}}, Obstacle{T}}}
+struct Obstacle
+    contact_face::HalfSpace
+    μ
+    contact_basis::Vector{FreeVector3D}
 end
+
+function Obstacle(contact_face::HalfSpace, μ, motion_type::Symbol)
+    basis = contact_basis(contact_face, μ, motion_type)
+    Obstacle(contact_face, μ, basis)
+end
+
+RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
+
+contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
 function planar_obstacle(normal::FreeVector3D, point::Point3D, μ=1.0, motion_type::Symbol=:xyz)
     normal = normalize(normal)
-    face = HalfSpace3D(point, normal)
-    Obstacle([face],
-             face,
-             μ,
-             motion_type)
+    face = HalfSpace(point, normal)
+    Obstacle(face,μ,motion_type)
 end
 
 planar_obstacle(frame::CartesianFrame3D, normal::AbstractVector, point::AbstractVector, args...) =
     planar_obstacle(FreeVector3D(frame, normal), Point3D(frame, point), args...)
 
-function parse_contacts(mechanism, urdf, μ=1.0, motion_type::Symbol=:xyz)
-    elements = visual_elements(mechanism, URDFVisuals(urdf; tag="collision"))
-    point_elements = filter(e -> e.geometry isa HyperSphere && radius(e.geometry) == 0, elements)
-    points = map(point_elements) do element
-        p = element.transform(SVector(origin(element.geometry)))
-        Point3D(element.frame, p)
-    end
-    plane_elements = filter(e -> e.geometry isa HyperPlane, elements)
-    obstacles = map(plane_elements) do element
-        origin = Point3D(element.frame, element.transform(SVector(0., 0, 0)))
-        normal = FreeVector3D(element.frame, transform_deriv(element.transform, SVector(0., 0, 0)) * element.geometry.normal)
-        hs = HalfSpace3D(origin, normal)
-        Obstacle([hs], hs, μ, motion_type)
-    end
-    contacts = vec(map(Base.Iterators.product(points, obstacles)) do p
-        point, obstacle = p
-        body = body_fixed_frame_to_body(mechanism, point.frame)
-        (body, point, obstacle)
-    end)
-    Environment(contacts)
+contact_basis(obs::Obstacle) = obs.contact_basis
+
+struct Environment
+    contacts::Array{Tuple{RigidBody, Point3D, Obstacle}}
 end
 
 function parse_contacts(mechanism, urdf, obstacles)
     elements = visual_elements(mechanism, URDFVisuals(urdf; tag="collision"))
     point_elements = filter(e -> e.geometry isa HyperSphere && radius(e.geometry) == 0, elements)
     points = map(point_elements) do element
-        p = element.transform(SVector(origin(element.geometry)))
+        p = element.transform(origin(element.geometry))
         Point3D(element.frame, p)
     end
     contacts = vec(map(Base.Iterators.product(points, obstacles)) do p
@@ -96,7 +87,7 @@ function parse_contacts(mechanism, urdf, obstacles)
         body = body_fixed_frame_to_body(mechanism, point.frame)
         (body, point, obstacle)
     end)
-    # TODO do this more elegantly
+    # removes collision with itself
     contacts = filter(c -> c[2].frame != c[3].contact_face.outward_normal.frame, contacts)
     Environment(contacts)
 end

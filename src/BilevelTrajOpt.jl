@@ -1,6 +1,7 @@
 module BilevelTrajOpt
 
-export Obstacle,
+export HalfSpace,
+       Obstacle,
        Environment,
        planar_obstacle,
        contact_basis,
@@ -15,7 +16,6 @@ export Obstacle,
 
 using StaticArrays
 using Ipopt
-using OSQP
 using Base.Test
 using RigidBodyDynamics
 using RigidBodyDynamics: HalfSpace3D, separation
