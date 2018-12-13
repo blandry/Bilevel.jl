@@ -13,24 +13,24 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     end
 
     contact_force = total_weight * v
-    
+
     # convert contact force from surface frame to world frame
     c = (rel_transform[1].mat * vcat(contact_force,1.))[1:3]
-    
+
     # convert contact point from body frame to world frame
     p = transform(contact_point, rel_transform[2])
-    
+
     # wrench in world frame
     w_linear = c
     w_angular = p.v × c
-    
+
     # convert wrench from world frame to torque in joint coordinates
     τ = geo_jacobian.linear' * w_linear + geo_jacobian.angular' * w_angular
 
     τ
 end
 
-function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data) where T    
+function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data) where T
     β_selector = sim_data.β_selector
     λ_selector = sim_data.λ_selector
     c_n_selector = sim_data.c_n_selector
@@ -116,7 +116,7 @@ function dynamics_contact_constraints(x,rel_transforms,geo_jacobians,HΔv,bias,s
     # manipulator eq constraint
     τ_contact = τ_total(x,rel_transforms,geo_jacobians,sim_data)
     dyn_con = HΔv .-  sim_data.Δt .* (bias .- τ_contact)
-    
+
     dyn_con
 end
 
@@ -152,8 +152,7 @@ end
 
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0;
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
-    
-    # TODO handle the case where they are note duals
+
     if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
         ϕs_value = map(x->x.value,ϕs)
         Dtv_value = map(x->x.value,Dtv)
@@ -166,7 +165,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
             GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
         end
         HΔv_value = map(x->x.value,HΔv)
-        bias_value = map(x->x.value,bias)  
+        bias_value = map(x->x.value,bias)
     else
         ϕs_value = ϕs
         Dtv_value = Dtv
@@ -175,7 +174,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
         HΔv_value = HΔv
         bias_value = bias
     end
-    
+
     f = x̃ -> begin
         if isa(x̃,ReverseDiff.TrackedArray)
             comp_con = complementarity_contact_constraints(x̃,ϕs_value,Dtv_value,sim_data)
@@ -183,7 +182,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
             comp_con = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
         end
         sum(comp_con) + dot(x̃,x̃)
-    end 
+    end
     h = x̃ -> begin
         if isa(x̃,ReverseDiff.TrackedArray)
             dynamics_contact_constraints(x̃,rel_transforms_value,geo_jacobians_value,HΔv_value,bias_value,sim_data)
