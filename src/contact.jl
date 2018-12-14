@@ -1,6 +1,7 @@
 global num_steps_default = 5
 global α_vect_default = [1.^i for i in 1:num_steps_default]
-global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
+# global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
+global c_vect_default = [50. for i in 1:num_steps_default]
 global I_vect_default = 1e-16*ones(num_steps_default)
 
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
@@ -150,7 +151,7 @@ function pos_contact_constraints(x,Dtv,sim_data)
     pos_con
 end
 
-function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0;
+function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;
     ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
 
     if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
@@ -198,18 +199,15 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
         end
     end
 
-    num_h = sim_data.num_v
-    num_g = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
-
     if ip_method
-        x = ip_solve(z0,f,h,g,num_h,num_g)
+        x = ip_solve(x0,f,h,g,sim_data.num_v,sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
     else
-        x = auglag_solve(z0,f,h,g,num_h,num_g,α_vect,c_vect,I_vect)
+        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,α_vect,c_vect,I_vect)
     end
 
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
 
-    return τ, x
+    return τ, x, λ, μ
 end
 
 function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},vnext::AbstractArray{T};

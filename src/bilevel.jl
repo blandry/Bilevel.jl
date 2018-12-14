@@ -25,30 +25,28 @@ function HxL(x,λ,μ,c,f,h,g)
     ReverseDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
-function auglag_solve(x,f_obj,h_eq,g_ineq,num_h,num_g,α_vect,c_vect,I_vect)
-    λ = zeros(num_h)
-    μ = zeros(num_g)
+function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect,I_vect)
     I = eye(length(x))
 
     # optimizing the reverse differentiation
-    Lg = (x_i,λ_i,μ_i,c_i_v) -> L(x_i,λ_i,μ_i,c_i_v[1],f_obj,h_eq,g_ineq)
-    ∇xL_tape = ReverseDiff.GradientTape(Lg, (x,λ,μ,[c_vect[1]]))
-    compiled_∇xL_tape = ReverseDiff.compile(∇xL_tape)
-    ∇xL_results = (zeros(length(x)), zeros(num_h), zeros(num_g), [0.])
+    # Lg = (x_i,λ_i,μ_i,c_i_v) -> L(x_i,λ_i,μ_i,c_i_v[1],f_obj,h_eq,g_ineq)
+    # ∇xL_tape = ReverseDiff.GradientTape(Lg, (x,λ,μ,[c_vect[1]]))
+    # compiled_∇xL_tape = ReverseDiff.compile(∇xL_tape)
+    # ∇xL_results = (zeros(length(x)), zeros(num_h), zeros(num_g), [0.])
 
     for i = 1:length(α_vect)
-        # gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
-        ReverseDiff.gradient!(∇xL_results, compiled_∇xL_tape, (x,λ,μ,[c_vect[i]]))
+        # ReverseDiff.gradient!(∇xL_results, compiled_∇xL_tape, (x,λ,μ,[c_vect[i]]))
         # gL = ∇xL_results[1]
-        # HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
+        gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
+        HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
 
-        # x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
-        x -= α_vect[i] .* .001*gL/norm(gL)
+        x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
+        # x -= α_vect[i] .* .001*gL/norm(gL)
         λ = λ + c_vect[i] * h_eq(x)
-        μ = softmax(0., μ + c_vect[i] * g_ineq(x))
+        μ = softmax(0.,μ + c_vect[i] * g_ineq(x))
     end
 
-    x
+    x, λ, μ
 end
 
 function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g) where T

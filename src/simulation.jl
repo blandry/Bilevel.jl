@@ -88,11 +88,15 @@ function update_constraints(sim_data,q0,v0,u0)
     eval_g, eval_jac_g
 end
 
-function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
+function update_constraints_implicit_contact(sim_data,q0,v0,u0)
     x0 = MechanismState(sim_data.mechanism)
     set_configuration!(x0,q0)
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
+
+    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+    contact_λ0 = zeros(sim_data.num_v)
+    contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -120,7 +124,23 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        contact_bias, contact_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0)
+        if isa(contact_x0, Array{T} where T<:ForwardDiff.Dual)
+            contact_x0 = map(x -> x.value, contact_x0)
+        end
+        if isa(contact_λ0, Array{T} where T<:ForwardDiff.Dual)
+            contact_λ0 = map(x -> x.value, contact_λ0)
+        end
+        if isa(contact_μ0, Array{T} where T<:ForwardDiff.Dual)
+            contact_μ0 = map(x -> x.value, contact_μ0)
+        end
+        # display(contact_x0)
+        # display(contact_λ0)
+        # display(contact_μ0)
+        # display("---")
+        # contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+        # contact_λ0 = zeros(sim_data.num_v)
+        # contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
+        contact_bias, contact_x0, contact_λ0, contact_μ0 = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
@@ -219,8 +239,11 @@ function simulate(state0::MechanismState{T, M},
     g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
     g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))
 
-    z0 = repmat(vcat(zeros(sim_data.β_dim),[0., 0.]), sim_data.num_contacts)
-    results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack),z0)
+    if implicit_contact
+        results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack))
+    else
+        results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack),zeros(sim_data.num_contacts*(2+sim_data.β_dim)))
+    end
 
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
@@ -240,16 +263,13 @@ function simulate(state0::MechanismState{T, M},
         q0 = x[1:sim_data.num_q]
         v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
 
-        # u0 = zeros(sim_data.num_v)
         set_configuration!(x_ctrl,q0)
         set_velocity!(x_ctrl,v0)
         setdirty!(x_ctrl)
         control!(u0, (i-1)*sim_data.Δt, x_ctrl)
 
-        #z0 = x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end]
-
         if implicit_contact
-          eval_g, eval_jac_g = update_constraints_implicit_contact(sim_data,q0,v0,u0,z0)
+          eval_g, eval_jac_g = update_constraints_implicit_contact(sim_data,q0,v0,u0)
         else
           eval_g, eval_jac_g = update_constraints(sim_data,q0,v0,u0)
         end
@@ -270,15 +290,7 @@ function simulate(state0::MechanismState{T, M},
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])
 
-        if implicit_contact
-          # qnext = prob.x[1:sim_data.num_q]
-          # vnext = prob.x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-          # τ_sol, z_sol = solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext,vnext)
-          z_sol = z0
-          results = hcat(results,vcat(prob.x,z_sol))
-        else
-          results = hcat(results,prob.x)
-        end
+        results = hcat(results,prob.x)
     end
 
     results
