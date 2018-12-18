@@ -1,11 +1,3 @@
-function abse(x,ϵ=1e-12)
-    sqrt.(x.*x .+ ϵ)
-end
-
-function diffmax(x,y)
-    .5*(x .+ y + abse(x .- y))
-end
-
 function softmax(x,y)
     log.(exp.(x) .+ exp.(y))
 end
@@ -13,38 +5,61 @@ end
 function L(x,λ,μ,c,f,h,g)
     hx = h(x)
     mucgx = softmax(0.,μ.+c*g(x))
-    fx = f(x)
-    fx + dot(λ,hx) + .5*c*dot(hx,hx) + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
+    f(x) + λ'*hx + .5*c*hx'*hx + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
+end
+
+function L(x,λ,c,f,h)
+    hx = h(x)
+    f(x) + λ'*hx + .5*c*hx'*hx
 end
 
 function ∇xL(x,λ,μ,c,f,h,g)
     ReverseDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    # ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
 function HxL(x,λ,μ,c,f,h,g)
     ReverseDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
+    # ForwardDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
-function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect,I_vect)
-    I = eye(length(x))
+function ∇xL(x,λ,c,f,h)
+    ReverseDiff.gradient(x̃ -> L(x̃,λ,c,f,h),x)
+    # ForwardDiff.gradient(x̃ -> L(x̃,λ,c,f,h),x)
+end
 
-    # optimizing the reverse differentiation
-    # Lg = (x_i,λ_i,μ_i,c_i_v) -> L(x_i,λ_i,μ_i,c_i_v[1],f_obj,h_eq,g_ineq)
-    # ∇xL_tape = ReverseDiff.GradientTape(Lg, (x,λ,μ,[c_vect[1]]))
-    # compiled_∇xL_tape = ReverseDiff.compile(∇xL_tape)
-    # ∇xL_results = (zeros(length(x)), zeros(num_h), zeros(num_g), [0.])
+function HxL(x,λ,c,f,h)
+    ReverseDiff.hessian(x̃ -> L(x̃,λ,c,f,h),x)
+    # ForwardDiff.hessian(x̃ -> L(x̃,λ,c,f,h),x)
+end
+
+function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect)
+    num_x = length(x)
+    num_h = length(λ)
+    num_g = length(μ)
+    I = eye(num_x)
 
     for i = 1:length(α_vect)
-        # ReverseDiff.gradient!(∇xL_results, compiled_∇xL_tape, (x,λ,μ,[c_vect[i]]))
-        # gL = ∇xL_results[1]
         gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
         HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
 
-        x -= α_vect[i] .* (HL + I_vect[i]*I) \ gL
-        # x -= α_vect[i] .* .001*gL/norm(gL)
-        λ = λ + c_vect[i] * h_eq(x)
-        μ = softmax(0.,μ + c_vect[i] * g_ineq(x))
+        x -= α_vect[i] * ((HL + I*1e-19) \ gL)
+        λ += c_vect[i] * h_eq(x)
+        μ = softmax(0., μ + c_vect[i] * g_ineq(x))
     end
+    
+    h_eq_final = x̃ -> vcat(h_eq(x̃),μ.*g_ineq(x̃))
+    h = h_eq_final(x)
+    gL = ∇xL(x,vcat(λ,μ),c_vect[end],f_obj,h_eq_final)
+    HL = HxL(x,vcat(λ,μ),c_vect[end],f_obj,h_eq_final)
+    # ∇h = ReverseDiff.jacobian(h_eq_final,x)
+    ∇h = ForwardDiff.jacobian(h_eq_final,x)
+    
+    A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h+num_g,num_h+num_g)))
+    δ = (A+eye(num_x+num_h+num_g)*1e-12)\(-vcat(gL,h))
+    
+    x += δ[1:length(x)]
+    # λ += (∇h*((HL + I*1e-12)\∇h'))\∇h'
 
     x, λ, μ
 end

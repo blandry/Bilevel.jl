@@ -78,9 +78,9 @@ function update_constraints(sim_data,q0,v0,u0)
             end
         else
             g = zeros(sim_data.num_h + sim_data.num_g)
-            tic()
+            # tic()
             J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
-            toc()
+            # toc()
             values[:] = J'[:]
         end
     end
@@ -94,9 +94,15 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
 
+    # aug lag initial guesses
     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
     contact_λ0 = zeros(sim_data.num_v)
     contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
+    
+    # aug lag parameters
+    num_contact_steps = 4
+    contact_α = [1. for i = 1:num_contact_steps]
+    contact_c = [150. for i = 1:num_contact_steps]
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -124,26 +130,12 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
         config_derivative = configuration_derivative(xnext)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
-        if isa(contact_x0, Array{T} where T<:ForwardDiff.Dual)
-            contact_x0 = map(x -> x.value, contact_x0)
-        end
-        if isa(contact_λ0, Array{T} where T<:ForwardDiff.Dual)
-            contact_λ0 = map(x -> x.value, contact_λ0)
-        end
-        if isa(contact_μ0, Array{T} where T<:ForwardDiff.Dual)
-            contact_μ0 = map(x -> x.value, contact_μ0)
-        end
-        # display(contact_x0)
-        # display(contact_λ0)
-        # display(contact_μ0)
-        # display("---")
-        # contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-        # contact_λ0 = zeros(sim_data.num_v)
-        # contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
-        contact_bias, contact_x0, contact_λ0, contact_μ0 = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+        
+        contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
+        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
@@ -284,8 +276,8 @@ function simulate(state0::MechanismState{T, M},
 
         addOption(prob, "hessian_approximation", "limited-memory")
         addOption(prob, "print_level", 1)
-        addOption(prob, "tol", 1e-6)
-        addOption(prob, "constr_viol_tol", 1e-3)
+        addOption(prob, "tol", 1e-6) # convergence tol default 1e-8
+        addOption(prob, "constr_viol_tol", 1e-4) # default 1e-4
 
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])

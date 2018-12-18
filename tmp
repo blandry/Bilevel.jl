@@ -1,0 +1,22 @@
+# optimizing the reverse differentiation
+# Lg = (x_i,λ_i,μ_i,c_i_v) -> L(x_i,λ_i,μ_i,c_i_v[1],f_obj,h_eq,g_ineq)
+# ∇xL_tape = ReverseDiff.GradientTape(Lg, (x,λ,μ,[c_vect[1]]))
+# compiled_∇xL_tape = ReverseDiff.compile(∇xL_tape)
+# ∇xL_results = (zeros(length(x)), zeros(num_h), zeros(num_g), [0.])
+
+# ReverseDiff.gradient!(∇xL_results, compiled_∇xL_tape, (x,λ,μ,[c_vect[i]]))
+# gL = ∇xL_results[1]
+
+
+
+# # those are never differentiated against
+# if isa(contact_x0, Array{G} where G<:ForwardDiff.Dual)
+#     contact_x0 = map(x -> x.value, contact_x0)
+# end
+# if isa(contact_λ0, Array{G} where G<:ForwardDiff.Dual)
+#     contact_λ0 = map(x -> x.value, contact_λ0)
+# end
+# if isa(contact_μ0, Array{G} where G<:ForwardDiff.Dual)
+#     contact_μ0 = map(x -> x.value, contact_μ0)
+# end
+

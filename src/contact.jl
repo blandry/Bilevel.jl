@@ -1,9 +1,3 @@
-global num_steps_default = 5
-global α_vect_default = [1.^i for i in 1:num_steps_default]
-# global c_vect_default = [100.+min.(2.^i,100.) for i in 1:num_steps_default]
-global c_vect_default = [50. for i in 1:num_steps_default]
-global I_vect_default = 1e-16*ones(num_steps_default)
-
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
                            rel_transform,geo_jacobian)
     # compute force in contact frame (obstacle frame)
@@ -151,8 +145,7 @@ function pos_contact_constraints(x,Dtv,sim_data)
     pos_con
 end
 
-function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;
-    ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default)
+function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0,contact_α,contact_c;ip_method=false)
 
     if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
         ϕs_value = map(x->x.value,ϕs)
@@ -201,8 +194,10 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
 
     if ip_method
         x = ip_solve(x0,f,h,g,sim_data.num_v,sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
+        λ = λ0
+        μ = μ0
     else
-        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,α_vect,c_vect,I_vect)
+        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,contact_α,contact_c)
     end
 
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
@@ -210,8 +205,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     return τ, x, λ, μ
 end
 
-function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},vnext::AbstractArray{T};
-    ip_method=false,α_vect=α_vect_default,c_vect=c_vect_default,I_vect=I_vect_default) where T
+function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false) where T
 
     x0 = MechanismState(sim_data.mechanism)
     set_configuration!(x0,q0)
@@ -221,7 +215,17 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},
     xnext = MechanismState{T}(sim_data.mechanism)
     set_configuration!(xnext, qnext)
     set_velocity!(xnext, vnext)
-
+    
+    # aug lag initial guesses
+    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+    contact_λ0 = zeros(sim_data.num_v)
+    contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
+    
+    # aug lag parameters
+    num_contact_steps = 4
+    contact_α = [1. for i = 1:num_contact_steps]
+    contact_c = [150. for i = 1:num_contact_steps]
+    
     Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
     rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
     geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
@@ -240,7 +244,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,z0,qnext::AbstractArray{T},
     config_derivative = configuration_derivative(xnext)
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
-    τ, x = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,z0,ip_method=ip_method,α_vect=α_vect,c_vect=c_vect,I_vect=I_vect)
+    τ, x = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c,ip_method=ip_method)
 
     return τ, x
 end
