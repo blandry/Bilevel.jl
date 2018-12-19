@@ -8,29 +8,12 @@ function L(x,λ,μ,c,f,h,g)
     f(x) + λ'*hx + .5*c*hx'*hx + 1./(2.*c)*sum(mucgx.*mucgx - μ.*μ)
 end
 
-function L(x,λ,c,f,h)
-    hx = h(x)
-    f(x) + λ'*hx + .5*c*hx'*hx
-end
-
 function ∇xL(x,λ,μ,c,f,h,g)
     ReverseDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
-    # ForwardDiff.gradient(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
 end
 
 function HxL(x,λ,μ,c,f,h,g)
     ReverseDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
-    # ForwardDiff.hessian(x̃ -> L(x̃,λ,μ,c,f,h,g),x)
-end
-
-function ∇xL(x,λ,c,f,h)
-    ReverseDiff.gradient(x̃ -> L(x̃,λ,c,f,h),x)
-    # ForwardDiff.gradient(x̃ -> L(x̃,λ,c,f,h),x)
-end
-
-function HxL(x,λ,c,f,h)
-    ReverseDiff.hessian(x̃ -> L(x̃,λ,c,f,h),x)
-    # ForwardDiff.hessian(x̃ -> L(x̃,λ,c,f,h),x)
 end
 
 function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect)
@@ -43,23 +26,22 @@ function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect)
         gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
         HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
 
-        x -= α_vect[i] * ((HL + I*1e-19) \ gL)
+        x += α_vect[i] * ((HL + I*1e-19) \ -gL)
         λ += c_vect[i] * h_eq(x)
         μ = softmax(0., μ + c_vect[i] * g_ineq(x))
     end
-    
-    h_eq_final = x̃ -> vcat(h_eq(x̃),μ.*g_ineq(x̃))
-    h = h_eq_final(x)
-    gL = ∇xL(x,vcat(λ,μ),c_vect[end],f_obj,h_eq_final)
-    HL = HxL(x,vcat(λ,μ),c_vect[end],f_obj,h_eq_final)
-    # ∇h = ReverseDiff.jacobian(h_eq_final,x)
-    ∇h = ForwardDiff.jacobian(h_eq_final,x)
-    
+
+    h_final = x̃ -> vcat(h_eq(x̃),μ.*g_ineq(x̃))
+    h = h_final(x)
+    ∇h = ForwardDiff.jacobian(h_final,x)
+    ∇f = ReverseDiff.gradient(f_obj,x)
+    Hf = ReverseDiff.hessian(f_obj,x)
+    gL = ∇f + ∇h'*vcat(λ,μ) + c_vect[end]*∇h'*h
+    HL = Hf + c_vect[end]*∇h'*∇h
+
     A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h+num_g,num_h+num_g)))
     δ = (A+eye(num_x+num_h+num_g)*1e-12)\(-vcat(gL,h))
-    
-    x += δ[1:length(x)]
-    # λ += (∇h*((HL + I*1e-12)\∇h'))\∇h'
+    x += δ[1:num_x]
 
     x, λ, μ
 end

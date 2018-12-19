@@ -215,17 +215,17 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     xnext = MechanismState{T}(sim_data.mechanism)
     set_configuration!(xnext, qnext)
     set_velocity!(xnext, vnext)
-    
+
     # aug lag initial guesses
     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    contact_λ0 = zeros(sim_data.num_v)
-    contact_μ0 = zeros(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
-    
+    contact_λ0 = ones(sim_data.num_v)
+    contact_μ0 = ones(sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2))
+
     # aug lag parameters
     num_contact_steps = 4
     contact_α = [1. for i = 1:num_contact_steps]
     contact_c = [150. for i = 1:num_contact_steps]
-    
+
     Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
     rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
     geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
