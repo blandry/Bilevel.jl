@@ -92,18 +92,20 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
 
-    # aug lag initial guesses
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
     num_pos = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
-    contact_x0 = zeros(1 + sim_data.num_contacts*(2+sim_data.β_dim))
-    contact_λ0 = ones(num_dyn)
-    contact_μ0 = ones(num_comp + num_pos)
+
+    # aug lag initial guesses
+    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+    # contact_λ0 = ones(num_dyn + num_comp)
+    contact_λ0 = ones(num_comp)
+    contact_μ0 = ones(num_pos)
 
     # aug lag parameter
     num_contact_steps = 4
     contact_α = [1. for i = 1:num_contact_steps]
-    contact_c = [250. for i = 1:num_contact_steps]
+    contact_c = [10.^i for i = 1:num_contact_steps]
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -135,10 +137,10 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
         contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
-        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
+        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
-        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0        
+        g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
 
     function eval_jac_g(x, mode, rows, cols, values)
@@ -167,20 +169,22 @@ function update_objective_implicit_contact(sim_data,q0,v0,u0)
     set_configuration!(x0,q0)
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
-    
-    # aug lag initial guesses
+
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
     num_pos = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
-    contact_x0 = zeros(1 + sim_data.num_contacts*(2+sim_data.β_dim))
-    contact_λ0 = ones(num_dyn)
-    contact_μ0 = ones(num_comp + num_pos)
+
+    # aug lag initial guesses
+    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+    # contact_λ0 = ones(num_dyn + num_comp)
+    contact_λ0 = ones(num_comp)
+    contact_μ0 = ones(num_pos)
 
     # aug lag parameter
     num_contact_steps = 4
     contact_α = [1. for i = 1:num_contact_steps]
-    contact_c = [250. for i = 1:num_contact_steps]
-    
+    contact_c = [10.^i for i = 1:num_contact_steps]
+
     function eval_f(x::AbstractArray{T}) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
@@ -209,14 +213,14 @@ function update_objective_implicit_contact(sim_data,q0,v0,u0)
         bias = u0 .- dynamics_bias(xnext)
 
         contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c)
-        
-        obj_sol
+
+        obj_sol + dot(slack,slack)
     end
-    
+
     function eval_grad_f(x, grad_f)
         grad_f[:] = ForwardDiff.gradient(eval_f, x)[:]
     end
-    
+
     eval_f, eval_grad_f
 end
 
@@ -305,7 +309,7 @@ function simulate(state0::MechanismState{T, M},
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
     end
-    
+
     x_ctrl = MechanismState(sim_data.mechanism)
     u0 = zeros(sim_data.num_v)
 

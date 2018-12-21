@@ -1,5 +1,16 @@
 function softmax(x)
-    log.(1. .+ exp.(x))
+    # thresh = 100.
+    # x_out = map(x) do xi
+    #     if (xi < -thresh)
+    #         exp.(xi)
+    #     elseif (xi > thresh)
+    #         xi + exp.(-xi)
+    #     else
+    #         log.(1. + exp.(xi))
+    #     end
+    # end
+    # return x_out
+    max.(0.,x)
 end
 
 function L(x,λ,μ,c,f,h,g)
@@ -22,26 +33,37 @@ function auglag_solve(x,λ,μ,f_obj,h_eq,g_ineq,α_vect,c_vect)
     num_g = length(μ)
     I = eye(num_x)
 
+    # scaling of all the inputs
+    # f_scale = maximum(abs.(ForwardDiff.gradient(f_obj,x)))
+    # f_obj_scaled = x̃ -> (1. ./ f_scale) .* f_obj(x̃)
+    # h_scale = maximum(abs.(ForwardDiff.jacobian(h_eq,x)),2)[:]
+    # h_eq_scaled = x̃ -> (1. ./ h_scale) .* h_eq(x̃)
+    # g_scale = maximum(abs.(ForwardDiff.jacobian(g_ineq,x)),2)[:]
+    # g_ineq_scaled = x̃ -> (1. ./ g_scale) .* g_ineq(x̃)
+    f_obj_scaled = f_obj
+    h_eq_scaled = h_eq
+    g_ineq_scaled = g_ineq
+
     for i = 1:length(α_vect)
-        gL = ∇xL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
-        HL = HxL(x,λ,μ,c_vect[i],f_obj,h_eq,g_ineq)
+        gL = ∇xL(x,λ,μ,c_vect[i],f_obj_scaled,h_eq_scaled,g_ineq_scaled)
+        HL = HxL(x,λ,μ,c_vect[i],f_obj_scaled,h_eq_scaled,g_ineq_scaled)
 
         x += α_vect[i] * ((HL + I*1e-12) \ -gL)
-        λ += c_vect[i] * h_eq(x)
-        μ = softmax(μ + c_vect[i] * g_ineq(x))
+        λ += c_vect[i] * h_eq_scaled(x)
+        μ = softmax(μ + c_vect[i] * g_ineq_scaled(x))
     end
 
-    h_final = x̃ -> vcat(h_eq(x̃),μ.*g_ineq(x̃))
-    h = h_final(x)
-    ∇h = ForwardDiff.jacobian(h_final,x)
-    ∇f = ReverseDiff.gradient(f_obj,x)
-    Hf = ReverseDiff.hessian(f_obj,x)
-    gL = ∇f + ∇h'*vcat(λ,μ) + c_vect[end]*∇h'*h
-    HL = Hf + c_vect[end]*∇h'*∇h
-
-    A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h+num_g,num_h+num_g)))
-    δ = (A+eye(num_x+num_h+num_g)*1e-12)\(-vcat(gL,h))
-    x += δ[1:num_x]
+    # h_final = x̃ -> vcat(h_eq_scaled(x̃),μ.*g_ineq_scaled(x̃))
+    # h = h_final(x)
+    # ∇h = ForwardDiff.jacobian(h_final,x)
+    # ∇f = ReverseDiff.gradient(f_obj_scaled,x)
+    # Hf = ReverseDiff.hessian(f_obj_scaled,x)
+    # gL = ∇f + ∇h'*vcat(λ,μ) + c_vect[end]*∇h'*h
+    # HL = Hf + c_vect[end]*∇h'*∇h
+    #
+    # A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h+num_g,num_h+num_g)))
+    # δ = (A+eye(num_x+num_h+num_g)*1e-12)\(-vcat(gL,h))
+    # x += δ[1:num_x]
 
     x, λ, μ
 end
