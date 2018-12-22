@@ -27,7 +27,8 @@ using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using Compat
 
-include("bilevel.jl")
+include("auglag.jl")
+include("ip.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
