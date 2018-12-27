@@ -123,87 +123,88 @@ function pos_contact_constraints(x,Dtv,sim_data)
     β_dim = sim_data.β_dim
     μs = sim_data.μs
 
-    # β >= 0
-    pos_con = -x[β_selector]
-    # λ >= 0
-    pos_con = vcat(pos_con, -x[λ_selector])
-    # c_n >= 0
-    pos_con = vcat(pos_con, -x[c_n_selector])
-
     # λe + D'*v >= 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
-    pos_con = vcat(pos_con, reshape(-(λ_all .+ Dtv),β_dim*num_contacts,1))
+    pos_con = reshape(-(λ_all .+ Dtv),β_dim*num_contacts,1)
 
     # μ*c_n - sum(β) >= 0
-    pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - reshape(x[β_selector],β_dim,num_contacts)'*ones(β_dim)))
-
-    # upper bounds
-    pos_con = vcat(pos_con, x[β_selector] .- 100.)
-    pos_con = vcat(pos_con, x[λ_selector] .- 100.)
-    pos_con = vcat(pos_con, x[c_n_selector] .- 100.)
+    β_all = reshape(x[β_selector],β_dim,num_contacts)
+    pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - sum(β_all,1)[:]))
 
     pos_con
 end
 
-function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0,contact_α,contact_c;ip_method=false)
+function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
 
-    if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
-        ϕs_value = map(x->x.value,ϕs)
-        Dtv_value = map(x->x.value,Dtv)
-        rel_transforms_value = map(rel_transforms) do rt
-            rt1 = Transform3D(rt[1].from,rt[1].to,Array(map(x->x.value,rt[1].mat)))
-            rt2 = Transform3D(rt[2].from,rt[2].to,Array(map(x->x.value,rt[2].mat)))
-            (rt1, rt2)
-        end
-        geo_jacobians_value = map(geo_jacobians) do gj
-            GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
-        end
-        HΔv_value = map(x->x.value,HΔv)
-        bias_value = map(x->x.value,bias)
-    else
-        ϕs_value = ϕs
-        Dtv_value = Dtv
-        rel_transforms_value = rel_transforms
-        geo_jacobians_value = geo_jacobians
-        HΔv_value = HΔv
-        bias_value = bias
-    end
+    # if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
+    #     ϕs_value = map(x->x.value,ϕs)
+    #     Dtv_value = map(x->x.value,Dtv)
+    #     rel_transforms_value = map(rel_transforms) do rt
+    #         rt1 = Transform3D(rt[1].from,rt[1].to,Array(map(x->x.value,rt[1].mat)))
+    #         rt2 = Transform3D(rt[2].from,rt[2].to,Array(map(x->x.value,rt[2].mat)))
+    #         (rt1, rt2)
+    #     end
+    #     geo_jacobians_value = map(geo_jacobians) do gj
+    #         GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
+    #     end
+    #     HΔv_value = map(x->x.value,HΔv)
+    #     bias_value = map(x->x.value,bias)
+    # else
+    #     ϕs_value = ϕs
+    #     Dtv_value = Dtv
+    #     rel_transforms_value = rel_transforms
+    #     geo_jacobians_value = geo_jacobians
+    #     HΔv_value = HΔv
+    #     bias_value = bias
+    # end
 
     f = x̃ -> begin
-        return dot(x̃,x̃)
+        # if isa(x̃,ReverseDiff.TrackedArray)
+        #     c = complementarity_contact_constraints(x̃,ϕs_value,Dtv_value,sim_data)
+        # else
+            c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
+        # end
+        return 100.*sum(c) + dot(x̃,x̃)
     end
     h = x̃ -> begin
-        if isa(x̃,ReverseDiff.TrackedArray)
-            # d = dynamics_contact_constraints(x̃,rel_transforms_value,geo_jacobians_value,HΔv_value,bias_value,sim_data)
-            c = complementarity_contact_constraints(x̃,ϕs_value,Dtv_value,sim_data)
-        else
-            # d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
-            c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        end
-        # return vcat(d,c)
-        return c
+        # if isa(x̃,ReverseDiff.TrackedArray)
+        #     d = dynamics_contact_constraints(x̃,rel_transforms_value,geo_jacobians_value,HΔv_value,bias_value,sim_data)
+        # else
+            d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
+        # end
+        return d
     end
     g = x̃ -> begin
-        if isa(x̃,ReverseDiff.TrackedArray)
-            p = pos_contact_constraints(x̃,Dtv_value,sim_data)
-        else
+        # if isa(x̃,ReverseDiff.TrackedArray)
+        #     p = pos_contact_constraints(x̃,Dtv_value,sim_data)
+        # else
             p = pos_contact_constraints(x̃,Dtv,sim_data)
-        end
+        # end
         return p
     end
 
+    x_min = zeros(length(x0))
+    x_max = 100.*ones(length(x0))
+
     if ip_method
-        x = ip_solve(x0,f,h,g,length(λ0),length(μ0))
+        x = ip_solve(x0,f,h,g,length(λ0),length(μ0),x_min,x_max)
         λ = λ0
         μ = μ0
+        # display("IpMethod")
+        # display(x)
+        # display(f(x))
+        # display(h(x))
+        # display(g(x))
     else
-        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,contact_α,contact_c)
+        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,x_min,x_max)
+        # display("AugLag")
+        # display(x)
+        # display(f(x))
+        # display(h(x))
+        # display(g(x))
     end
 
-    # dx = dynamics_contact_constraints(x,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
-    # cx = complementarity_contact_constraints(x,ϕs_value,Dtv_value,sim_data)
-    # fx = dot(dx,dx) + dot(cx,cx)
-    fx = 0.
+    fx = f(x)
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
 
     return τ, x, λ, μ, fx
@@ -222,18 +223,12 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
 
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
 
     # aug lag initial guesses
-    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    # contact_λ0 = ones(num_dyn + num_comp)
-    contact_λ0 = ones(num_comp)
+    contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
+    contact_λ0 = ones(num_dyn)
     contact_μ0 = ones(num_pos)
-
-    # aug lag parameter
-    num_contact_steps = 4
-    contact_α = [1. for i = 1:num_contact_steps]
-    contact_c = [10.^i for i = 1:num_contact_steps]
 
     Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
     rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
@@ -253,7 +248,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     config_derivative = configuration_derivative(xnext)
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
-    τ, x, λ, μ, fx = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c,ip_method=ip_method)
+    τ, x, λ, μ, fx = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
 
     return τ, x, λ, μ, fx
 end

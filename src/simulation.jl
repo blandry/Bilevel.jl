@@ -63,7 +63,7 @@ function update_constraints(sim_data,q0,v0,u0)
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)] =
             complementarity_contact_constraints_relaxed(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],slack,ϕs,Dtv,sim_data) # <= 0
         g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts] = -ϕs # <= 0
-        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(3+2*sim_data.β_dim)+sim_data.num_contacts*(2+sim_data.β_dim)] =
+        g[sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(1+sim_data.β_dim)] =
             pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],Dtv,sim_data) # <= 0
     end
 
@@ -94,18 +94,13 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
 
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
 
     # aug lag initial guesses
-    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    # contact_λ0 = ones(num_dyn + num_comp)
-    contact_λ0 = ones(num_comp)
+    # these should come from the previous time step
+    contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
+    contact_λ0 = ones(num_dyn)
     contact_μ0 = ones(num_pos)
-
-    # aug lag parameter
-    num_contact_steps = 4
-    contact_α = [1. for i = 1:num_contact_steps]
-    contact_c = [10.^i for i = 1:num_contact_steps]
 
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
@@ -134,7 +129,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
 
-        contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c)
+        contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
@@ -172,18 +167,13 @@ function update_objective_implicit_contact(sim_data,q0,v0,u0)
 
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(2*sim_data.β_dim+3+sim_data.β_dim+2)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
 
     # aug lag initial guesses
-    contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    # contact_λ0 = ones(num_dyn + num_comp)
-    contact_λ0 = ones(num_comp)
+    # these should come from the previous time step
+    contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
+    contact_λ0 = ones(num_dyn)
     contact_μ0 = ones(num_pos)
-
-    # aug lag parameter
-    num_contact_steps = 4
-    contact_α = [1. for i = 1:num_contact_steps]
-    contact_c = [10.^i for i = 1:num_contact_steps]
 
     function eval_f(x::AbstractArray{T}) where T
         qnext = x[1:sim_data.num_q]
@@ -212,9 +202,9 @@ function update_objective_implicit_contact(sim_data,q0,v0,u0)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
 
-        contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,contact_α,contact_c)
+        contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
 
-        obj_sol + dot(slack,slack)
+        dot(contact_x0_sol,contact_x0_sol) + dot(slack,slack)
     end
 
     function eval_grad_f(x, grad_f)
@@ -245,7 +235,7 @@ function get_sim_data(state0::MechanismState{T, M},
       num_slack = 1
       num_x = num_q + num_v + num_slack + num_contacts*(2+β_dim)
       num_h = num_q + num_v
-      num_g = num_contacts + num_contacts*(5+3*β_dim) + num_contacts*(2+β_dim)
+      num_g = num_contacts + num_contacts*(2+β_dim) + num_contacts*(1+β_dim)
     end
 
     # some constants throughout the simulation
@@ -290,6 +280,10 @@ function simulate(state0::MechanismState{T, M},
     # optimization bounds
     x_L = -1e19 * ones(sim_data.num_x)
     x_U = 1e19 * ones(sim_data.num_x)
+    if !implicit_contact
+        x_L[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end] .= 0.
+        x_U[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end] .= 100.
+    end
 
     g_L = vcat(0. * ones(sim_data.num_h), -1e19 * ones(sim_data.num_g))
     g_U = vcat(0. * ones(sim_data.num_h),    0. * ones(sim_data.num_g))

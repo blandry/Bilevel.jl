@@ -20,3 +20,15 @@
 #     contact_μ0 = map(x -> x.value, contact_μ0)
 # end
 
+
+# β >= 0
+pos_con = -x[β_selector]
+# λ >= 0
+pos_con = vcat(pos_con, -x[λ_selector])
+# c_n >= 0
+pos_con = vcat(pos_con, -x[c_n_selector])
+
+# upper bounds
+pos_con = vcat(pos_con, x[β_selector] .- 100.)
+pos_con = vcat(pos_con, x[λ_selector] .- 100.)
+pos_con = vcat(pos_con, x[c_n_selector] .- 100.)
