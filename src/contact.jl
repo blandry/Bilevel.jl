@@ -66,7 +66,8 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    comp_con = ϕs .* x[c_n_selector]
+    α = 1e-12
+    comp_con = (ϕs - α) .* x[c_n_selector]
 
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
@@ -91,7 +92,8 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    comp_con = ϕs .* x[c_n_selector] .- dot(slack,slack)
+    α = 1e-12
+    comp_con = (ϕs - α) .* x[c_n_selector] .- dot(slack,slack)
 
     # (λe + Dtv)' * β = 0
     λ_all = repmat(x[λ_selector]',β_dim,1)
@@ -136,50 +138,16 @@ end
 
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
 
-    # if isa(ϕs,Array{T} where T<:ForwardDiff.Dual)
-    #     ϕs_value = map(x->x.value,ϕs)
-    #     Dtv_value = map(x->x.value,Dtv)
-    #     rel_transforms_value = map(rel_transforms) do rt
-    #         rt1 = Transform3D(rt[1].from,rt[1].to,Array(map(x->x.value,rt[1].mat)))
-    #         rt2 = Transform3D(rt[2].from,rt[2].to,Array(map(x->x.value,rt[2].mat)))
-    #         (rt1, rt2)
-    #     end
-    #     geo_jacobians_value = map(geo_jacobians) do gj
-    #         GeometricJacobian(gj.body,gj.base,gj.frame,map(x->x.value,gj.angular),map(x->x.value,gj.linear))
-    #     end
-    #     HΔv_value = map(x->x.value,HΔv)
-    #     bias_value = map(x->x.value,bias)
-    # else
-    #     ϕs_value = ϕs
-    #     Dtv_value = Dtv
-    #     rel_transforms_value = rel_transforms
-    #     geo_jacobians_value = geo_jacobians
-    #     HΔv_value = HΔv
-    #     bias_value = bias
-    # end
-
     f = x̃ -> begin
-        # if isa(x̃,ReverseDiff.TrackedArray)
-        #     c = complementarity_contact_constraints(x̃,ϕs_value,Dtv_value,sim_data)
-        # else
-            c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        # end
-        return 100.*sum(c) + dot(x̃,x̃)
+        c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
+        return sum(c) + sum(x̃)
     end
     h = x̃ -> begin
-        # if isa(x̃,ReverseDiff.TrackedArray)
-        #     d = dynamics_contact_constraints(x̃,rel_transforms_value,geo_jacobians_value,HΔv_value,bias_value,sim_data)
-        # else
-            d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
-        # end
+        d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
         return d
     end
     g = x̃ -> begin
-        # if isa(x̃,ReverseDiff.TrackedArray)
-        #     p = pos_contact_constraints(x̃,Dtv_value,sim_data)
-        # else
-            p = pos_contact_constraints(x̃,Dtv,sim_data)
-        # end
+        p = pos_contact_constraints(x̃,Dtv,sim_data)
         return p
     end
 
@@ -190,18 +158,8 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
         x = ip_solve(x0,f,h,g,length(λ0),length(μ0),x_min,x_max)
         λ = λ0
         μ = μ0
-        # display("IpMethod")
-        # display(x)
-        # display(f(x))
-        # display(h(x))
-        # display(g(x))
     else
         (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,x_min,x_max)
-        # display("AugLag")
-        # display(x)
-        # display(f(x))
-        # display(h(x))
-        # display(g(x))
     end
 
     fx = f(x)

@@ -1,9 +1,9 @@
 function softmax(x,y;k=1.)
     # safe for large x inputs only
-    thresh = 100.
-    if x < -thresh
+    thresh = 500.
+    if k*x < -thresh
         (k*y + log.(1. + exp.(k*x - k*y)))/k
-    elseif x > thresh
+    elseif k*x > thresh
         (k*x + log.(1. + exp.(k*y - k*x)))/k
     else
         log.(exp.(k*x) + exp.(k*y))/k
@@ -15,7 +15,7 @@ function L(x,λ,h,c)
 end
 
 function auglag_solve(x0,λ0,μ0,f0,h0,g0,x_min,x_max)
-    num_steps = 5
+    num_steps = 25
     c = 1.
     k = 100.
 
