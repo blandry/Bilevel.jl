@@ -66,7 +66,7 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    α = 1e-12
+    α = 0.
     comp_con = (ϕs - α) .* x[c_n_selector]
 
     # (λe + Dtv)' * β = 0
@@ -92,7 +92,7 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     num_contacts = sim_data.num_contacts
 
     # dist * c_n = 0
-    α = 1e-12
+    α = 0.
     comp_con = (ϕs - α) .* x[c_n_selector] .- dot(slack,slack)
 
     # (λe + Dtv)' * β = 0
