@@ -21,21 +21,20 @@ end
 
 function update_constraints(traj_data)
     num_slack = 1
-    
     num_kin = traj_data.num_q
     num_dyn = traj_data.num_v
     num_comp = traj_data.num_contacts*(2+traj_data.β_dim)
     num_dist = traj_data.num_contacts
     num_pos = traj_data.num_contacts*(1+traj_data.β_dim)
-    
+
     q0_selector = 1:traj_data.num_q
     v0_selector = traj_data.num_q+1:traj_data.num_q+traj_data.num_v
     qnext_selector = traj_data.num_q+traj_data.num_v:2*traj_data.num_q+traj_data.num_v
     vnext_selector = 2*traj_data.num_q+traj_data.num_v+1:2*traj_data.num_q+2*traj_data.num_v
     slack_selector = 2*traj_data.num_q+2*traj_data.num_v+1:2*traj_data.num_q+2*traj_data.num_v+num_slack
-    contact_selector = 
-    2*traj_data.num_q+2*traj_data.num_v+num_slack+1:2*traj_data.num_q+2*traj_data.num_v+num_slack+traj_data.num_contacts*(2+traj_data.β_dim)    
-    
+    contact_selector =
+    2*traj_data.num_q+2*traj_data.num_v+num_slack+1:2*traj_data.num_q+2*traj_data.num_v+num_slack+traj_data.num_contacts*(2+traj_data.β_dim)
+
     g_kin_selector = 1:num_kin
     g_dyn_selector = num_kin+1:num_kin+num_dyn
     g_comp_selector = num_kin+num_dyn+1:num_kin+num_dyn+num_comp
@@ -48,21 +47,21 @@ function update_constraints(traj_data)
     function eval_g(x::AbstractArray{T}, g) where T
         q0 = x[q0_selector]
         v0 = x[v0_selector]
-        
+
         qnext = x[qnext_selector]
         vnext = x[vnext_selector]
-        
+
         slack = x[slack_selector]
         xcontact = x[contact_selector]
-        
+
         x0 = MechanismState{T}(traj_data.mechanism)
         set_configuration!(x0,q0)
         set_velocity!(x0,v0)
-        
+
         xnext = MechanismState{T}(traj_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
-        
+
         H = mass_matrix(x0)
 
         Dtv = Matrix{T}(traj_data.β_dim,traj_data.num_contacts)
@@ -99,41 +98,43 @@ function update_constraints(traj_data)
 end
 
 function traj_constraints(traj_data,N)
-    
-    num_x = traj_data.num_q + traj_data.num_v + traj_data.num_slack + traj_data.num_contacts*(2+traj_data.β_dim)
-    
+    num_xn = traj_data.num_q+traj_data.num_v+traj_data.num_slack+traj_data.num_contacts*(2+traj_data.β_dim)
+    dyn_con, num_dyn_eq, num_dyn_ineq = update_constraints(traj_data)
+
+    num_x = N*num_xn
+    num_eq = (N-1)*num_dyn_eq
+    num_ineq = (N-1)*num_dyn_ineq
+
     function eval_g(xv::AbstractArray{T}, g) where T
-        
-        x = reshape(xv,num_x,N)
-        num_dyn_con = num_eq + num_ineq
-        
-        # dynamics 
+        x = reshape(xv,num_x,N) # don't reshape
+        # dynamics
         for i = 1:N-1
-            
-            g[i*num_
+            xn = vcat(x[1:traj_data.num_q+traj_data.num_v,i],x[:,i+1])
+            # make this in place
+            gn = zeros(num_dyn_eq+num_dyn_ineq)
+            dyn_con(xn, gn)
+            g[(i-1)*num_dyn_eq+1:i*num_dyn_eq] = gn[1:num_dyn_eq]
+            g[(N-1)*num_dyn_eq+(i-1)*num_dyn_ineq+1:(N-1)*num_dyn_eq+i*num_dyn_ineq] = gn[num_dyn_eq+1:num_dyn_eq+num_dyn_ineq]
         end
-        x0 = x[j*
     end
-    
+
     function eval_jac_g(x, mode, rows, cols, values)
         if mode == :Structure
             # TODO actually figure out the sparsity pattern
-            for i = 1:(sim_data.num_h + sim_data.num_g)
-                for j = 1:sim_data.num_x
-                    rows[(i-1)*sim_data.num_x+j] = i
-                    cols[(i-1)*sim_data.num_x+j] = j
+            for i = 1:(num_eq + num_ineq)
+                for j = 1:num_x
+                    rows[(i-1)*num_x+j] = i
+                    cols[(i-1)*num_x+j] = j
                 end
             end
         else
-            g = zeros(sim_data.num_h + sim_data.num_g)
-            tic()
+            g = zeros(num_eq + num_ineq)
             J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
-            toc()
             values[:] = J'[:]
         end
     end
-    
-    eval_g, eval_jac_g    
+
+    eval_g, eval_jac_g, num_h, num_g
 end
 
 function get_traj_data(mechanism::Mechanism,
@@ -144,10 +145,8 @@ function get_traj_data(mechanism::Mechanism,
     num_v = num_velocities(mechanism)
     num_contacts = length(env.contacts)
     β_dim = length(contact_basis(env.contacts[1][3]))
-    
-    # x = [q, v, slack, β1, λ1, c_n1, β2, λ2, c_n2...]
 
-    # some constants throughout the simulation
+    # some constants throughout the trajectory
     world = root_body(mechanism)
     world_frame = default_frame(world)
     total_weight = mass(mechanism) * norm(mechanism.gravitational_acceleration)
@@ -186,17 +185,22 @@ function trajopt(mechanism::Mechanism,
     traj_data = get_traj_data(mechanism,env,Δt)
 
     if implicit_contact
-        num_x =  
+        num_xn = traj_data.num_q+traj_data.num_v
     else
-        num_x =
+        num_xn = traj_data.num_q+traj_data.num_v+1+traj_data.num_contacts*(2+traj_data.β_dim)
     end
+    num_x = N*num_xn
 
     # optimization bounds
     x_L = -1e19 * ones(num_x)
     x_U = 1e19 * ones(num_x)
     if !implicit_contact
-        x_L[traj_data.num_q+traj_data.num_v+traj_data.num_slack+1:end] .= 0.
-        x_U[traj_data.num_q+traj_data.num_v+traj_data.num_slack+1:end] .= 100.
+        for i=1:N
+            istart =
+            iend =
+            x_L[istart:iend] .= 0.
+            x_U[istart:iend] .= 100.
+        end
     end
 
     g_L = vcat(0. * ones(traj_data.num_h), -1e19 * ones(traj_data.num_g))
