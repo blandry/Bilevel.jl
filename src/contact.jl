@@ -140,7 +140,8 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
 
     f = x̃ -> begin
         c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        return sum(c) + sum(x̃)
+        # return sum(c) + sum(x̃)
+        return 1.*(sum(c) + sum(x̃)) + dot(c,c) + dot(x̃,x̃)
     end
     h = x̃ -> begin
         d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
