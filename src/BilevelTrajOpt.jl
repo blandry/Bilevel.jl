@@ -26,6 +26,7 @@ using ReverseDiff
 using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using Compat
+using Convex
 
 include("auglag.jl")
 include("ip.jl")

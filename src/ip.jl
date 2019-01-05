@@ -1,7 +1,7 @@
-function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g,x_min,x_max) where T
+function ip_solve(x0::AbstractArray{T},f_obj,h_eq,g_ineq,num_h,num_g) where T
     num_x = length(x0)
-    x_L = x_min
-    x_U = x_max
+    x_L = -1e19*ones(num_x)
+    x_U = 1e19*ones(num_x)
     g_L = vcat(0. * ones(num_h), -1e19 * ones(num_g))
     g_U = vcat(0. * ones(num_h), 0. * ones(num_g))
 
