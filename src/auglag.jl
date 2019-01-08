@@ -49,10 +49,9 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         λ += δλ
 
         c *= 10.
-
-        display(x)
     end
-        
+
+    rtol = eps(real(float(one(1))))*(num_h+num_x)
     for i = 1:num_sosteps
         hx = h(x)
         ∇h = ForwardDiff.jacobian(h,x)
@@ -62,8 +61,19 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         HL = Hf + c*∇h'*∇h     
     
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
+        
         # δxλ = (A + 1e-12*eye(num_x+num_h)) \ (-vcat(gL,hx))
-        δxλ = pinv(A) * (-vcat(gL,hx))
+        # δxλ = pinv(A) * (-vcat(gL,hx))
+        # δxλ = A \ (-vcat(gL,hx))
+                
+        SVD = svd(A)
+        tol = rtol*maximum(SVD[2]) # TODO not differentiable
+        Stype = eltype(SVD[2])
+        Sinv = zeros(Stype, length(SVD[2]))
+        Sinv = max.(0., SVD[2] .- tol)./(SVD[2] .- tol) .* (one(Stype)./SVD[2]) # TODO not differentiable
+        Apinv = SVD[3] * (Diagonal(Sinv) * SVD[1]')
+        δxλ = Apinv * (-vcat(gL,hx))
+        
         δx = δxλ[1:num_x]
         δλ = δxλ[num_x+1:num_x+num_h]
 
@@ -71,18 +81,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         λ += δλ
 
         c *= 1.
-
-        display(x)
     end
 
     x[1:num_x0], λ[1:num_h0], λ[num_h0+1:num_h0+num_g0], c
 end
-
-# δ = Variable(num_x)
-# SQP
-# sqp_obj = ∇f'*δ + .5*quadform(δ,HL)
-# sqp_con = [hx + ∇h*δ == 0.]
-# sqp_prob = minimize(sqp_obj, sqp_con)
-# solve!(sqp_prob)
-# δx = δ.value
-# δλ = 0.

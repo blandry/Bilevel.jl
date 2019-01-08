@@ -12,7 +12,8 @@ export HalfSpace,
        get_sim_data,
        separation,
        solve_implicit_contact_τ,
-       parse_contacts
+       parse_contacts,
+       svd
 
 using StaticArrays
 using Ipopt
@@ -33,5 +34,6 @@ include("ip.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
+include("svd.jl")
 
 end # module
