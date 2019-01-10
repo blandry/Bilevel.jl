@@ -29,16 +29,6 @@ function update_constraints(sim_data,q0,v0,u0)
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
 
-    num_dyn = sim_data.num_v
-    num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
-
-    # aug lag initial guesses
-    # these should come from the previous time step
-    contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
-    contact_λ0 = ones(num_dyn)
-    contact_μ0 = ones(num_pos)
-
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
@@ -66,9 +56,6 @@ function update_constraints(sim_data,q0,v0,u0)
         HΔv = H * (vnext - v0)
         bias = u0 .- dynamics_bias(xnext)
         
-        # contact_bias_implicit, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
-        # xcontact = x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end] + contact_x0_sol
-        # contact_bias = τ_total(xcontact,rel_transforms,geo_jacobians,sim_data)
         contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],rel_transforms,geo_jacobians,sim_data)
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
@@ -110,7 +97,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0)
 
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
 
     # aug lag initial guesses
     # these should come from the previous time step

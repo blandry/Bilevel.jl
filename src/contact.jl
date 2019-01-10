@@ -138,11 +138,15 @@ end
 
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
 
+    x_min = zeros(length(x0))
+    x_max = 100.*ones(length(x0))
+
     f = x̃ -> begin
         c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
         # return sum(c) + sum(x̃)
         # return 1000.*(sum(c) + sum(x̃)) + dot(c,c) + dot(x̃,x̃)
-        return dot(c,c) + dot(x̃,x̃)
+        # return dot(c,c) + dot(x̃,x̃)
+        return sum(c)
     end
     h = x̃ -> begin
         d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
@@ -150,18 +154,15 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     end
     g = x̃ -> begin
         p = pos_contact_constraints(x̃,Dtv,sim_data)
-        return p
+        return vcat(p, x_min .- x̃, x̃ .- x_max)
     end
 
-    x_min = zeros(length(x0))
-    x_max = 100.*ones(length(x0))
-
     if ip_method
-        x = ip_solve(x0,f,h,g,length(λ0),length(μ0),x_min,x_max)
+        x = ip_solve(x0,f,h,g,length(λ0),length(μ0))
         λ = λ0
         μ = μ0
     else
-        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,x_min,x_max)
+        (x,λ,μ,c) = auglag_solve(x0,λ0,μ0,f,h,g)
     end
 
     fx = f(x)
@@ -183,7 +184,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
 
     num_dyn = sim_data.num_v
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    num_pos = sim_data.num_contacts*(1+sim_data.β_dim)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
 
     # aug lag initial guesses
     contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
