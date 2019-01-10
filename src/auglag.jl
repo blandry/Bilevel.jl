@@ -25,15 +25,15 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
     x = vcat(copy(x0),zeros(num_g0))
     λ = vcat(copy(λ0),copy(μ0))
     c = c0
-    
+
     num_x = length(x)
     num_h = length(λ)
 
     h = x̃ -> vcat(h0(x̃[1:num_x0]),
                   g0(x̃[1:num_x0]) + softmax.(x̃[num_x0+1:num_x0+num_g0],0.,k=1.))
-    
+
     f = x̃ -> f0(x̃[1:num_x0])
-        
+
     for i = 1:num_fosteps
         hx = h(x)
         ∇h = ForwardDiff.jacobian(h,x)
@@ -44,36 +44,31 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
 
         δx = (HL + (sum(HL.^2)+1e-12)*eye(num_x)) \ (-gL)
         δλ = -c * hx
-        
+
         x += δx
         λ += δλ
 
         c *= 10.
     end
 
-    rtol = eps(real(float(one(1))))*(num_h+num_x)
+    rtol = eps(1.)*(num_h+num_x)
     for i = 1:num_sosteps
         hx = h(x)
         ∇h = ForwardDiff.jacobian(h,x)
         ∇f = ForwardDiff.gradient(f,x)
         Hf = ForwardDiff.hessian(f,x)
         gL = ∇f - ∇h'*λ + c*∇h'*hx
-        HL = Hf + c*∇h'*∇h     
-    
+        HL = Hf + c*∇h'*∇h
+
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
-        
-        # δxλ = (A + 1e-12*eye(num_x+num_h)) \ (-vcat(gL,hx))
-        # δxλ = pinv(A) * (-vcat(gL,hx))
-        # δxλ = A \ (-vcat(gL,hx))
-                
         SVD = svd(A)
-        tol = rtol*maximum(SVD[2]) # TODO not differentiable
-        Stype = eltype(SVD[2])
-        Sinv = zeros(Stype, length(SVD[2]))
-        Sinv = max.(0., SVD[2] .- tol)./(SVD[2] .- tol) .* (one(Stype)./SVD[2]) # TODO not differentiable
-        Apinv = SVD[3] * (Diagonal(Sinv) * SVD[1]')
+        tol = rtol*maximum(SVD[2]) # TODO not smooth
+        Sinv = max.(0., SVD[2] .- tol)./(SVD[2] .- tol) .* (1. ./ SVD[2]) # TODO not smooth (sigmoid?)
+        Sinv[isinf.(Sinv)] = 0.
+        Apinv = SVD[3] * (diagm(Sinv) * SVD[1]')
+
         δxλ = Apinv * (-vcat(gL,hx))
-        
+
         δx = δxλ[1:num_x]
         δλ = δxλ[num_x+1:num_x+num_h]
 

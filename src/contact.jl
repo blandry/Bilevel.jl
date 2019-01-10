@@ -143,9 +143,6 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
 
     f = x̃ -> begin
         c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        # return sum(c) + sum(x̃)
-        # return 1000.*(sum(c) + sum(x̃)) + dot(c,c) + dot(x̃,x̃)
-        # return dot(c,c) + dot(x̃,x̃)
         return sum(c)
     end
     h = x̃ -> begin
@@ -188,8 +185,8 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
 
     # aug lag initial guesses
     contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
-    contact_λ0 = ones(num_dyn)
-    contact_μ0 = ones(num_pos)
+    contact_λ0 = zeros(num_dyn)
+    contact_μ0 = zeros(num_pos)
 
     Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
     rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform

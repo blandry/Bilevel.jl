@@ -104,6 +104,7 @@ function traj_constraints(traj_data,N)
     num_x = N*num_xn
     num_eq = (N-1)*num_dyn_eq
     num_ineq = (N-1)*num_dyn_ineq
+    gn = zeros(num_dyn_eq+num_dyn_ineq)
 
     function eval_g(xv::AbstractArray{T}, g) where T
         x = reshape(xv,num_x,N) # don't reshape
@@ -111,10 +112,9 @@ function traj_constraints(traj_data,N)
         for i = 1:N-1
             xn = vcat(x[1:traj_data.num_q+traj_data.num_v,i],x[:,i+1])
             # make this in place
-            gn = zeros(num_dyn_eq+num_dyn_ineq)
             dyn_con(xn, gn)
             g[(i-1)*num_dyn_eq+1:i*num_dyn_eq] = gn[1:num_dyn_eq]
-            g[(N-1)*num_dyn_eq+(i-1)*num_dyn_ineq+1:(N-1)*num_dyn_eq+i*num_dyn_ineq] = gn[num_dyn_eq+1:num_dyn_eq+num_dyn_ineq]
+            g[(num_eq+(i-1)*num_dyn_ineq+1:num_eq+i*num_dyn_ineq] = gn[num_dyn_eq+1:num_dyn_eq+num_dyn_ineq]
         end
     end
 
