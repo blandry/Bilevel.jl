@@ -95,18 +95,6 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,contact_x0,contac
     set_velocity!(x0,v0)
     H = mass_matrix(x0)
 
-    # num_dyn = sim_data.num_v
-    # num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
-    # num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
-
-    # aug lag initial guesses
-    # these should come from the previous time step
-    # contact_x0 = repmat(vcat(zeros(sim_data.β_dim),0.,1.),sim_data.num_contacts)
-    # contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    # contact_λ0 = zeros(num_dyn)
-    # contact_λ0 = zeros(num_dyn+num_comp)
-    # contact_μ0 = zeros(num_pos)
-
     function eval_g(x::AbstractArray{T}, g) where T
         qnext = x[1:sim_data.num_q]
         vnext = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
@@ -136,7 +124,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,contact_x0,contac
 
         contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
 
-        if isa(contact_bias, Array{T} where T<:ForwardDiff.Dual)
+        if isa(contact_bias, Array{M} where M<:ForwardDiff.Dual)
             cval = map(x̃->x̃.value,contact_bias)
             display(cval)
 
@@ -256,13 +244,11 @@ function simulate(state0::MechanismState{T, M},
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         .5*slack'*slack
-        # sum(abs.(slack))
     end
     eval_grad_f = (x, grad_f) -> begin
         grad_f[:] = 0
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
-        # grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = sign.(slack)
     end
 
     x_ctrl = MechanismState(sim_data.mechanism)
@@ -304,8 +290,8 @@ function simulate(state0::MechanismState{T, M},
 
         addOption(prob, "hessian_approximation", "limited-memory")
         addOption(prob, "print_level", 1)
-        addOption(prob, "tol", 1e-4) # convergence tol default 1e-8
-        addOption(prob, "constr_viol_tol", 1e-2) # default 1e-4
+        addOption(prob, "tol", 1e-8) # convergence tol default 1e-8
+        addOption(prob, "constr_viol_tol", 1e-6) # default 1e-4
 
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])

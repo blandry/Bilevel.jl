@@ -63,7 +63,6 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
         SVD = svd(A)
         tol = rtol*maximum(SVD[2]) # TODO not smooth
-        # Sinv = max.(0., SVD[2] .- tol)./(SVD[2] .- tol) .* (1. ./ SVD[2]) # TODO not smooth (sigmoid?)
         ksig = 100.
         Sinv = 1. ./ (1. + exp.(-ksig*(SVD[2] .- tol)/tol)) .* (1. ./ SVD[2])
         Sinv[isinf.(Sinv)] = 0.
