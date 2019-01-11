@@ -134,8 +134,8 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,contact_x0,contac
         end
 
         g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
-        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
-        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
+        g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
+        # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
         g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
     end
@@ -150,6 +150,7 @@ function update_constraints_implicit_contact(sim_data,q0,v0,u0,contact_x0,contac
                 end
             end
         else
+            display(x)
             g = zeros(sim_data.num_h + sim_data.num_g)
             tic()
             J = ForwardDiff.jacobian((g̃, x̃) -> eval_g(x̃, g̃), g, x)
@@ -241,14 +242,17 @@ function simulate(state0::MechanismState{T, M},
         results = vcat(configuration(state0),velocity(state0),zeros(sim_data.num_slack),zeros(sim_data.num_contacts*(2+sim_data.β_dim)))
     end
 
+    kslack = 1e12
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         .5*slack'*slack
+        x'*x + kslack*.5*slack'*slack# + sum(abs.(slack))
     end
     eval_grad_f = (x, grad_f) -> begin
-        grad_f[:] = 0
+        grad_f[:] = x[:]
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
-        grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] = slack
+        grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] += kslack*slack
+        # grad_f[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] += sign.(slack)
     end
 
     x_ctrl = MechanismState(sim_data.mechanism)
@@ -291,7 +295,7 @@ function simulate(state0::MechanismState{T, M},
         addOption(prob, "hessian_approximation", "limited-memory")
         addOption(prob, "print_level", 1)
         addOption(prob, "tol", 1e-8) # convergence tol default 1e-8
-        addOption(prob, "constr_viol_tol", 1e-6) # default 1e-4
+        addOption(prob, "constr_viol_tol", 1e-4) # default 1e-4
 
         status = solveProblem(prob)
         println(Ipopt.ApplicationReturnStatus[status])
