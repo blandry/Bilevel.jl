@@ -27,8 +27,8 @@ using ForwardDiff
 using ReverseDiff
 using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
-using Compat
 using Snopt
+using Compat
 
 include("auglag.jl")
 include("ip.jl")

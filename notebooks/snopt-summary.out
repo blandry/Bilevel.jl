@@ -5680,3 +5680,2596 @@
  Time for solution output                        .00 seconds
  Time for constraint functions                 -2.00 seconds
  Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      4               1  1.6E-01  1.0E-01  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.8E-13)(0.0E+00) 2.0315053E-16       1.6E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   4   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.587E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             2   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.4E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.7E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.8E-13)(0.0E+00) 1.1847105E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.4E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.8E-13)(0.0E+00) 3.0178384E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.4E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.8E-13)(0.0E+00) 3.6640399E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.5E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.8E-13)(0.0E+00) 4.3595834E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.502E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.5E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.9E-13)(0.0E+00) 5.1249038E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.502E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.6E-13
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.5E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.9E-13)(0.0E+00) 5.9498396E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.502E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.7E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.5E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (2.0E-13)(0.0E+00) 6.8696279E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.503E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.8E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.5E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (2.1E-13)(0.0E+00) 7.9122475E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.504E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.9E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  3.4E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.1E-13)(0.0E+00) 1.5522192E-16       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.504E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    1.5E-13
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  2.1E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  7.7E-05 (1.6E-06) 1.0437732E-05       4.8E+00 n r
+     2      0  1.0E+00      3 (1.3E-08)(1.6E-09)-9.8755389E-14       2.2E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.248E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 3.3E-09
+ Nonlinear constraint violn    1.7E-08
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  2.1E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.5E-04  3.2E-06  2.0817843E-05       4.8E+00 n r
+     2      0  1.0E+00      8 (2.9E-07) 3.5E-04 -9.5530158E-12       2.2E+00 s
+     3      0  4.5E-07     11 (2.9E-07) 3.5E+01  4.8886093E-09       6.4E+04
+     3      3              16 (2.9E-07)(5.7E-08)-9.7201953E-12     1           r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   4   Objective value      0.0000000000E+00
+ No. of major iterations             3   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             16   No. of calls to funcon             16
+ No. of superbasics                  1   No. of basic nonlinears             2
+ No. of degenerate steps             3   Percentage                      75.00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 1.1E-07
+ Nonlinear constraint violn    3.8E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  2.1E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  2.3E-04  4.8E-06  3.1494650E-05       4.8E+00 n r
+     2      0  1.0E+00      3 (1.3E-07)(3.4E-09)-2.6345931E-12       2.3E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.257E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 6.7E-09
+ Nonlinear constraint violn    1.8E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                       2.00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  2.0E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  3.0E-04  6.6E-06  4.2801267E-05       4.9E+00 n r
+     2      0  1.0E+00      3 (9.8E-08)(9.2E-11) 3.0810108E-12       2.3E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.278E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            13 1.8E-10
+ Nonlinear constraint violn    1.3E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output              ************* seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  2.0E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  3.7E-04  8.6E-06  5.4968624E-05       5.0E+00 n r
+     2      0  1.0E+00      3 (2.8E-07)(6.7E-08)-1.5125843E-11       2.3E+00 s
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.311E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            12 1.3E-07
+ Nonlinear constraint violn    3.8E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output              ************* seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  1.9E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  4.5E-04  1.1E-05  6.8296170E-05       5.1E+00 n r
+     2      0  1.0E+00      3 (1.9E-07)(3.6E-09) 8.6821938E-12       2.4E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.358E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 7.1E-09
+ Nonlinear constraint violn    2.6E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  1.8E-02  2.4E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  5.3E-04  1.4E-05  8.3198437E-05       5.3E+00 n r
+     2      0  1.0E+00      3 (4.1E-07)(1.7E-08)-1.7386314E-11       2.4E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.424E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 3.5E-08
+ Nonlinear constraint violn    5.6E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  1.8E-02  2.3E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  6.1E-04  1.7E-05  1.0011143E-04       5.5E+00 n r
+     2      0  1.0E+00      3 (4.1E-07)(3.8E-10) 8.4988765E-12       2.5E+00 s
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.514E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            13 7.6E-10
+ Nonlinear constraint violn    5.6E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  1.7E-02  2.3E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  6.9E-04  2.1E-05  1.1928062E-04       5.8E+00 n r
+     2      0  1.0E+00      3 (6.2E-07)(4.0E-09) 6.0720873E-11       2.6E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.642E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 8.1E-09
+ Nonlinear constraint violn    8.5E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                      -2.00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  1.6E-02  2.3E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2  7.6E-04  2.6E-05  1.4128846E-04       6.2E+00 n r
+     2      0  1.0E+00      3 (8.9E-07)(1.0E-09) 5.1453110E-11       2.8E+00 sm
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           2.823E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              3   No. of calls to funcon              3
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            13 2.1E-09
+ Nonlinear constraint violn    1.2E-06
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                       2.00 seconds
+ Time for solution output                      -2.00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      5               1  1.6E-01  8.1E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (1.6E-19)(0.0E+00) 5.3180117E-23       1.6E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   5   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.587E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             2   Percentage                      40.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.2E-19
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      3               1  3.7E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (3.2E-19)(0.0E+00) 2.1272047E-22       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   3   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             2   Percentage                      66.67
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    4.3E-19
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  3.7E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (5.1E-18)(0.0E+00) 3.4053781E-19       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    6.9E-18
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (5.1E-18)(0.0E+00)-3.3996134E-19       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.501E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    6.9E-18
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  3.6E-02  2.5E-02  0.0000000E+00                 r
+     1      0  1.0E+00      2 (5.1E-18)(0.0E+00)-3.4039529E-19       1.5E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           1.502E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             1   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    6.9E-18
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      3               1  3.6E-02  4.9E-02  1.0255250E+03     1           r i
+     1      1  1.0E+00      2  1.1E-04  7.2E-04  3.0050000E+00               n r
+     2      0  1.0E+00      4 (5.5E-18)(0.0E+00) 5.9785492E-17               n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   4   Objective value      0.0000000000E+00
+ No. of major iterations             2   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              4   No. of calls to funcon              4
+ No. of degenerate steps             1   Percentage                      25.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    8.7E-18
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      3               1  1.2E-02  1.9E-02  7.2542250E+02     1           r i
+     1      1  7.1E-01      2  2.2E-03  6.4E-03  2.1411558E+02               n rl
+     2      0  9.4E-01      4  1.0E-04  6.4E-03  1.3308709E+01               n rl
+     3      0  1.0E+00      5 (1.9E-14)(0.0E+00) 3.9853557E-16               n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   4   Objective value      0.0000000000E+00
+ No. of major iterations             3   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              5   No. of calls to funcon              5
+ No. of degenerate steps             1   Percentage                      25.00
+ Max x                      20 6.4E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    6.5E-14
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     18               1  7.8E-02  2.6E-01  8.4180000E+03                 r i
+     1     13  5.7E-01      2  4.8E-02  1.1E-01  3.6608103E+03     1         n rli
+     2      0  1.0E+00      4  1.6E-04  2.5E-04  6.3233988E+00     1         n r i
+     2      3              12  1.6E-04  2.2E-04  6.3233988E+00     1         n r i
+     3      3  1.0E+00     14  1.5E-04  2.7E-04  6.1099991E+00               n r i
+     4      1  1.0E+00     16  2.4E-05  3.8E-01  7.6000000E-01               n r
+     5      0  1.0E+00     18 (1.7E-13)(0.0E+00) 0.0000000E+00               n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  38   Objective value      0.0000000000E+00
+ No. of major iterations             5   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             18   No. of calls to funcon             18
+ No. of degenerate steps            19   Percentage                      50.00
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.6E-13
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                       2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     12               1  1.6E-02  2.4E-02  4.9050000E+02     1           r i
+     1      0  1.0E+00      2  1.6E-04  2.5E-04  4.1450000E+00     1         n r i
+     1      1               2  1.6E-04  2.4E-04  4.1450000E+00     2         n r i
+     2      1  1.0E+00      4  1.4E-04  2.4E-04  3.7716441E+00     2         n r i
+     3      2  1.5E+02      9  7.4E-03  2.5E-04  1.3477549E-14     1         n rl
+     4      0  1.0E+00     10  2.7E-03  1.4E-01  8.6723833E-04     1 5.3E+00 s
+     5      0  1.0E+00     11  8.9E-04  3.3E-02  9.3415269E-05     1 2.3E+00
+     6      0  1.0E+00     12  2.6E-04  7.6E-03  1.0698041E-05     1 2.3E+00
+     7      0  1.0E+00     13  6.1E-05  1.3E-03  1.0136628E-06     1 2.3E+00
+     8      0  1.0E+00     14  9.6E-06  8.4E-05  4.6135663E-08     1 2.3E+00
+     9      0  1.0E+00     15 (4.6E-07)(4.1E-07) 2.0337965E-10     1 2.3E+00
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  16   Objective value      0.0000000000E+00
+ No. of major iterations             9   Linear objective     0.0000000000E+00
+ Penalty parameter           2.308E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             15   No. of calls to funcon             15
+ No. of superbasics                  1   No. of basic nonlinears            17
+ No. of degenerate steps             7   Percentage                      43.75
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 8.2E-07
+ Nonlinear constraint violn    6.7E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      3               1  2.6E-03  1.1E-03  0.0000000E+00     1           r
+     1      0  1.0E+00      2 (3.7E-09)(6.7E-07) 1.7683484E-07     1 3.2E+02 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   3   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           3.186E+02   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            16
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            20 1.3E-06
+ Nonlinear constraint violn    5.4E-09
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.4E-02  9.0E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  3.7E-05  2.5E-04  1.3089150E-04       9.6E+00 n r
+     2      0  1.0E+00     10 (7.2E-08) 2.3E-02  8.1491462E-09       4.0E+00 s
+     3      0  1.0E+00     11 (9.4E-08) 6.7E-01 -4.3771499E-10       4.0E+00 n
+     4      0  8.5E-07     16 (9.4E-08) 9.6E-02  4.9728712E-06       4.9E+08 n R
+     5      0  1.0E+00     23 (9.8E-08) 2.8E-01  5.2828884E-06       6.3E+08 n R
+     6      4  1.0E+00     32 (8.8E-08) 4.4E-01  3.9593351E-03     2 2.8E+09 s
+     7      2  1.0E+00     34 (8.8E-08) 3.7E+01  3.7986208E-03     2 1.2E+05 n
+     8      2  1.0E+00     35 (8.8E-08) 3.6E+01  1.8360704E-08     2 1.1E+03
+     9      2  4.6E-02     37 (8.8E-08) 1.7E+01  2.7643646E-08     2 1.2E+06
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      2  4.6E-02     45 (8.8E-08) 3.8E+01  5.6479083E-05     2 7.3E+09
+    11      2  1.0E+00     47 (8.8E-08) 1.0E-02  5.4780761E-07     2 4.0E+05 sM
+    12      1  1.0E+00     48 (8.8E-08) 7.1E-02  3.0106884E-11     2 4.3E+03
+    13      1  1.0E+00     50 (8.8E-08) 1.0E-05  5.8372395E-12     2 7.5E+02  m
+    14      1  1.0E+00     51 (8.8E-08) 7.8E-03  1.2810772E-12     2 2.0E+02
+    15      1  1.0E+00     52 (8.8E-08) 4.0E-03  8.3865434E-13     2 1.6E+02
+    16      1  1.0E+00     53 (8.8E-08) 8.2E-05  8.3062437E-13     2 1.6E+02  m
+    17      1  1.0E+00     54 (8.8E-08) 3.5E-04  8.3083156E-13     2 1.6E+02
+    18      1  1.0E+00     55 (8.8E-08) 1.8E-03  8.3105948E-13     2 1.6E+02
+    19      1  1.0E+00     56 (8.8E-08) 6.6E-03  8.3273683E-13     2 1.6E+02
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    20      1  1.0E+00     57 (8.8E-08) 1.1E-03  8.3397271E-13     2 1.6E+02
+    21      1  1.0E+00     58 (8.8E-08) 1.6E-01  8.3022040E-13     2 1.6E+02
+    22      1  9.5E-01     64 (8.8E-08) 2.1E-02  9.5821759E-13     2 1.6E+02  m
+    23      1  1.0E+00     66 (8.8E-08) 1.9E-02  8.4039632E-13     2 1.6E+02  M
+    24      1  1.0E+00     67 (8.8E-08) 1.3E-01  8.3755415E-13     2 1.6E+02
+    25      1  7.0E-01     69 (8.8E-08) 1.2E-01  1.0777426E-12     2 1.6E+02
+    26      1  1.0E+00     71 (8.8E-08) 1.9E-01  1.2358361E-12     2 1.6E+02  M
+    27      1  1.0E+00     72 (8.8E-08) 1.9E-01  8.4532674E-13     2 1.6E+02
+    28      1  1.0E+00     74 (8.8E-08) 1.7E-04  8.5972909E-13     2 1.6E+02 n
+    29      1  1.0E+00     75 (8.8E-08) 3.5E-04  8.3091500E-13     2 1.6E+02
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    30      1  1.0E+00     76 (8.8E-08) 7.8E-01  8.3017668E-13     2 1.6E+02
+    31      1  1.0E+00     78 (8.8E-08) 3.1E-03  2.2612681E-12     2 4.3E+02  m
+    32      1  1.0E+00     79 (8.8E-08) 1.8E-03  3.1119712E-12     2 4.3E+02
+    33      0  1.0E+00     80 (8.8E-08)(0.0E+00) 1.6725244E-12     2 2.6E+02 n
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  37   Objective value      0.0000000000E+00
+ No. of major iterations            33   Linear objective     0.0000000000E+00
+ Penalty parameter           2.633E+02   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             80   No. of calls to funcon             80
+ No. of superbasics                  2   No. of basic nonlinears            11
+ No. of degenerate steps            13   Percentage                      35.14
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    1.1E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.4E-02  8.4E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  6.2E-05  4.5E-04  2.2482006E-04       8.1E+00 n r
+     2      0  1.0E+00      3 (5.5E-07) 7.4E-05  1.5331116E-07       3.5E+00 s
+     3      0  1.0E+00      4 (7.3E-07) 1.1E+00 -7.9241335E-09       3.5E+00  m
+     4      0  2.4E-02     14 (7.1E-07) 3.6E-01  5.3944478E-08       1.3E+05 n
+     5      0  5.3E-03     23 (7.1E-07) 4.5E-01  6.8498317E-06       1.5E+07 n R
+     6      0  4.4E-02     31 (6.9E-07) 5.1E+00  6.8127417E-06       1.5E+07 s
+     7      1  8.0E-07     37 (6.9E-07) 9.0E+00  3.6136184E-03     1 7.6E+07
+     7      2              43 (6.9E-07) 1.1E-05  3.5814572E-03     1           r
+     8      1  1.0E+00     44 (7.3E-07) 5.9E-05  9.6034633E-12     1         s
+     8      2              50 (7.3E-07) 1.4E-05  9.6034633E-12     1         s r
+     9      1  3.0E-01     58 (6.6E-07) 9.8E-06  9.5521888E-12     1         s
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  1.0E+00     59 (6.5E-07) 1.8E-05  1.9604857E-12     1
+    11      1  3.6E-01     61 (6.5E-07) 5.1E-06  2.0645473E-12     1
+    12      1  1.0E+00     63 (6.5E-07) 1.1E-05  5.4957860E-13     1          m
+    13      1  1.8E-03     67 (6.5E-07) 1.2E-04  1.1452214E-12     1 1.5E+00  m
+ 
+ SNOPTA EXIT  40 -- terminated after numerical difficulties
+ SNOPTA INFO  41 -- current point cannot be improved
+
+ Problem name                 opt prob
+ No. of iterations                  11   Objective value      0.0000000000E+00
+ No. of major iterations            13   Linear objective     0.0000000000E+00
+ Penalty parameter           2.914E+01   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             73   No. of calls to funcon             73
+ No. of superbasics                  1   No. of basic nonlinears            12
+ No. of degenerate steps             3   Percentage                      27.27
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 2.4E-04
+ Nonlinear constraint violn    8.4E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.4E-02  7.2E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  8.2E-05  6.3E-04  2.7334744E-04       6.4E+00 n r
+     2      0  1.0E+00      3  1.8E-06  2.9E-04  8.9743044E-07       3.0E+00 s
+     3      0  1.0E+00      4 (2.2E-07)(8.3E-08)-1.4756746E-09       3.0E+00  m
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             3   Linear objective     0.0000000000E+00
+ Penalty parameter           2.977E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              4   No. of calls to funcon              4
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 1.7E-07
+ Nonlinear constraint violn    2.8E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.4E-02  5.5E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.0E-04  7.7E-04  2.4763592E-04       4.4E+00 n r
+     2      0  1.0E+00      3  2.3E-06  5.3E-05  2.4855326E-06       2.3E+00 n r
+     3      0  1.0E+00      4 (3.7E-07) 1.1E-05  2.6330596E-08       2.3E+00 s
+     4      0  1.0E+00      5 (1.3E-08) 1.1E-03 -3.1131683E-11       2.3E+00  m
+     5      0  1.0E-04     11 (1.3E-08) 1.5E-05  3.1840299E-10       2.4E+06 n
+
+ XXX Singular basis after    40 factorization attempts
+ 
+ SNOPTA EXIT  40 -- terminated after numerical difficulties
+ SNOPTA INFO  42 -- singular basis
+
+ Problem name                 opt prob
+ No. of iterations                  23   Objective value      0.0000000000E+00
+ No. of major iterations             6   Linear objective     0.0000000000E+00
+ Penalty parameter           7.044E+05   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             13   No. of calls to funcon             13
+ No. of superbasics                  1   No. of basic nonlinears             3
+ No. of degenerate steps             4   Percentage                      17.39
+ Max x                       1 1.0E+00   Max pi                     14 1.1E+11
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 1.7E+13
+ Nonlinear constraint violn    1.7E-08
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.3E-02  4.5E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.6E-04  4.8E-04  8.4138375E-05       2.4E+00 n r
+     2      0  1.0E+00      3  5.7E-06  4.0E-03  5.3902283E-06       2.4E+00 s
+     3      0  1.0E+00      4 (8.4E-07) 2.9E-04  4.7660652E-08       2.4E+00 n
+     4      0  1.0E+00      5 (9.5E-08)(4.3E-07) 6.8876940E-10       2.4E+00
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             4   Linear objective     0.0000000000E+00
+ Penalty parameter           2.385E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              5   No. of calls to funcon              5
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 8.7E-07
+ Nonlinear constraint violn    1.3E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                       4.00 seconds
+ Time for solution output                      -2.00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.3E-02  8.1E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2  5.1E-04  2.3E-06  1.9708096E-05       2.3E+00 n r
+     2      0  1.0E+00      3  1.0E-06  1.6E-04  5.4888801E-10       2.3E+00 s
+     3      0  9.4E-02      6 (9.1E-07) 2.3E-04  1.4586421E-08       1.6E+04 n
+     4      0  3.5E-02     13 (8.7E-07) 7.6E-06  1.4171533E-08       1.6E+04
+     5      0  1.0E+00     14 (4.6E-09) 7.4E-06  9.0658985E-09       1.6E+04
+     6      0  3.5E-03     22 (4.6E-09) 1.9E-05  9.1262300E-08       3.8E+09
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   3 -- requested accuracy could not be achieved
+
+ Problem name                 opt prob
+ No. of iterations                   2   Objective value      0.0000000000E+00
+ No. of major iterations             6   Linear objective     0.0000000000E+00
+ Penalty parameter           1.015E+10   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             27   No. of calls to funcon             27
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     14 1.7E+02
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            13 3.4E-03
+ Nonlinear constraint violn    6.1E-09
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     13               1  1.3E-02  1.8E-02  5.7101967E+02     6           r i
+     1      0  7.5E-01      5  5.6E-02  4.7E-03 -5.7420238E+02     6         n r i
+     2      1  7.4E-01     10  1.7E-02  1.3E-02 -3.3634176E+01     6 2.6E+05 n r
+     3      0  5.4E-03     13  1.7E-02  7.1E-02  1.7771997E+00     6 4.2E+05 sM
+     4      0  3.0E-02     15  1.6E-02  6.3E-02  3.4489291E+00     6 4.2E+05 n
+     5      0  3.8E-02     17  1.6E-02  1.1E+00  3.8478730E+00     6 4.3E+05 n R
+     6      0  1.0E+00     18  4.3E-03  5.0E-02  1.3247677E+01     6 5.0E+05 s
+     7      1  1.0E+00     19  9.2E-04  9.3E-03  2.1921139E+00     6 1.8E+05     i
+     8      0  1.0E+00     20  2.2E-04  7.7E-04  2.8688124E-01     6 6.2E+02     i
+     9      0  1.0E+00     21  5.7E-05  2.0E-02  3.9914178E-02     6 3.9E+01 n
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      0  1.0E+00     22  1.4E-05  2.5E-02  1.7002507E-03     6 1.0E+01
+    11      0  1.0E+00     23  3.6E-06  1.2E-02  2.2103127E-04     6 7.2E+00
+    12      0  1.0E+00     24  1.0E-06  5.8E-03  3.1244237E-05     6 7.2E+00
+    13      0  1.0E+00     25 (2.3E-07) 1.3E-02  3.8372650E-06     6 7.2E+00
+    14      0  1.0E+00     26 (3.2E-07) 4.6E-03  1.8825372E-06     6 7.2E+00
+    15      0  1.0E+00     27 (1.6E-08) 6.9E-04  1.2535196E-06     6 1.9E+08 n
+    16      1  1.0E+00     34 (9.7E-09) 8.6E-02 -8.4558919E-07     7 5.1E+09
+
+ XXX Singular basis after    40 factorization attempts
+ 
+ SNOPTA EXIT  40 -- terminated after numerical difficulties
+ SNOPTA INFO  42 -- singular basis
+
+ Problem name                 opt prob
+ No. of iterations                  16   Objective value      0.0000000000E+00
+ No. of major iterations            16   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             38   No. of calls to funcon             38
+ No. of superbasics                  7   No. of basic nonlinears             1
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 1.7E-01
+ Nonlinear constraint violn    1.2E-08
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                      -4.00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     20               1  9.2E-06 (6.4E-09) 2.2612909E+05     6           r i
+ 
+ SNOPTA EXIT  10 -- the problem appears to be infeasible
+ SNOPTA INFO  13 -- nonlinear infeasibilities minimized
+
+ Problem name                 opt prob
+ No. of iterations                  20   Objective value      0.0000000000E+00
+ No. of infeasibilities              1   Sum of infeas        1.1306454261E-05
+ Elastic weight                2.0E+10   Scaled Merit         1.1306454261E-05
+ No. of major iterations             0   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              1   No. of calls to funcon              1
+ No. of superbasics                  6   No. of basic nonlinears            13
+ No. of degenerate steps             7   Percentage                      35.00
+ Max x                       1 1.0E+00   Max pi                      1 2.0E+10
+ Max Primal infeas          28 1.1E-05   Max Dual infeas            12 1.3E+02
+ Nonlinear constraint violn    1.1E-05
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     20               1  9.2E-06 (6.4E-09) 2.2612909E+05     6           r i
+ 
+ SNOPTA EXIT  10 -- the problem appears to be infeasible
+ SNOPTA INFO  13 -- nonlinear infeasibilities minimized
+
+ Problem name                 opt prob
+ No. of iterations                  20   Objective value      0.0000000000E+00
+ No. of infeasibilities              1   Sum of infeas        1.1306454261E-05
+ Elastic weight                2.0E+10   Scaled Merit         1.1306454261E-05
+ No. of major iterations             0   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              1   No. of calls to funcon              1
+ No. of superbasics                  6   No. of basic nonlinears            13
+ No. of degenerate steps             7   Percentage                      35.00
+ Max x                       1 1.0E+00   Max pi                      1 2.0E+10
+ Max Primal infeas          28 1.1E-05   Max Dual infeas            12 1.3E+02
+ Nonlinear constraint violn    1.1E-05
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output              ************* seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     20               1  9.2E-06 (6.4E-09) 2.2612909E+05     6           r i
+ 
+ SNOPTA EXIT  10 -- the problem appears to be infeasible
+ SNOPTA INFO  13 -- nonlinear infeasibilities minimized
+
+ Problem name                 opt prob
+ No. of iterations                  20   Objective value      0.0000000000E+00
+ No. of infeasibilities              1   Sum of infeas        1.1306454261E-05
+ Elastic weight                2.0E+10   Scaled Merit         1.1306454261E-05
+ No. of major iterations             0   Linear objective     0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              1   No. of calls to funcon              1
+ No. of superbasics                  6   No. of basic nonlinears            13
+ No. of degenerate steps             7   Percentage                      35.00
+ Max x                       1 1.0E+00   Max pi                      1 2.0E+10
+ Max Primal infeas          28 1.1E-05   Max Dual infeas            12 1.3E+02
+ Nonlinear constraint violn    1.1E-05
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                       2.00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      6               1  1.6E-01  2.5E-04  0.0000000E+00     3           r
+     1      4  1.0E+00      2  6.4E-02  5.4E-04  1.9475852E-16       3.9E+01 n r
+     2      1  1.0E+00      3  5.8E-03  1.3E-03  4.5138582E-03       9.6E+00 s
+     3      1  1.0E+00      4  8.1E-05  1.9E-05  1.7374722E-06       9.6E+00
+     4      0  1.0E+00      5 (1.7E-08)(1.0E-10) 1.5185146E-13       9.6E+00  m
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  12   Objective value      0.0000000000E+00
+ No. of major iterations             4   Linear objective     0.0000000000E+00
+ Penalty parameter           9.572E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              5   No. of calls to funcon              5
+ No. of degenerate steps             6   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas          16 7.5E-14   Max Dual infeas            19 2.0E-10
+ Nonlinear constraint violn    2.8E-08
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      5               1  1.5E-02  1.2E-02  0.0000000E+00     1           r
+     1      1  1.0E+00      2 (1.4E-07)(6.9E-11) 3.6799178E-11     1 3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   6   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           2.999E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            18
+ No. of degenerate steps             4   Percentage                      66.67
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            17 1.4E-10
+ Nonlinear constraint violn    2.4E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      4               1  1.5E-02  1.6E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2 (2.8E-10)(1.4E-11) 1.0194946E-11       3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   4   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           3.024E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             2   Percentage                      50.00
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            17 2.8E-11
+ Nonlinear constraint violn    4.6E-10
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                      -2.00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -4.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      5               1  1.5E-02  1.2E-02  0.0000000E+00     1           r
+     1      1  1.0E+00      2 (4.2E-10)(2.2E-12) 1.0878975E-12     1 3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   6   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           2.998E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            18
+ No. of degenerate steps             3   Percentage                      50.00
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            17 4.4E-12
+ Nonlinear constraint violn    6.7E-10
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                 -2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      5               1  1.5E-02  1.2E-02  0.0000000E+00     1           r
+     1      1  1.0E+00      2 (1.5E-07)(5.2E-13) 2.4635839E-13     1 3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   6   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           2.997E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            18
+ No. of degenerate steps             5   Percentage                      83.33
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            17 1.0E-12
+ Nonlinear constraint violn    2.4E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      7               1  8.0E-02  2.5E-04  0.0000000E+00     3           r
+     1      4  1.0E+00      2  3.3E-02  6.0E-04  8.8199987E-10       1.5E+02 n r
+     2      1  1.0E+00      3  4.9E-03  7.7E-04  6.3028449E-03       2.6E+01 s
+     3      1  1.0E+00      4  2.6E-04  3.9E-04  3.2010685E-05       1.0E+01
+     4      0  1.0E+00      5 (9.0E-07)(5.1E-09) 7.7185288E-10       1.0E+01
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  13   Objective value      0.0000000000E+00
+ No. of major iterations             4   Linear objective     0.0000000000E+00
+ Penalty parameter           1.012E+01   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              5   No. of calls to funcon              5
+ No. of degenerate steps             7   Percentage                      53.85
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            19 1.0E-08
+ Nonlinear constraint violn    1.4E-06
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem                        .00 seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      7               1  1.5E-02  1.2E-02  0.0000000E+00     1           r
+     1      1  1.0E+00      2 (2.0E-07)(1.9E-08) 8.0473593E-09     1 3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   8   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           2.997E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            18
+ No. of degenerate steps             5   Percentage                      62.50
+ Max x                       1 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas          18 1.5E-17   Max Dual infeas            17 3.8E-08
+ Nonlinear constraint violn    3.1E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      6               1  1.5E-02  1.6E-03  0.0000000E+00                 r
+     1      0  1.0E+00      2 (5.0E-08)(1.2E-08) 5.1929330E-09       3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   6   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           3.023E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of degenerate steps             4   Percentage                      66.67
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas          16 6.7E-20   Max Dual infeas            17 2.3E-08
+ Nonlinear constraint violn    7.8E-08
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      8               1  1.6E-02  1.2E-02  0.0000000E+00     1           r
+     1      1  1.0E+00      2 (3.4E-09)(8.6E-09) 3.8137270E-10     1 3.0E+00 n r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   9   Objective value      0.0000000000E+00
+ No. of major iterations             1   Linear objective     0.0000000000E+00
+ Penalty parameter           2.997E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              2   No. of calls to funcon              2
+ No. of superbasics                  1   No. of basic nonlinears            18
+ No. of degenerate steps             4   Percentage                      44.44
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            17 1.7E-08
+ Nonlinear constraint violn    5.2E-09
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions         ************* seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      25     Linear constraints       1
+ Nonlinear variables        20     Linear variables         0
+ Jacobian  variables        20     Objective variables     20
+ Total constraints          26     Total variables         20
+ 
+
+ 
+ The user has defined     520   out of     520   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0     11               1  1.6E-02  2.4E-02  4.9049838E+02     1           r i
+     1      1  1.0E+00      2  1.8E-04  2.4E-04  4.5246702E+00     1         n r i
+     2      1  1.0E+00      4  1.5E-04  2.4E-04  3.8656309E+00     1         n r i
+     3      2  8.2E+01      8  7.3E-03  2.5E-04  1.2543302E-14               n rl
+     4      0  1.0E+00      9  2.7E-03  1.4E-01  8.4516971E-04       5.5E+00 s
+     5      0  1.0E+00     10  8.8E-04  3.3E-02  9.0953420E-05       2.3E+00
+     6      0  1.0E+00     11  2.5E-04  7.4E-03  1.0400407E-05       2.3E+00
+     7      0  1.0E+00     12  6.0E-05  1.3E-03  9.7892501E-07       2.3E+00
+     8      0  1.0E+00     13  9.3E-06  8.0E-05  4.3497479E-08       2.3E+00
+     9      0  1.0E+00     14 (4.2E-07)(3.6E-07) 1.7899695E-10       2.3E+00
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  15   Objective value      0.0000000000E+00
+ No. of major iterations             9   Linear objective     0.0000000000E+00
+ Penalty parameter           2.337E+00   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             14   No. of calls to funcon             14
+ No. of degenerate steps             5   Percentage                      33.33
+ Max x                      20 1.0E+00   Max pi                     26 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 7.2E-07
+ Nonlinear constraint violn    6.2E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  9.9E-03  8.7E-05  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.6E-03  5.2E-05  2.4084786E-04       1.8E+01 n r
+     2      0  1.0E+00      3  6.5E-06  4.0E-03  9.6635201E-05       7.9E+00 s
+     3      0  1.0E+00     12 (4.1E-07) 9.4E-03  1.8875018E-05       7.9E+00
+     4      0  1.0E+00     13 (2.9E-07) 1.2E-03  1.8483628E-09       7.9E+00
+     4      1              16 (2.9E-07) 4.0E-06  1.8478928E-09     1           r
+     5      1  1.0E+00     17 (2.6E-07) 7.0E-06  6.0341897E-13     1         s
+     6      1  4.1E-01     19 (2.7E-07) 5.5E-05  7.3706665E-13     1
+     6      2              24 (2.7E-07) 6.2E-06  7.3706665E-13     1           r
+     7      1  6.7E-02     26 (2.7E-07) 1.9E-04  1.3634591E-12     1 9.6E+00 s
+ 
+ SNOPTA EXIT  40 -- terminated after numerical difficulties
+ SNOPTA INFO  41 -- current point cannot be improved
+
+ Problem name                 opt prob
+ No. of iterations                   7   Objective value      0.0000000000E+00
+ No. of major iterations             7   Linear objective     0.0000000000E+00
+ Penalty parameter           4.809E+03   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             33   No. of calls to funcon             33
+ No. of superbasics                  1   No. of basic nonlinears            12
+ No. of degenerate steps             4   Percentage                      57.14
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            13 3.8E-04
+ Nonlinear constraint violn    3.4E-07
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  7.1E-03  2.9E-04  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.5E-03  7.2E-05  1.9684493E-04       1.4E+01 n r
+     2      0  1.0E+00      3  1.4E-04  1.4E-04  1.4272613E-05       5.1E+00 s
+     3      0  1.0E+00      4  3.4E-05  2.0E-03  1.3443997E-05       4.7E+03
+     4     13  1.0E+00      5  2.8E-06 (4.8E-07) 5.4429930E-04     6 3.6E+04   r
+     5      1  1.0E+00      7 (6.0E-07)(1.3E-06) 7.4811352E-07     7 4.2E+02 sM
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  16   Objective value      0.0000000000E+00
+ No. of major iterations             5   Linear objective     0.0000000000E+00
+ Penalty parameter           4.181E+02   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj              7   No. of calls to funcon              7
+ No. of superbasics                  7   No. of basic nonlinears            13
+ No. of degenerate steps             1   Percentage                       6.25
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 2.6E-06
+ Nonlinear constraint violn    7.5E-07
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output              ************* seconds
+ Time for constraint functions                   .00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  5.3E-03  3.5E-04  0.0000000E+00                 r
+     1      0  1.0E+00      2  1.3E-03  1.7E-05  2.0898132E-04       1.9E+01 n r
+     2      1  1.0E+00      3  2.9E-04  9.5E-03  5.5861001E-02     1 4.9E+00 sm  i
+     3      1  1.0E+00      4  9.7E-05  5.1E-02  2.6884420E-02       4.9E+00
+     4      0  1.0E+00      6  4.7E-05  3.4E-03  1.3716659E-01       8.2E+07 n
+     5      1  6.0E-01      8  1.0E-06  2.5E-04  9.3003361E-04     1 1.5E+07 n R
+     6      1  1.0E+00      9 (1.5E-07) 5.7E-04  1.5190549E-03     1 7.7E+08 s
+     7      1  1.0E+00     11 (6.1E-08)(1.6E-06) 1.2569242E-10     1 1.2E+05 n
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                   7   Objective value      0.0000000000E+00
+ No. of major iterations             7   Linear objective     0.0000000000E+00
+ Penalty parameter           1.191E+05   Nonlinear objective  0.0000000000E+00
+ No. of calls to funobj             11   No. of calls to funcon             11
+ No. of superbasics                  1   No. of basic nonlinears            12
+ No. of degenerate steps             2   Percentage                      28.57
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 3.1E-06
+ Nonlinear constraint violn    7.5E-08
+ 
+ 
+
+ Solution printed on file  18
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      2               1  1.0E-03  2.4E-04  0.0000000E+00                 r
+     1      0  1.0E+00      2  2.8E-04  4.1E-05  2.4027126E-05       9.1E+01 n r
+     2      0  1.0E+00      3  1.1E-04  6.9E-05 -2.1173359E-07       1.1E+01 s
+     3      0  1.0E+00      4  2.9E-05  7.7E-04  2.7607534E-07       1.1E+02  m
+     4     14  1.0E+00      5  7.6E-06  3.0E-06  1.1824615E-03     7 3.1E+06   r
+     5      1  1.0E+00      7  2.5E-06  4.0E-04  1.3905716E-03     7 3.9E+03 sM
+     6      1  1.0E+00      8 (7.1E-07) 1.2E-04  1.8863514E-07     7 2.0E+02
+     7      1  1.0E+00      9 (1.5E-07) 3.1E-05  2.5147145E-08     7 4.8E+01
+     8      1  1.0E+00     10 (9.4E-08) 1.6E-05  3.1474091E-09     7 3.5E+01
+     9      1  1.0E+00     11 (7.1E-08) 2.2E-05  1.9208681E-09     7 3.5E+01
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+    10      1  1.0E+00     13 (5.7E-08)(6.8E-07) 1.8634831E-09     7 4.7E+05 n
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   1 -- optimality conditions satisfied
+
+ Problem name                 opt prob
+ No. of iterations                  22   Objective value      5.9883284965E-40
+ No. of major iterations            10   Linear objective     0.0000000000E+00
+ Penalty parameter           4.657E+05   Nonlinear objective  5.9883284965E-40
+ No. of calls to funobj             13   No. of calls to funcon             13
+ No. of superbasics                  7   No. of basic nonlinears            13
+ No. of degenerate steps             0   Percentage                        .00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas            11 1.4E-06
+ Nonlinear constraint violn    7.0E-08
+ 
+ 
+
+ Solution printed on file  18
+ 
+ Time for MPS input                              .00 seconds
+ Time for solving problem              ************* seconds
+ Time for solution output                        .00 seconds
+ Time for constraint functions                  2.00 seconds
+ Time for objective function                     .00 seconds
+
+ ==============================
+ S N O P T  7.2-12   (Feb 2013)
+ ==============================
+ 
+ SNMEMA EXIT 100 -- finished successfully
+ SNMEMA INFO 104 -- memory requirements estimated
+ 
+ 
+
+ Nonlinear constraints      14     Linear constraints       1
+ Nonlinear variables        19     Linear variables         0
+ Jacobian  variables        19     Objective variables     19
+ Total constraints          15     Total variables         19
+ 
+
+ 
+ The user has defined     285   out of     285   first  derivatives
+ 
+
+ Major Minors     Step   nCon Feasible  Optimal  MeritFunction    nS Penalty
+     0      1               1  8.3E-06 (5.1E-10) 5.9883285E-40     1           r
+ 
+ SNOPTA EXIT   0 -- finished successfully
+ SNOPTA INFO   3 -- requested accuracy could not be achieved
+
+ Problem name                 opt prob
+ No. of iterations                   1   Objective value      5.9883284965E-40
+ No. of major iterations             0   Linear objective     0.0000000000E+00
+ Penalty parameter           1.795E-04   Nonlinear objective  5.9883284965E-40
+ No. of calls to funobj             25   No. of calls to funcon             25
+ No. of superbasics                  1   No. of basic nonlinears            11
+ No. of degenerate steps             1   Percentage                     100.00
+ Max x                       1 1.0E+00   Max pi                     15 1.0E+00
+ Max Primal infeas           0 0.0E+00   Max Dual infeas             7 1.0E-09
+ Nonlinear constraint violn    1.0E-05
+ 
+ 
+
+ Solution printed on file  18
