@@ -15,8 +15,8 @@ function L(x,λ,f,h,c)
 end
 
 function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
-    num_fosteps = 1
-    num_sosteps = 9
+    num_fosteps = 2
+    num_sosteps = 8
 
     num_h0 = length(λ0)
     num_g0 = length(μ0)

@@ -9,6 +9,7 @@ export HalfSpace,
        auglag_solve,
        ip_solve,
        simulate,
+       simulate_snopt,
        get_sim_data,
        separation,
        solve_implicit_contact_τ,
@@ -27,12 +28,14 @@ using ReverseDiff
 using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using Compat
+using Snopt
 
 include("auglag.jl")
 include("ip.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
+include("simulation_snopt.jl")
 include("svd.jl")
 
 end # module
