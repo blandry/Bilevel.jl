@@ -245,8 +245,8 @@ function simulate(state0::MechanismState{T, M},
     kslack = 1e12
     eval_f = x -> begin
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
-        .5*slack'*slack
-        x'*x + kslack*.5*slack'*slack# + sum(abs.(slack))
+        # .5*slack'*slack
+        .5*x'*x + kslack*.5*slack'*slack# + sum(abs.(slack))
     end
     eval_grad_f = (x, grad_f) -> begin
         grad_f[:] = x[:]
