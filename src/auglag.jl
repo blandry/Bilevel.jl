@@ -42,7 +42,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
-        δx = (HL + (sum(HL.^2)+1e-12)*eye(num_x)) \ (-gL)
+        δx = (HL + (sum(HL.^2)+1e-12)*I) \ (-gL)
         δλ = -c * hx
 
         x += δx
@@ -61,12 +61,12 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         HL = Hf + c*∇h'*∇h
 
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
-        SVD = svd(A)
-        tol = rtol*maximum(SVD[2]) # TODO not smooth
+        U,S,V = svd(A)
+        tol = rtol*maximum(S) # TODO not smooth
         ksig = 100.
-        Sinv = 1. ./ (1. + exp.(-ksig*(SVD[2] .- tol)/tol)) .* (1. ./ SVD[2])
-        Sinv[isinf.(Sinv)] = 0.
-        Apinv = SVD[3] * (diagm(Sinv) * SVD[1]')
+        Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
+        Sinv[isinf.(Sinv)] .= 0.
+        Apinv = V * (Diagonal(Sinv) * U')
 
         δxλ = Apinv * (-vcat(gL,hx))
 
