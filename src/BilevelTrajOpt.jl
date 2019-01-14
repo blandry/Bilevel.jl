@@ -26,6 +26,7 @@ using CoordinateTransformations: transform_deriv
 using MechanismGeometries
 using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using ForwardDiff
+using DiffResults
 using Ipopt
 using Snopt
 using Compat

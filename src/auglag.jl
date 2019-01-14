@@ -22,8 +22,16 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
     num_g0 = length(μ0)
     num_x0 = length(x0)
 
-    x = vcat(copy(x0),zeros(num_g0))
-    λ = vcat(copy(λ0),copy(μ0))
+    # note that since this is recursive, the type of x changes after 1 iteration
+    # that needs to tbe taken into account
+    # TODO need to find the common type across f,h and g
+    h0x = h0(x0) # todo useless call
+    x = Array{eltype(h0x),1}(undef, num_x0+num_g0)
+    x[1:num_x0] = x0[:]
+    x[num_x0+1:num_x0+num_g0] .= 0.
+    λ = Array{eltype(h0x),1}(undef, num_h0+num_g0)
+    λ[1:num_h0] = λ0[:]
+    λ[num_h0+1:num_h0+num_g0] = μ0[:]
     c = c0
 
     num_x = length(x)
@@ -31,14 +39,22 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
 
     h = x̃ -> vcat(h0(x̃[1:num_x0]),
                   g0(x̃[1:num_x0]) + softmax.(x̃[num_x0+1:num_x0+num_g0],0.,k=1.))
-
     f = x̃ -> f0(x̃[1:num_x0])
+    
+    hres = DiffResults.JacobianResult(h(x), x)
+    fres = DiffResults.HessianResult(x)
 
-    for i = 1:num_fosteps
-        hx = h(x)
-        ∇h = ForwardDiff.jacobian(h,x)
-        ∇f = ForwardDiff.gradient(f,x)
-        Hf = ForwardDiff.hessian(f,x)
+    hcfg = ForwardDiff.JacobianConfig(h, x)
+    fcfg = ForwardDiff.HessianConfig(f, fres, x)
+    
+    for i = 1:num_fosteps    
+        ForwardDiff.jacobian!(hres, h, x, hcfg)
+        hx = DiffResults.value(hres)
+        ∇h = DiffResults.jacobian(hres)
+        ForwardDiff.hessian!(fres, f, x, fcfg)
+        ∇f = DiffResults.gradient(fres)
+        Hf = DiffResults.hessian(fres)
+        
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
@@ -53,13 +69,16 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
 
     rtol = eps(1.)*(num_h+num_x)
     for i = 1:num_sosteps
-        hx = h(x)
-        ∇h = ForwardDiff.jacobian(h,x)
-        ∇f = ForwardDiff.gradient(f,x)
-        Hf = ForwardDiff.hessian(f,x)
+        ForwardDiff.jacobian!(hres, h, x, hcfg)
+        hx = DiffResults.value(hres)
+        ∇h = DiffResults.jacobian(hres)
+        ForwardDiff.hessian!(fres, f, x, fcfg)
+        ∇f = DiffResults.gradient(fres)
+        Hf = DiffResults.hessian(fres)
+        
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
-
+    
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
         U,S,V = svd(A)
         tol = rtol*maximum(S) # TODO not smooth
@@ -67,15 +86,15 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
         Sinv[isinf.(Sinv)] .= 0.
         Apinv = V * (Diagonal(Sinv) * U')
-
+    
         δxλ = Apinv * (-vcat(gL,hx))
-
+    
         δx = δxλ[1:num_x]
         δλ = δxλ[num_x+1:num_x+num_h]
-
+    
         x += δx
         λ += δλ
-
+    
         c *= 1.
     end
 
