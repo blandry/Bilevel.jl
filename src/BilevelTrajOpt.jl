@@ -16,8 +16,9 @@ export HalfSpace,
        parse_contacts,
        svd
 
-using Base.Test
+using Test
 using StaticArrays
+using LinearAlgebra
 using RigidBodyDynamics
 using RigidBodyDynamics: HalfSpace3D, separation
 using Rotations

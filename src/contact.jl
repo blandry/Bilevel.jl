@@ -139,7 +139,7 @@ end
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
 
     x_min = zeros(length(x0))
-    x_max = 100.*ones(length(x0))
+    x_max = 100. .* ones(length(x0))
 
     f = x̃ -> begin
         return x̃'*x̃
