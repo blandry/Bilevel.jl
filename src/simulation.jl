@@ -38,12 +38,12 @@ function get_sim_data(state0::MechanismState,
     if implicit_contact
       num_slack = num_v
       num_x = num_q + num_v + num_slack
-      num_h = num_q + num_v
+      num_h = num_q + num_v + 1
       num_g = num_contacts
     else
       num_slack = 1
       num_x = num_q + num_v + num_slack + num_contacts*(2+β_dim)
-      num_h = num_q + num_v
+      num_h = num_q + num_v + 1
       num_g = num_contacts + num_contacts*(2+β_dim) + num_contacts*(1+β_dim)
     end
 

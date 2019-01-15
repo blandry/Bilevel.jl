@@ -47,6 +47,8 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
     hcfg = ForwardDiff.JacobianConfig(h, x)
     fcfg = ForwardDiff.HessianConfig(f, fres, x)
     
+    rtol = eps(1.)*(num_h+num_x)
+    
     for i = 1:num_fosteps    
         ForwardDiff.jacobian!(hres, h, x, hcfg)
         hx = DiffResults.value(hres)
@@ -58,7 +60,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
-        δx = (HL + (sum(HL.^2)+1e-12)*I) \ (-gL)
+        δx = (HL + (sqrt(sum(HL.^2))+rtol)*I) \ (-gL)
         δλ = -c * hx
 
         x += δx
@@ -67,7 +69,6 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         c *= 10.
     end
 
-    rtol = eps(1.)*(num_h+num_x)
     for i = 1:num_sosteps
         ForwardDiff.jacobian!(hres, h, x, hcfg)
         hx = DiffResults.value(hres)
