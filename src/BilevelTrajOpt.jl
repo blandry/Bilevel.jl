@@ -10,6 +10,7 @@ export HalfSpace,
        svd,
        auglag_solve,
        ip_solve,
+       snopt,
        solve_implicit_contact_τ,
        get_sim_data,
        simulate_ipopt,
@@ -32,6 +33,7 @@ using Compat
 include("svd.jl")
 include("auglag.jl")
 include("ip.jl")
+include("snopt.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
