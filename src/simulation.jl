@@ -204,9 +204,9 @@ function get_sim_data(state0::MechanismState{T, M},
       push!(paths, path(mechanism, body, world))
       push!(Ds, contact_basis(obstacle))
     end
-    β_selector = find(repmat(vcat(ones(β_dim),[0,0]),num_contacts))
-    λ_selector = find(repmat(vcat(zeros(β_dim),[1,0]),num_contacts))
-    c_n_selector = find(repmat(vcat(zeros(β_dim),[0,1]),num_contacts))
+    β_selector = findall(x->x!=0,repeat(vcat(ones(β_dim),[0,0]),num_contacts))
+    λ_selector = findall(x->x!=0,repeat(vcat(zeros(β_dim),[1,0]),num_contacts))
+    c_n_selector = findall(x->x!=0,repeat(vcat(zeros(β_dim),[0,1]),num_contacts))
 
     sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,num_x,num_slack,num_h,num_g,
                        world,world_frame,total_weight,

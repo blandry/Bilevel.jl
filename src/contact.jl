@@ -67,10 +67,10 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
 
     # dist * c_n = 0
     α = 0.
-    comp_con = (ϕs - α) .* x[c_n_selector]
+    comp_con = (ϕs .- α) .* x[c_n_selector]
 
     # (λe + Dtv)' * β = 0
-    λ_all = repmat(x[λ_selector]',β_dim,1)
+    λ_all = repeat(x[λ_selector]',β_dim,1)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
@@ -78,7 +78,7 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector])
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector])
 
     comp_con
 end
@@ -93,10 +93,10 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
 
     # dist * c_n = 0
     α = 0.
-    comp_con = (ϕs - α) .* x[c_n_selector] .- dot(slack,slack)
+    comp_con = (ϕs .- α) .* x[c_n_selector] .- dot(slack,slack)
 
     # (λe + Dtv)' * β = 0
-    λ_all = repmat(x[λ_selector]',β_dim,1)
+    λ_all = repeat(x[λ_selector]',β_dim,1)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
@@ -104,7 +104,7 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,1)[:]) .* x[λ_selector] .- dot(slack,slack))
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector] .- dot(slack,slack))
 
     comp_con
 end
@@ -126,12 +126,12 @@ function pos_contact_constraints(x,Dtv,sim_data)
     μs = sim_data.μs
 
     # λe + D'*v >= 0
-    λ_all = repmat(x[λ_selector]',β_dim,1)
+    λ_all = repeat(x[λ_selector]',β_dim,1)
     pos_con = reshape(-(λ_all .+ Dtv),β_dim*num_contacts,1)
 
     # μ*c_n - sum(β) >= 0
     β_all = reshape(x[β_selector],β_dim,num_contacts)
-    pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - sum(β_all,1)[:]))
+    pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - sum(β_all,dims=1)[:]))
 
     pos_con
 end
@@ -169,7 +169,6 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
 end
 
 function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false) where T
-
     x0 = MechanismState(sim_data.mechanism)
     set_configuration!(x0,q0)
     set_velocity!(x0,v0)
@@ -188,10 +187,10 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     contact_λ0 = zeros(num_dyn+num_comp)
     contact_μ0 = zeros(num_pos)
 
-    Dtv = Matrix{T}(sim_data.β_dim,sim_data.num_contacts)
-    rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(sim_data.num_contacts) # force transform, point transform
-    geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(sim_data.num_contacts)
-    ϕs = Vector{T}(sim_data.num_contacts)
+    Dtv = Matrix{T}(undef,sim_data.β_dim,sim_data.num_contacts)
+    rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
+    geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
+    ϕs = Vector{T}(undef, sim_data.num_contacts)
     for i = 1:sim_data.num_contacts
         v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
         Dtv[:,i] = map(sim_data.Ds[i]) do d
