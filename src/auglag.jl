@@ -15,8 +15,8 @@ function L(x,λ,f,h,c)
 end
 
 function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
-    num_fosteps = 2
-    num_sosteps = 8
+    num_fosteps = 1
+    num_sosteps = 5
 
     num_h0 = length(λ0)
     num_g0 = length(μ0)
@@ -40,23 +40,23 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
     h = x̃ -> vcat(h0(x̃[1:num_x0]),
                   g0(x̃[1:num_x0]) + softmax.(x̃[num_x0+1:num_x0+num_g0],0.,k=1.))
     f = x̃ -> f0(x̃[1:num_x0])
-    
+
     hres = DiffResults.JacobianResult(h(x), x)
     fres = DiffResults.HessianResult(x)
 
     hcfg = ForwardDiff.JacobianConfig(h, x)
     fcfg = ForwardDiff.HessianConfig(f, fres, x)
-    
+
     rtol = eps(1.)*(num_h+num_x)
-    
-    for i = 1:num_fosteps    
+
+    for i = 1:num_fosteps
         ForwardDiff.jacobian!(hres, h, x, hcfg)
         hx = DiffResults.value(hres)
         ∇h = DiffResults.jacobian(hres)
         ForwardDiff.hessian!(fres, f, x, fcfg)
         ∇f = DiffResults.gradient(fres)
         Hf = DiffResults.hessian(fres)
-        
+
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
@@ -76,10 +76,10 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         ForwardDiff.hessian!(fres, f, x, fcfg)
         ∇f = DiffResults.gradient(fres)
         Hf = DiffResults.hessian(fres)
-        
+
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
-    
+
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_h,num_h)))
         U,S,V = svd(A)
         tol = rtol*maximum(S) # TODO not smooth
@@ -87,15 +87,15 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
         Sinv[isinf.(Sinv)] .= 0.
         Apinv = V * (Diagonal(Sinv) * U')
-    
+
         δxλ = Apinv * (-vcat(gL,hx))
-    
+
         δx = δxλ[1:num_x]
         δλ = δxλ[num_x+1:num_x+num_h]
-    
+
         x += δx
         λ += δλ
-    
+
         c *= 1.
     end
 
