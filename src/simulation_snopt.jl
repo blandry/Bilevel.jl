@@ -60,11 +60,8 @@ function update_constraints_snopt(sim_data,implicit_contact,q0,v0,u0;contact_x0=
             contact_bias = τ_total(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],rel_transforms,geo_jacobians,sim_data)        
         end
 
+        g = zeros(T,sim_data.num_h+sim_data.num_g)
         if implicit_contact
-            num_eq = sim_data.num_q + sim_data.num_v
-            num_ineq = sim_data.num_contacts
-
-            g = zeros(T,num_eq+num_ineq)
 
             g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
             # g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- (contact_bias .+ slack)) # == 0
@@ -72,11 +69,6 @@ function update_constraints_snopt(sim_data,implicit_contact,q0,v0,u0;contact_x0=
 
             g[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_contacts] = -ϕs # <= 0
         else
-            num_eq = sim_data.num_q + sim_data.num_v
-            num_ineq = sim_data.num_contacts*(2+sim_data.β_dim)+sim_data.num_contacts+sim_data.num_contacts*(1+sim_data.β_dim)
-
-            g = zeros(T,num_eq+num_ineq)
-
             g[1:sim_data.num_q] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
             g[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = HΔv .- sim_data.Δt .* (bias .- contact_bias) # == 0
 
@@ -87,25 +79,26 @@ function update_constraints_snopt(sim_data,implicit_contact,q0,v0,u0;contact_x0=
                 pos_contact_constraints(x[sim_data.num_q+sim_data.num_v+sim_data.num_slack+1:end],Dtv,sim_data) # <= 0
         end
 
-        g, num_eq, num_ineq
+        g
     end
 
-    function evaldgdx(x::AbstractArray{T}) where T
-        # TODO inplace
-        @time dgdx = ForwardDiff.jacobian(x̃ -> evalg(x̃)[1], x)
+    gres = DiffResults.JacobianResult(zeros(sim_data.num_h+sim_data.num_g), zeros(sim_data.num_x))
+    gcfg = ForwardDiff.JacobianConfig(evalg, zeros(sim_data.num_x))
 
-        dgdx
-    end
-
-    function update_fn(x::AbstractArray{T}) where T
+    function update_fn(x)
         J = evalf(x)
-        g, num_eq, num_ineq = evalg(x)
-        ceq = g[1:num_eq]
-        c = g[num_eq+1:num_eq+num_ineq]
         gJ = evaldfdx(x)
-        dgdx = evaldgdx(x)
-        gceq = dgdx[1:num_eq,:]
-        gc = dgdx[num_eq+1:num_eq+num_ineq,:]
+    
+        @time ForwardDiff.jacobian!(gres, evalg, x, gcfg)
+        
+        g = DiffResults.value(gres)        
+        ceq = g[1:sim_data.num_h]
+        c = g[sim_data.num_h+1:sim_data.num_h+sim_data.num_g]
+
+        dgdx = DiffResults.jacobian(gres)
+        gceq = dgdx[1:sim_data.num_h,:]
+        gc = dgdx[sim_data.num_h+1:sim_data.num_h+sim_data.num_g,:]
+        
         fail = false
 
         J, c, ceq, gJ, gc, gceq, fail
