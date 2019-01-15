@@ -1,5 +1,7 @@
 module BilevelTrajOpt
 
+__precompile__(false)
+
 export HalfSpace,
        Obstacle,
        Environment,
