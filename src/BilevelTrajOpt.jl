@@ -6,15 +6,14 @@ export HalfSpace,
        planar_obstacle,
        contact_basis,
        parse_contacts,
+       separation,
+       svd,
        auglag_solve,
        ip_solve,
-       simulate,
-       simulate_snopt,
-       get_sim_data,
-       separation,
        solve_implicit_contact_τ,
-       parse_contacts,
-       svd
+       get_sim_data,
+       simulate_ipopt,
+       simulate_snopt
 
 using Test
 using StaticArrays
@@ -28,15 +27,15 @@ using GeometryTypes: HyperSphere, origin, radius, HyperRectangle
 using ForwardDiff
 using DiffResults
 using Ipopt
-using Snopt
 using Compat
 
+include("svd.jl")
 include("auglag.jl")
 include("ip.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
+include("simulation_ipopt.jl")
 include("simulation_snopt.jl")
-include("svd.jl")
 
 end # module
