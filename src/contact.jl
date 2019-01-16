@@ -3,7 +3,7 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     # compute force in contact frame (obstacle frame)
     n = contact_normal(obstacle)
     v = c_n .* n.v
-    for i in eachindex(β)
+    for i in 1:length(β)
         v += β[i] .* Array(D[i].v)
     end
 
@@ -74,7 +74,7 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i])
+        comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i])
     end
 
     # (μ * c_n - sum(β)) * λ = 0
@@ -100,7 +100,7 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- dot(slack,slack))
+        comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i] .- dot(slack,slack))
     end
 
     # (μ * c_n - sum(β)) * λ = 0
@@ -137,12 +137,11 @@ function pos_contact_constraints(x,Dtv,sim_data)
 end
 
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
-
     x_min = zeros(length(x0))
     x_max = 100. .* ones(length(x0))
 
     f = x̃ -> begin
-        return x̃'*x̃
+        return 0.
     end
     h = x̃ -> begin
         d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
@@ -151,21 +150,23 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     end
     g = x̃ -> begin
         p = pos_contact_constraints(x̃,Dtv,sim_data)
-        return vcat(p, (x_min .- x̃), (x̃ .- x_max))
+        p_min = x_min .- x̃
+        p_max = x̃ .- x_max
+        return vcat(p, p_min, p_max)
     end
 
     if ip_method
         x = ip_solve(x0,f,h,g,length(λ0),length(μ0))
         λ = λ0
         μ = μ0
+        L = 0.
     else
-        (x,λ,μ,c) = auglag_solve(x0,λ0,μ0,f,h,g)
+        (x,λ,μ,L) = auglag_solve(x0,λ0,μ0,f,h,g)
     end
 
-    fx = f(x)
     τ = τ_total(x,rel_transforms,geo_jacobians,sim_data)
 
-    return τ, x, λ, μ, fx
+    return τ, x, λ, μ, L
 end
 
 function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false) where T
@@ -179,7 +180,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     set_velocity!(xnext, vnext)
 
     num_dyn = sim_data.num_v
-    num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
+    num_comp = sim_data.num_contacts*3
     num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
 
     # aug lag initial guesses
@@ -205,7 +206,6 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     config_derivative = configuration_derivative(xnext)
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
-    τ, x, λ, μ, fx = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
 
-    return τ, x, λ, μ, fx
+    return solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
 end

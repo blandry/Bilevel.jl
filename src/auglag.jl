@@ -99,5 +99,10 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         c *= 1.
     end
 
-    x[1:num_x0], λ[1:num_h0], λ[num_h0+1:num_h0+num_g0], c
+    Lsol = L(x,λ,f,h,c)
+    xsol = x[1:num_x0]
+    λsol = λ[1:num_h0]
+    μsol = λ[num_h0+1:num_h0+num_g0]
+
+    xsol, λsol, μsol, Lsol
 end
