@@ -57,6 +57,10 @@ function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data)
     τ_external_wrenches
 end
 
+function fischer_burm(a,b)
+    a .+ b .- sqrt.(a.^2 .+ b.^2 .+ eps(1.))
+end
+
 function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     μs = sim_data.μs
     β_selector = sim_data.β_selector
@@ -74,11 +78,13 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i])
+        # comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i])
+        comp_con = vcat(comp_con, fischer_burm(λpDtv[:,i],β_all[:,i]))
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector])
+    # comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector])
+    comp_con = vcat(comp_con, fischer_burm((μs .* x[c_n_selector] - sum(β_all,dims=1)[:]),x[λ_selector]))
 
     comp_con
 end
@@ -156,10 +162,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     end
 
     if ip_method
-        x = ip_solve(x0,f,h,g,length(λ0),length(μ0))
-        λ = λ0
-        μ = μ0
-        L = 0.
+        (x,λ,μ,L) = (ip_solve(x0,f,h,g,length(λ0),length(μ0)),λ0,μ0,0.)
     else
         (x,λ,μ,L) = auglag_solve(x0,λ0,μ0,f,h,g)
     end
@@ -180,7 +183,8 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     set_velocity!(xnext, vnext)
 
     num_dyn = sim_data.num_v
-    num_comp = sim_data.num_contacts*3
+    # num_comp = sim_data.num_contacts*3
+    num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
     num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
 
     # aug lag initial guesses

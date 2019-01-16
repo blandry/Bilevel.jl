@@ -141,7 +141,8 @@ function simulate_snopt(state0::MechanismState,
     u0 = zeros(sim_data.num_v)
 
     num_dyn = sim_data.num_v
-    num_comp = sim_data.num_contacts*3
+    # num_comp = sim_data.num_contacts*3
+    num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
     num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
     contact_λ0 = zeros(num_dyn+num_comp)
@@ -165,10 +166,10 @@ function simulate_snopt(state0::MechanismState,
         options = Dict{String, Any}()
         options["Derivative option"] = 1
         options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = 1e-6
+        options["Major optimality tolerance"] = 1e-3
         if implicit_contact
             options["Feasible point"] = true
-            # options["Major feasibility tolerance"] = 1e-3
+            options["Major feasibility tolerance"] = 1e-6
         end
 
         xopt, fopt, info = snopt(update_fn, x, x_L, x_U, options)
