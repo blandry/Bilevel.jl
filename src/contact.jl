@@ -147,7 +147,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     x_max = 100. .* ones(length(x0))
 
     f = x̃ -> begin
-        return 0.
+        return sum(x̃[sim_data.β_selector]) + sum(x̃[sim_data.c_n_selector])
     end
     h = x̃ -> begin
         d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
@@ -183,7 +183,6 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     set_velocity!(xnext, vnext)
 
     num_dyn = sim_data.num_v
-    # num_comp = sim_data.num_contacts*3
     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
     num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
 
