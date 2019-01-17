@@ -1,4 +1,4 @@
-struct SimData
+mutable struct SimData
     Δt
     mechanism
     num_q

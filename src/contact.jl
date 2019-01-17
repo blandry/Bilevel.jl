@@ -210,5 +210,10 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
 
-    return solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
+    τ, x, λ, μ, L = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
+
+    # for friction coeff regression 
+    d = dynamics_contact_constraints(x,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
+    
+    return τ, x, d
 end
