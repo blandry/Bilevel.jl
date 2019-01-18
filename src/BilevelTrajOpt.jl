@@ -16,7 +16,10 @@ export HalfSpace,
        solve_implicit_contact_τ,
        get_sim_data,
        simulate_ipopt,
-       simulate_snopt
+       simulate_snopt,
+       get_traj_data,
+       add_constraint!,
+       trajopt_snopt
 
 using Test
 using StaticArrays
@@ -41,5 +44,7 @@ include("contact.jl")
 include("simulation.jl")
 include("simulation_ipopt.jl")
 include("simulation_snopt.jl")
+include("trajopt.jl")
+include("trajopt_snopt.jl")
 
 end # module
