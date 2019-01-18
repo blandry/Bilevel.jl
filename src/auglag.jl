@@ -14,7 +14,7 @@ function L(x,λ,f,h,c)
     f(x) - dot(λ,h(x)) + .5*c*dot(h(x),h(x))
 end
 
-function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
+function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,inplace=true)
     num_fosteps = 1
     num_sosteps = 9
 
@@ -41,21 +41,29 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
                   g0(x̃[1:num_x0]) + softmax.(x̃[num_x0+1:num_x0+num_g0],0.,k=1.))
     f = x̃ -> f0(x̃[1:num_x0])
 
-    hres = DiffResults.JacobianResult(h(x), x)
-    fres = DiffResults.HessianResult(x)
-
-    hcfg = ForwardDiff.JacobianConfig(h, x)
-    fcfg = ForwardDiff.HessianConfig(f, fres, x)
+    if inplace
+        hres = DiffResults.JacobianResult(h(x), x)
+        fres = DiffResults.HessianResult(x)
+        hcfg = ForwardDiff.JacobianConfig(h, x)
+        fcfg = ForwardDiff.HessianConfig(f, fres, x)
+    end
 
     rtol = eps(1.)*(num_h+num_x)
 
     for i = 1:num_fosteps
-        ForwardDiff.jacobian!(hres, h, x, hcfg)
-        hx = DiffResults.value(hres)
-        ∇h = DiffResults.jacobian(hres)
-        ForwardDiff.hessian!(fres, f, x, fcfg)
-        ∇f = DiffResults.gradient(fres)
-        Hf = DiffResults.hessian(fres)
+        if inplace
+            ForwardDiff.jacobian!(hres, h, x, hcfg)
+            hx = DiffResults.value(hres)
+            ∇h = DiffResults.jacobian(hres)
+            ForwardDiff.hessian!(fres, f, x, fcfg)
+            ∇f = DiffResults.gradient(fres)
+            Hf = DiffResults.hessian(fres)
+        else
+            hx = h(x)
+            ∇h = ForwardDiff.jacobian(h, x)
+            ∇f = ForwardDiff.gradient(f, x)
+            Hf = ForwardDiff.hessian(f, x)
+        end
 
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
@@ -70,12 +78,19 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
     end
 
     for i = 1:num_sosteps
-        ForwardDiff.jacobian!(hres, h, x, hcfg)
-        hx = DiffResults.value(hres)
-        ∇h = DiffResults.jacobian(hres)
-        ForwardDiff.hessian!(fres, f, x, fcfg)
-        ∇f = DiffResults.gradient(fres)
-        Hf = DiffResults.hessian(fres)
+        if inplace
+            ForwardDiff.jacobian!(hres, h, x, hcfg)
+            hx = DiffResults.value(hres)
+            ∇h = DiffResults.jacobian(hres)
+            ForwardDiff.hessian!(fres, f, x, fcfg)
+            ∇f = DiffResults.gradient(fres)
+            Hf = DiffResults.hessian(fres)
+        else
+            hx = h(x)
+            ∇h = ForwardDiff.jacobian(h, x)
+            ∇f = ForwardDiff.gradient(f, x)
+            Hf = ForwardDiff.hessian(f, x)
+        end
 
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
@@ -99,7 +114,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.)
         c *= 1.
     end
 
-    Lsol = L(x,λ,f,h,c)
+    Lsol = 0. #L(x,λ,f,h,c)
     xsol = x[1:num_x0]
     λsol = λ[1:num_h0]
     μsol = λ[num_h0+1:num_h0+num_g0]
