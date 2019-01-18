@@ -48,7 +48,11 @@ function get_traj_data(mechanism::Mechanism,
     num_q = num_positions(mechanism)
     num_v = num_velocities(mechanism)
     num_contacts = length(env.contacts)
-    β_dim = length(contact_basis(env.contacts[1][3]))
+    if num_contacts > 0
+        β_dim = length(contact_basis(env.contacts[1][3]))
+    else
+        β_dim = Int(0)
+    end
 
     # some constants throughout the trajectory
     world = root_body(mechanism)
@@ -73,7 +77,7 @@ function get_traj_data(mechanism::Mechanism,
     c_n_selector = findall(x->x!=0,repeat(vcat(zeros(β_dim),[0,1]),num_contacts))
 
     if implicit_contact
-        num_slack = 1
+        num_slack = 0
         num_xn = num_q+num_v+num_slack+num_v
     else
         num_slack = 1
@@ -85,10 +89,10 @@ function get_traj_data(mechanism::Mechanism,
     num_comp = num_contacts*3
     num_dist = num_contacts
     num_pos = num_contacts*(1+β_dim)
-    
+
     num_dyn_eq = num_kin+num_dyn
     num_dyn_ineq = num_comp+num_dist+num_pos
-    
+
     num_x = N*num_xn
     num_eq = (N-1)*num_dyn_eq
     num_ineq = (N-1)*num_dyn_ineq
