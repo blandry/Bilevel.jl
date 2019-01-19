@@ -31,12 +31,18 @@ mutable struct TrajData
     num_x
     num_eq
     num_ineq
-    con
+    state_eq
+    fn_ineq
 end
 
-function add_constraint!(traj_data, con_fn, con_indx)
-    push!(traj_data.con, (con_fn,con_indx))
+function add_state_eq!(traj_data, con_fn, con_indx)
+    push!(traj_data.state_eq, (con_fn,con_indx))
     traj_data.num_eq += traj_data.num_q + traj_data.num_v
+end
+
+function add_fn_ineq!(traj_data, con_fn, con_indx)
+    push!(traj_data.fn_ineq, (con_fn,con_indx))
+    traj_data.num_ineq += 1
 end
 
 function get_traj_data(mechanism::Mechanism,
@@ -97,7 +103,8 @@ function get_traj_data(mechanism::Mechanism,
     num_eq = (N-1)*num_dyn_eq
     num_ineq = (N-1)*num_dyn_ineq
 
-    con = Vector()
+    state_eq = Vector()
+    fn_ineq = Vector()
 
     traj_data = TrajData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,
                          world,world_frame,total_weight,
@@ -105,7 +112,7 @@ function get_traj_data(mechanism::Mechanism,
                          β_selector,λ_selector,c_n_selector,
                          N,num_slack,num_xn,implicit_contact,
                          num_kin,num_dyn,num_comp,num_dist,num_pos,
-                         num_dyn_eq,num_dyn_ineq,num_x,num_eq,num_ineq,con)
+                         num_dyn_eq,num_dyn_ineq,num_x,num_eq,num_ineq,state_eq,fn_ineq)
 
     traj_data
 end

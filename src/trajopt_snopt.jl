@@ -112,12 +112,19 @@ function traj_fn_snopt(traj_data)
             gineq[(i-1)*traj_data.num_dyn_ineq+1:i*traj_data.num_dyn_ineq] = gn[traj_data.num_dyn_eq+1:traj_data.num_dyn_eq+traj_data.num_dyn_ineq]
         end
 
-        # for now other constraints are just equality on whole states
-        for i = 1:length(traj_data.con)
-            gi = traj_data.con[i][1](x[1:traj_data.num_q+traj_data.num_v,traj_data.con[i][2]])
-            geq[(traj_data.N-1)*traj_data.num_dyn_eq+(i-1)*(traj_data.num_q+traj_data.num_v)+1:(traj_data.N-1)*traj_data.num_dyn_eq+i*(traj_data.num_q+traj_data.num_v)] = gi
+        # TODO handle more types of constraints
+        glasteqi = (traj_data.N-1)*traj_data.num_dyn_eq
+        glastineqi = (traj_data.N-1)*traj_data.num_dyn_ineq
+        for i = 1:length(traj_data.state_eq)
+            gi = traj_data.state_eq[i][1](x[1:traj_data.num_q+traj_data.num_v,traj_data.state_eq[i][2]])
+            geq[glasteqi+1:glasteqi+traj_data.num_q+traj_data.num_v] = gi
+            glasteqi += traj_data.num_q+traj_data.num_v
         end
-        # TODO handle inequalities and more!
+        for i = 1:length(traj_data.fn_ineq)
+            gi = traj_data.fn_ineq[i][1](x[1:traj_data.num_q,traj_data.fn_ineq[i][2]])
+            gineq[glastineqi+1] = gi
+            glastineqi += 1
+        end
 
         g = vcat(geq,gineq)
 

@@ -18,7 +18,8 @@ export HalfSpace,
        simulate_ipopt,
        simulate_snopt,
        get_traj_data,
-       add_constraint!,
+       add_state_eq!,
+       add_fn_ineq!,
        trajopt_snopt
 
 using Test
