@@ -20,6 +20,7 @@ export HalfSpace,
        get_traj_data,
        add_state_eq!,
        add_fn_ineq!,
+       add_fn_obj!,
        trajopt_snopt
 
 using Test

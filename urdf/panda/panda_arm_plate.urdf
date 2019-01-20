@@ -147,8 +147,7 @@
     </inertial>
   </link>
   <joint name="panda_joint8" type="fixed">
-    <!-- <origin rpy="1.57079632679 0 0" xyz="0 0.11 0"/> -->
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="-1.57079632679 0 0" xyz="0 0.11 0"/>
     <parent link="panda_link7"/>
     <child link="panda_link8"/>
   </joint>

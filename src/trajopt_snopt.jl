@@ -134,9 +134,14 @@ function traj_fn_snopt(traj_data)
     input_selector_full = traj_data.num_q + traj_data.num_v + (1:traj_data.num_v)
     function eval_f(xv)
         x = reshape(xv,traj_data.num_xn,traj_data.N)
-        u = x[input_selector_full,:]
-
-        J = .5*sum(u.^2)
+        
+        # u = x[input_selector_full,:]
+        # J = .5*sum(u.^2)
+        
+        J = 0.
+        for i = 1:length(traj_data.fn_obj)
+            J += traj_data.fn_obj[i][1](x[1:traj_data.num_q,traj_data.fn_obj[i][2]])
+        end
 
         J
     end
@@ -189,8 +194,11 @@ function trajopt_snopt(traj_data)
     options = Dict{String, Any}()
     options["Derivative option"] = 1
     options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-    options["Major optimality tolerance"] = 1e-6
-
+    options["Major optimality tolerance"] = 1e-3
+    options["Major feasibility tolerance"] = 1e-3
+    options["Minor feasibility tolerance"] = 1e-3
+    # options["Feasible point"] = true
+	
     x0 = zeros(traj_data.num_xn,traj_data.N)
     x0[1,:] .= 1. # quaternion
     x0 = x0[:]

@@ -33,6 +33,7 @@ mutable struct TrajData
     num_ineq
     state_eq
     fn_ineq
+    fn_obj
 end
 
 function add_state_eq!(traj_data, con_fn, con_indx)
@@ -43,6 +44,10 @@ end
 function add_fn_ineq!(traj_data, con_fn, con_indx)
     push!(traj_data.fn_ineq, (con_fn,con_indx))
     traj_data.num_ineq += 1
+end
+
+function add_fn_obj!(traj_data, obj_fn, obj_indx)
+    push!(traj_data.fn_obj, (obj_fn, obj_indx))
 end
 
 function get_traj_data(mechanism::Mechanism,
@@ -105,6 +110,7 @@ function get_traj_data(mechanism::Mechanism,
 
     state_eq = Vector()
     fn_ineq = Vector()
+    fn_obj = Vector()
 
     traj_data = TrajData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,
                          world,world_frame,total_weight,
@@ -112,7 +118,8 @@ function get_traj_data(mechanism::Mechanism,
                          β_selector,λ_selector,c_n_selector,
                          N,num_slack,num_xn,implicit_contact,
                          num_kin,num_dyn,num_comp,num_dist,num_pos,
-                         num_dyn_eq,num_dyn_ineq,num_x,num_eq,num_ineq,state_eq,fn_ineq)
+                         num_dyn_eq,num_dyn_ineq,num_x,num_eq,num_ineq,state_eq,
+                         fn_ineq,fn_obj)
 
     traj_data
 end
