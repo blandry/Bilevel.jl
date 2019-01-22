@@ -89,17 +89,17 @@ function get_traj_data(mechanism::Mechanism,
 
     if implicit_contact
         num_slack = 0
-        num_xn = num_q+num_v+num_slack+num_v
+        num_xn = num_q+num_v+num_v+num_slack
     else
         num_slack = 1
-        num_xn = num_q+num_v+num_slack+num_contacts*(2+β_dim)+num_v
+        num_xn = num_q+num_v+num_v+num_slack+num_contacts*(2+β_dim)
     end
 
     num_kin = num_q
     num_dyn = num_v
-    num_comp = num_contacts*3
+    num_comp = num_contacts*(2+β_dim)
     num_dist = num_contacts
-    num_pos = num_contacts*(1+β_dim)
+    num_pos = num_contacts*(1+β_dim) + 2*num_contacts*(2+β_dim)
 
     num_dyn_eq = num_kin+num_dyn
     num_dyn_ineq = num_comp+num_dist+num_pos

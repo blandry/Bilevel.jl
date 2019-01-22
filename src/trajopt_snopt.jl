@@ -9,7 +9,7 @@ function traj_fn_snopt(traj_data)
         slack_selector = last_selector .+ (1:traj_data.num_slack)
         last_selector = slack_selector[end]
     end
-    if (traj_data.num_contacts > 0)
+    if (traj_data.num_contacts > 0 && !traj_data.implicit_contact)
         contact_selector = last_selector .+ (1:traj_data.num_contacts*(2+traj_data.β_dim))
         last_selector = contact_selector[end]
     end
@@ -17,18 +17,18 @@ function traj_fn_snopt(traj_data)
     g_kin_selector = 1:traj_data.num_kin
     g_dyn_selector = g_kin_selector[end] .+ (1:traj_data.num_dyn)
     if (traj_data.num_contacts > 0)
-        g_comp_selector = g_dyn_selector[end] .+ (1:traj_data.num_comp)
-        g_dist_selector = g_comp_selector[end] .+ (1:traj_data.num_dist)
-        g_pos_selector = g_dist_selector[end] .+ (1:traj_data.num_pos)
-    end
-
-    if (traj_data.implicit_contact)
-        num_dyn_contact = traj_data.num_v
-        num_comp_contact = traj_data.num_contacts*(2+traj_data.β_dim)
-        num_pos_contact = traj_data.num_contacts*(1+traj_data.β_dim) + 2*traj_data.num_contacts*(2+traj_data.β_dim)
-        contact_x0 = zeros(traj_data.num_contacts*(2+traj_data.β_dim))
-        contact_λ0 = zeros(num_dyn_contact+num_comp_contact)
-        contact_μ0 = zeros(num_pos_contact)
+        g_dist_selector = g_dyn_selector[end] .+ (1:traj_data.num_dist)
+        if traj_data.implicit_contact
+            num_dyn_contact = traj_data.num_v
+            num_comp_contact = traj_data.num_contacts*(2+traj_data.β_dim)
+            num_pos_contact = traj_data.num_contacts*(1+traj_data.β_dim) + 2*traj_data.num_contacts*(2+traj_data.β_dim)
+            contact_x0 = zeros(traj_data.num_contacts*(2+traj_data.β_dim))
+            contact_λ0 = zeros(num_dyn_contact+num_comp_contact)
+            contact_μ0 = zeros(num_pos_contact)
+        else
+            g_comp_selector = g_dist_selector[end] .+ (1:traj_data.num_comp)
+            g_pos_selector = g_comp_selector[end] .+ (1:traj_data.num_pos)
+        end
     end
 
     function eval_dyn(x::AbstractArray{T}) where T
@@ -54,7 +54,6 @@ function traj_fn_snopt(traj_data)
         H = mass_matrix(x0)
 
         if (traj_data.num_contacts > 0)
-            xcontact = x[contact_selector]
             Dtv = Matrix{T}(undef, traj_data.β_dim,traj_data.num_contacts)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, traj_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, traj_data.num_contacts)
@@ -77,9 +76,9 @@ function traj_fn_snopt(traj_data)
 
         if (traj_data.num_contacts > 0)
             if traj_data.implicit_contact
-                contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, obj_sol = solve_implicit_contact_τ(traj_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+                contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, L_sol = solve_implicit_contact_τ(traj_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
             else
-                contact_bias = τ_total(xcontact,rel_transforms,geo_jacobians,traj_data)
+                contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,traj_data)
             end
         else
             contact_bias = zeros(traj_data.num_v)
@@ -93,9 +92,11 @@ function traj_fn_snopt(traj_data)
 
         # <= 0
         if (traj_data.num_contacts > 0)
-            g[g_comp_selector] = complementarity_contact_constraints_relaxed(xcontact,slack,ϕs,Dtv,traj_data)
             g[g_dist_selector] = -ϕs
-            g[g_pos_selector] = pos_contact_constraints(xcontact,Dtv,traj_data)
+            if !traj_data.implicit_contact
+                g[g_comp_selector] = complementarity_contact_constraints_relaxed(x[contact_selector],slack,ϕs,Dtv,traj_data)
+                g[g_pos_selector] = pos_contact_constraints(x[contact_selector],Dtv,traj_data)
+            end
         end
 
         g
@@ -134,10 +135,10 @@ function traj_fn_snopt(traj_data)
     input_selector_full = traj_data.num_q + traj_data.num_v + (1:traj_data.num_v)
     function eval_f(xv)
         x = reshape(xv,traj_data.num_xn,traj_data.N)
-        
+
         # u = x[input_selector_full,:]
         # J = .5*sum(u.^2)
-        
+
         J = 0.
         for i = 1:length(traj_data.fn_obj)
             J += traj_data.fn_obj[i][1](x[1:traj_data.num_q,traj_data.fn_obj[i][2]])
@@ -179,15 +180,6 @@ function trajopt_snopt(traj_data)
     # optimization bounds
     x_L = -1e19 * ones(traj_data.num_x)
     x_U = 1e19 * ones(traj_data.num_x)
-    # TODO contact variables bounds
-    # if !traj_data.implicit_contact && traj_data.num_contacts > 0
-    #     for i=1:traj_data.N
-    #         istart =
-    #         iend =
-    #         x_L[istart:iend] .= 0.
-    #         x_U[istart:iend] .= 100.
-    #     end
-    # end
 
     traj_fn = traj_fn_snopt(traj_data)
 
@@ -198,7 +190,7 @@ function trajopt_snopt(traj_data)
     options["Major feasibility tolerance"] = 1e-3
     options["Minor feasibility tolerance"] = 1e-3
     # options["Feasible point"] = true
-	
+
     x0 = zeros(traj_data.num_xn,traj_data.N)
     x0[1,:] .= 1. # quaternion
     x0 = x0[:]

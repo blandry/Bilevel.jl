@@ -139,13 +139,12 @@ function pos_contact_constraints(x,Dtv,sim_data)
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     pos_con = vcat(pos_con, -(μs.*x[c_n_selector] - sum(β_all,dims=1)[:]))
 
+    pos_con = vcat(pos_con, 0. .- x, x .- 100.)
+
     pos_con
 end
 
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,x0,λ0,μ0;ip_method=false)
-    x_min = zeros(length(x0))
-    x_max = 100. .* ones(length(x0))
-
     f = x̃ -> begin
         return sum(x̃[sim_data.β_selector]) + sum(x̃[sim_data.c_n_selector])
     end
@@ -156,9 +155,7 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     end
     g = x̃ -> begin
         p = pos_contact_constraints(x̃,Dtv,sim_data)
-        p_min = x_min .- x̃
-        p_max = x̃ .- x_max
-        return vcat(p, p_min, p_max)
+        return p
     end
 
     if ip_method
@@ -212,8 +209,8 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
 
     τ, x, λ, μ, L = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method)
 
-    # for friction coeff regression 
+    # for friction coeff regression
     d = dynamics_contact_constraints(x,rel_transforms,geo_jacobians,HΔv,bias,sim_data)
-    
+
     return τ, x, d
 end
