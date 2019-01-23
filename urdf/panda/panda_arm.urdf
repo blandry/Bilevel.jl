@@ -9,8 +9,8 @@
     </visual>
     <inertial>
       <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <link name="panda_link1">
@@ -20,8 +20,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint1" type="revolute">
@@ -37,8 +37,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint2" type="revolute">
@@ -54,8 +54,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint3" type="revolute">
@@ -71,8 +71,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint4" type="revolute">
@@ -88,8 +88,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint5" type="revolute">
@@ -105,8 +105,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint6" type="revolute">
@@ -122,8 +122,8 @@
       </geometry>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint7" type="revolute">
@@ -142,8 +142,8 @@
       </material>
     </visual>
     <inertial>
-      <mass value="0.1" />
-      <inertia ixx="0.03" iyy="0.03" izz="0.03" ixy="0.0" ixz="0.0" iyz="0.0" />
+      <mass value="1." />
+      <inertia ixx="0.3" iyy="0.3" izz="0.3" ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
   <joint name="panda_joint8" type="fixed">

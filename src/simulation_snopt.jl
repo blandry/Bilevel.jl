@@ -160,7 +160,7 @@ function simulate_snopt(sim_data,control!,state0::MechanismState,N)
         options = Dict{String, Any}()
         options["Derivative option"] = 1
         options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = 1e-6
+        options["Major optimality tolerance"] = 1e-7
         options["Major feasibility tolerance"] = 1e-6
         if sim_data.implicit_contact
             options["Feasible point"] = true
