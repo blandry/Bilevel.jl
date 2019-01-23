@@ -106,7 +106,7 @@ function complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i] .- dot(slack,slack))
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i] .- dot(slack,slack))
     end
 
     # (μ * c_n - sum(β)) * λ = 0

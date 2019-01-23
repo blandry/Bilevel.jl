@@ -234,7 +234,6 @@
     <child link="panda_link7"/>
     <axis xyz="0 1 0"/>
   </joint>
-
   <link name="panda_link8">
     <visual>
       <geometry>
