@@ -13,6 +13,7 @@ mutable struct SimData
     obstacles
     μs
     paths
+    surface_paths
     Ds
     β_selector
     λ_selector
@@ -52,6 +53,7 @@ function get_sim_data(mechanism::Mechanism,
     obstacles = []
     μs = []
     paths = []
+    surface_paths = []
     Ds = []
     for (body, contact_point, obstacle) in env.contacts
       push!(bodies, body)
@@ -59,6 +61,11 @@ function get_sim_data(mechanism::Mechanism,
       push!(obstacles, obstacle)
       push!(μs, obstacle.μ)
       push!(paths, path(mechanism, body, world))
+      if obstacle.is_floating
+          push!(surface_paths, path(mechanism, obstacle.body, world))
+      else
+          push!(surface_paths, nothing)
+      end
       push!(Ds, contact_basis(obstacle))
     end
     β_selector = findall(x->x!=0,repeat(vcat(ones(β_dim),[0,0]),num_contacts))
@@ -84,7 +91,7 @@ function get_sim_data(mechanism::Mechanism,
 
     sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,
                        world,world_frame,total_weight,
-                       bodies,contact_points,obstacles,μs,paths,Ds,
+                       bodies,contact_points,obstacles,μs,paths,surface_paths,Ds,
                        β_selector,λ_selector,c_n_selector,
                        num_slack,num_xn,implicit_contact,
                        num_kin,num_dyn,num_comp,num_dist,num_pos,

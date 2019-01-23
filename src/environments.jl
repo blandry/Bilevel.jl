@@ -49,25 +49,27 @@ struct Obstacle
     contact_face::HalfSpace
     μ
     contact_basis::Vector{FreeVector3D}
+    body::RigidBody
+    is_floating::Bool
 end
 
-function Obstacle(contact_face::HalfSpace, μ, motion_type::Symbol)
+function Obstacle(contact_face::HalfSpace, μ, motion_type::Symbol, body::RigidBody; is_floating=false)
     basis = contact_basis(contact_face, μ, motion_type)
-    Obstacle(contact_face, μ, basis)
+    Obstacle(contact_face, μ, basis, body, is_floating)
 end
 
 RigidBodyDynamics.separation(obs::Obstacle, p::Point3D) = separation(obs.contact_face, p)
 
 contact_normal(obs::Obstacle) = obs.contact_face.outward_normal
 
-function planar_obstacle(normal::FreeVector3D, point::Point3D, μ=1.0, motion_type::Symbol=:xyz)
-    normal = normalize(normal)
-    face = HalfSpace(point, normal)
-    Obstacle(face,μ,motion_type)
-end
-
-planar_obstacle(frame::CartesianFrame3D, normal::AbstractVector, point::AbstractVector, args...) =
-    planar_obstacle(FreeVector3D(frame, normal), Point3D(frame, point), args...)
+# function planar_obstacle(normal::FreeVector3D, point::Point3D, μ=1.0, motion_type::Symbol=:xyz)
+#     normal = normalize(normal)
+#     face = HalfSpace(point, normal)
+#     Obstacle(face,μ,motion_type)
+# end
+# 
+# planar_obstacle(frame::CartesianFrame3D, normal::AbstractVector, point::AbstractVector, args...) =
+#     planar_obstacle(FreeVector3D(frame, normal), Point3D(frame, point), args...)
 
 contact_basis(obs::Obstacle) = obs.contact_basis
 

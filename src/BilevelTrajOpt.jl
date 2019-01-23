@@ -5,7 +5,7 @@ __precompile__(false)
 export HalfSpace,
        Obstacle,
        Environment,
-       planar_obstacle,
+       # planar_obstacle,
        contact_basis,
        parse_contacts,
        separation,

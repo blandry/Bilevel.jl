@@ -49,6 +49,7 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
             Dtv = Matrix{T}(undef, sim_data.β_dim,sim_data.num_contacts)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
+            geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, sim_data.num_contacts)
             ϕs = Vector{T}(undef, sim_data.num_contacts)
             for i = 1:sim_data.num_contacts
                 v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
@@ -58,6 +59,11 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
                 rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                               relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+                if !isa(sim_data.surface_paths[i],Nothing)
+                    geo_jacobians_surfaces[i] = geometric_jacobian(xnext, sim_data.surface_paths[i])
+                else
+                    geo_jacobians_surfaces[i] = nothing
+                end
                 ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
             end
         end
@@ -70,7 +76,7 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
             if sim_data.implicit_contact
                 contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, L_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
             else
-                contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,sim_data)
+                contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data)
             end
         else
             contact_bias = zeros(sim_data.num_v)
@@ -116,7 +122,7 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
         J = eval_f(x)
         gJ = eval_dfdx(x)
 
-        @time ForwardDiff.jacobian!(gres, eval_con, x, gcfg)
+        ForwardDiff.jacobian!(gres, eval_con, x, gcfg)
 
         g = DiffResults.value(gres)
         ceq = g[1:sim_data.num_dyn_eq]
@@ -160,7 +166,7 @@ function simulate_snopt(sim_data,control!,state0::MechanismState,N)
         options = Dict{String, Any}()
         options["Derivative option"] = 1
         options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = 1e-7
+        options["Major optimality tolerance"] = 1e-6
         options["Major feasibility tolerance"] = 1e-6
         if sim_data.implicit_contact
             options["Feasible point"] = true

@@ -1,5 +1,5 @@
 function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,total_weight,
-                           rel_transform,geo_jacobian)
+                           rel_transform,geo_jacobian;geo_jacobian_surface=Nothing)
     # compute force in contact frame (obstacle frame)
     n = contact_normal(obstacle)
     v = c_n .* n.v
@@ -22,10 +22,23 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
     # convert wrench from world frame to torque in joint coordinates
     τ = geo_jacobian.linear' * w_linear + geo_jacobian.angular' * w_angular
 
+    # surface reaction torque
+    if !isa(geo_jacobian_surface,Nothing)
+        surface_contact_force = -contact_force
+        # world frame
+        cs = (rel_transform[1].mat * vcat(surface_contact_force,1.))[1:3]
+        # wrench
+        ws_linear = cs
+        ws_angular = p.v × cs
+        τs = geo_jacobian_surface.linear' * ws_linear + geo_jacobian_surface.angular' * ws_angular
+        
+        τ += τs
+    end
+
     τ
 end
 
-function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data) where T
+function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data) where T
     β_selector = sim_data.β_selector
     λ_selector = sim_data.λ_selector
     c_n_selector = sim_data.c_n_selector
@@ -51,7 +64,8 @@ function τ_total(x_sol::AbstractArray{T},rel_transforms,geo_jacobians,sim_data)
         τ_external_wrenches += τ_external_wrench(β,λ,c_n,
                                                  bodies[i],contact_points[i],obstacles[i],Ds[i],
                                                  world_frame,total_weight,
-                                                 rel_transforms[i],geo_jacobians[i])
+                                                 rel_transforms[i],geo_jacobians[i],
+                                                 geo_jacobian_surface=geo_jacobians_surfaces[i])
     end
 
     τ_external_wrenches
