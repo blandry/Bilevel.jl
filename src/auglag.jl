@@ -14,7 +14,7 @@ function L(x,λ,f,h,c)
     f(x) - dot(λ,h(x)) + .5*c*dot(h(x),h(x))
 end
 
-function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,inplace=true)
+function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true)
     num_fosteps = 1
     num_sosteps = 9
 
@@ -41,7 +41,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,inplace=true)
                   g0(x̃[1:num_x0]) + softmax.(x̃[num_x0+1:num_x0+num_g0],0.,k=1.))
     f = x̃ -> f0(x̃[1:num_x0])
 
-    if inplace
+    if in_place
         hres = DiffResults.JacobianResult(h(x), x)
         fres = DiffResults.HessianResult(x)
         hcfg = ForwardDiff.JacobianConfig(h, x)
@@ -51,7 +51,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,inplace=true)
     rtol = eps(1.)*(num_h+num_x)
 
     for i = 1:num_fosteps
-        if inplace
+        if in_place
             ForwardDiff.jacobian!(hres, h, x, hcfg)
             hx = DiffResults.value(hres)
             ∇h = DiffResults.jacobian(hres)
@@ -78,7 +78,7 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,inplace=true)
     end
 
     for i = 1:num_sosteps
-        if inplace
+        if in_place
             ForwardDiff.jacobian!(hres, h, x, hcfg)
             hx = DiffResults.value(hres)
             ∇h = DiffResults.jacobian(hres)

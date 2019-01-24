@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<robot name="panda">
+
+  <link name="floor">
+    <visual>
+      <origin xyz=".5 0 -0.05"/>
+      <geometry>
+        <box size="4 3 0.1"/>
+      </geometry>
+      <material name="purple">
+        <color rgba=" .04 .2 .7 .9"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="box">
+  <visual>
+    <geometry>
+      <box size=".5 .5 .5"/>
+    </geometry>
+    <material name="green">
+      <color rgba=".5 0.75 .25 .8"/>
+    </material>
+  </visual>
+  <inertial>
+    <mass value="10."/>
+    <inertia ixx="1." iyy="1." izz="1." ixy="0." ixz="0." iyz="0."/>
+  </inertial>
+  <!-- contact points -->
+  <visual>
+    <origin xyz="-.25 -.25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-.25 -.25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz="-.25 .25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-.25 .25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz=".25 -.25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz=".25 -.25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz=".25 .25 -.25"/>
+    <geometry>
+      <sphere radius=".025"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz=".25 .25 -.25"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  </link>
+  
+  <joint name="floor_to_box" type="fixed">
+    <parent link="floor"/>
+    <child link="box"/>
+    <origin xyz="0 0 0"/> <!-- this is important once we make it float -->
+  </joint>
+  
+</robot>

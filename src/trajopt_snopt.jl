@@ -57,6 +57,7 @@ function traj_fn_snopt(traj_data)
             Dtv = Matrix{T}(undef, traj_data.β_dim,traj_data.num_contacts)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, traj_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, traj_data.num_contacts)
+            geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, sim_data.num_contacts)
             ϕs = Vector{T}(undef, traj_data.num_contacts)
             for i = 1:traj_data.num_contacts
                 v = point_velocity(twist_wrt_world(xnext,traj_data.bodies[i]), transform_to_root(xnext, traj_data.contact_points[i].frame) * traj_data.contact_points[i])
@@ -66,6 +67,11 @@ function traj_fn_snopt(traj_data)
                 rel_transforms[i] = (relative_transform(xnext, traj_data.obstacles[i].contact_face.outward_normal.frame, traj_data.world_frame),
                                               relative_transform(xnext, traj_data.contact_points[i].frame, traj_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, traj_data.paths[i])
+                if !isa(sim_data.surface_paths[i],Nothing)
+                    geo_jacobians_surfaces[i] = geometric_jacobian(xnext, sim_data.surface_paths[i])
+                else
+                    geo_jacobians_surfaces[i] = nothing
+                end
                 ϕs[i] = separation(traj_data.obstacles[i], transform(xnext, traj_data.contact_points[i], traj_data.obstacles[i].contact_face.outward_normal.frame))
             end
         end
@@ -76,7 +82,7 @@ function traj_fn_snopt(traj_data)
 
         if (traj_data.num_contacts > 0)
             if traj_data.implicit_contact
-                contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, L_sol = solve_implicit_contact_τ(traj_data,ϕs,Dtv,rel_transforms,geo_jacobians,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+                contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, L_sol = solve_implicit_contact_τ(traj_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
             else
                 contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,traj_data)
             end

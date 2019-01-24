@@ -15,7 +15,7 @@ export HalfSpace,
        snopt,
        solve_implicit_contact_τ,
        get_sim_data,
-       simulate_ipopt,
+       # simulate_ipopt,
        simulate_snopt,
        get_traj_data,
        add_state_eq!,
@@ -44,7 +44,7 @@ include("snopt.jl")
 include("environments.jl")
 include("contact.jl")
 include("simulation.jl")
-include("simulation_ipopt.jl")
+# include("simulation_ipopt.jl")
 include("simulation_snopt.jl")
 include("trajopt.jl")
 include("trajopt_snopt.jl")
