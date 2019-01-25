@@ -25,13 +25,18 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true)
     # note that since this is recursive, the type of x changes after 1 iteration
     # that needs to tbe taken into account
     # TODO need to find the common type across f,h and g
-    h0x = h0(x0) # todo useless call
-    x = Array{eltype(h0x),1}(undef, num_x0+num_g0)
-    x[1:num_x0] = x0[:]
-    x[num_x0+1:num_x0+num_g0] .= 0.
-    λ = Array{eltype(h0x),1}(undef, num_h0+num_g0)
-    λ[1:num_h0] = λ0[:]
-    λ[num_h0+1:num_h0+num_g0] = μ0[:]
+    if in_place
+        h0x = h0(x0) # todo useless call
+        x = Array{eltype(h0x),1}(undef, num_x0+num_g0)
+        x[1:num_x0] = x0[:]
+        x[num_x0+1:num_x0+num_g0] .= 0.
+        λ = Array{eltype(h0x),1}(undef, num_h0+num_g0)
+        λ[1:num_h0] = λ0[:]
+        λ[num_h0+1:num_h0+num_g0] = μ0[:]
+    else
+        x = vcat(copy(x0), zeros(num_g0))
+        λ = vcat(copy(λ0), copy(μ0))
+    end
     c = c0
 
     num_x = length(x)

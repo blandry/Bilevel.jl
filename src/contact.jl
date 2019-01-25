@@ -31,7 +31,7 @@ function τ_external_wrench(β,λ,c_n,body,contact_point,obstacle,D,world_frame,
         ws_linear = cs
         ws_angular = p.v × cs
         τs = geo_jacobian_surface.linear' * ws_linear + geo_jacobian_surface.angular' * ws_angular
-        
+
         τ += τs
     end
 
@@ -158,18 +158,14 @@ function pos_contact_constraints(x,Dtv,sim_data)
     pos_con
 end
 
-function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,x0,λ0,μ0;ip_method=false,in_place=true)
+function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,x0,λ0,μ0;ip_method=false,in_place=true,comp_scale=1.)
     f = x̃ -> begin
-        # return sum(x̃[sim_data.β_selector]) + sum(x̃[sim_data.c_n_selector])
-        c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        return c'*c
-        # return 0.
+        return sum(x̃[sim_data.β_selector]) + sum(x̃[sim_data.c_n_selector])
     end
     h = x̃ -> begin
         d = dynamics_contact_constraints(x̃,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,sim_data)
-        # c = complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
-        # return vcat(d,c)
-        return d
+        c = comp_scale * complementarity_contact_constraints(x̃,ϕs,Dtv,sim_data)
+        return vcat(d,c)
     end
     g = x̃ -> begin
         p = pos_contact_constraints(x̃,Dtv,sim_data)
@@ -187,7 +183,52 @@ function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians
     return τ, x, λ, μ, L
 end
 
-function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false,in_place=true) where T
+# function compute_contact_params(sim_data,q0,v0,u0,qnext,vnext)
+#     x0 = MechanismState(sim_data.mechanism)
+#     set_configuration!(x0,q0)
+#     set_velocity!(x0,v0)
+#     H = mass_matrix(x0)
+#
+#     xnext = MechanismState{T}(sim_data.mechanism)
+#     set_configuration!(xnext, qnext)
+#     set_velocity!(xnext, vnext)
+#
+#     num_dyn = sim_data.num_v
+#     num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
+#     num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
+#
+#     # aug lag initial guesses
+#     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
+#     contact_λ0 = zeros(num_dyn+num_comp)
+#     contact_μ0 = zeros(num_pos)
+#
+#     Dtv = Matrix{T}(undef,sim_data.β_dim,sim_data.num_contacts)
+#     rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
+#     geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
+#     geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, sim_data.num_contacts)
+#     ϕs = Vector{T}(undef, sim_data.num_contacts)
+#     for i = 1:sim_data.num_contacts
+#         v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
+#         Dtv[:,i] = map(sim_data.Ds[i]) do d
+#             dot(transform_to_root(xnext, d.frame) * d, v)
+#         end
+#         rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
+#                                       relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+#         geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
+#         if !isa(sim_data.surface_paths[i],Nothing)
+#             geo_jacobians_surfaces[i] = geometric_jacobian(xnext, sim_data.surface_paths[i])
+#         else
+#             geo_jacobians_surfaces[i] = nothing
+#         end
+#         ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
+#     end
+#
+#     config_derivative = configuration_derivative(xnext)
+#     HΔv = H * (vnext - v0)
+#     bias = u0 .- dynamics_bias(xnext)
+# end
+
+function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vnext::AbstractArray{T};ip_method=false,in_place=true,comp_scale=1.) where T
     x0 = MechanismState(sim_data.mechanism)
     set_configuration!(x0,q0)
     set_velocity!(x0,v0)
@@ -203,8 +244,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
 
     # aug lag initial guesses
     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
-    # contact_λ0 = zeros(num_dyn+num_comp)
-    contact_λ0 = zeros(num_dyn)
+    contact_λ0 = zeros(num_dyn+num_comp)
     contact_μ0 = zeros(num_pos)
 
     Dtv = Matrix{T}(undef,sim_data.β_dim,sim_data.num_contacts)
@@ -232,7 +272,7 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext::AbstractArray{T},vne
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
 
-    τ, x, λ, μ, L = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method,in_place=in_place)
+    τ, x, λ, μ, L = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0,ip_method=ip_method,in_place=in_place,comp_scale=comp_scale)
 
     # for friction coeff regression
     d = dynamics_contact_constraints(x,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,sim_data)
