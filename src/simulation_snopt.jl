@@ -74,7 +74,8 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
 
         if (sim_data.num_contacts > 0)
             if sim_data.implicit_contact
-                contact_bias, contact_x0_sol, contact_λ0_sol, contact_μ0_sol, L_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+                contact_x0_sol, contact_λ0_sol, contact_μ0_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+                contact_bias = τ_total(contact_x0_sol,rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data)
             else
                 contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data)
             end

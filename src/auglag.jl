@@ -14,17 +14,14 @@ function L(x,λ,f,h,c)
     f(x) - dot(λ,h(x)) + .5*c*dot(h(x),h(x))
 end
 
-function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true)
-    num_fosteps = 1
-    num_sosteps = 9
-
+function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true,num_fosteps=1,num_sosteps=9)
     num_h0 = length(λ0)
     num_g0 = length(μ0)
     num_x0 = length(x0)
 
     # note that since this is recursive, the type of x changes after 1 iteration
     # that needs to tbe taken into account
-    # TODO need to find the common type across f,h and g
+    # TODO NEED TO FIND THE SUPER TYPE OF f AND h
     if in_place
         h0x = h0(x0) # todo useless call
         x = Array{eltype(h0x),1}(undef, num_x0+num_g0)
@@ -119,10 +116,9 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true)
         c *= 1.
     end
 
-    Lsol = 0. #L(x,λ,f,h,c)
     xsol = x[1:num_x0]
     λsol = λ[1:num_h0]
     μsol = λ[num_h0+1:num_h0+num_g0]
 
-    xsol, λsol, μsol, Lsol
+    xsol, λsol, μsol
 end
