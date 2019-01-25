@@ -127,15 +127,21 @@ const usrfun = @cfunction(objcon_wrapper, Cvoid, (Ptr{Clong}, Ref{Clong}, Ptr{Cd
 
 # main call to snopt
 function snopt(fun, x0, lb, ub, options;
-               printfile = "snopt-print.out", sumfile = "snopt-summary.out")
+               printfile = "snopt-print.out", sumfile = "snopt-summary.out",
+               num_ineq = nothing, num_eq = nothing)
 
-    # call function
-    res = fun(x0)
-    if (length(res) == 3) || (length(res) == 5)
-        J, c, _ = res
-        ceq = Float64[]
-    else
-        J, c, ceq, _ = res
+    if isa(num_ineq,Nothing) || isa(num_eq,Nothing)
+        # call function
+        res = fun(x0)
+        if (length(res) == 3) || (length(res) == 5)
+            J, c, _ = res
+            ceq = Float64[]
+        else
+            J, c, ceq, _ = res
+        end
+        
+        num_ineq = length(c)
+        num_eq = length(ceq)
     end
 
     # TODO: there is a probably a better way than to use a global
@@ -145,7 +151,7 @@ function snopt(fun, x0, lb, ub, options;
 
     # setup
     Start = 0  # cold start  # TODO: allow warm starts
-    nF = 1 + length(c) + length(ceq)  # 1 objective + constraints
+    nF = 1 + num_ineq + num_eq  # 1 objective + constraints
     n = length(x0)  # number of design variables
     ObjAdd = 0.0  # no constant term added to objective (user can add themselves if desired)
     ObjRow = 1  # objective is first thing returned, then constraints
@@ -177,8 +183,8 @@ function snopt(fun, x0, lb, ub, options;
     Flow = -1e20*ones(nF)  # TODO: check Infinite Bound size
     Fupp = zeros(nF)  # TODO: currently c <= 0, but perhaps change
 
-    if !isempty(ceq) #equality constraints
-        Flow[nF - length(ceq) + 1 : nF] .= 0.0
+    if num_eq > 0 #equality constraints
+        Flow[nF - num_eq + 1 : nF] .= 0.0
     end
 
     # names
