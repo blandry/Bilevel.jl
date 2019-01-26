@@ -16,11 +16,11 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
             end
         end
     end
-    F[isinf.(F)] .= 0. # TODO figure out how to deal with duplicate sv
+    F[isinf.(F)] .= 0. # TODO figure out how to deal with duplicate sv?
 
-    Up = Array{eltype(Av),3}(undef, Tuple([size(Uv)...,num_partials]))
-    sp = Array{eltype(Av),2}(undef, Tuple([length(sv),num_partials]))
-    Vp = Array{eltype(Av),3}(undef, Tuple([size(Vv)...,num_partials]))
+    Up = Array{eltype(Av),3}(undef, (size(Uv)...,num_partials))
+    sp = Array{eltype(Av),2}(undef, (length(sv),num_partials))
+    Vp = Array{eltype(Av),3}(undef, (size(Vv)...,num_partials))
     for k = 1:num_partials
         dA = map(a -> a.partials[k],A)
 
@@ -34,22 +34,17 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
     end
 
     U = Array{T,2}(undef, size(Uv))
+    V = Array{T,2}(undef, size(Vv))
     for i=1:size(U,1)
         for j=1:size(U,2)
             U[i,j] = T(Uv[i,j], ForwardDiff.Partials(Tuple(Up[i,j,:])))
+            V[j,i] = T(Vv[j,i], ForwardDiff.Partials(Tuple(Vp[j,i,:])))
         end
     end
 
     S = Array{T,1}(undef, length(sv))
     for i=1:length(sv)
         S[i] = T(sv[i], ForwardDiff.Partials(Tuple(sp[i,:])))
-    end
-
-    V = Array{T,2}(undef, size(Vv))
-    for i=1:size(V,1)
-        for j=1:size(V,2)
-            V[i,j] = T(Vv[i,j], ForwardDiff.Partials(Tuple(Vp[i,j,:])))
-        end
     end
 
     return U, S, V
