@@ -135,11 +135,14 @@
   <link name="panda_link8">
     <visual>
       <geometry>
-        <box size=".25 .25 .01"/>
+        <box size=".35 .35 .01"/>
       </geometry>
       <material name="blue">
-        <color rgba="0 0.4 .6 1."/>
+        <color rgba=".28125 .23828 .542968 1."/>
       </material>
+      <!-- <material name="green">
+        <color rgba=".1328 .54296 .1328 1."/>
+      </material> -->
     </visual>
     <inertial>
       <mass value="0.1" />
