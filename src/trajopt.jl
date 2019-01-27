@@ -34,6 +34,8 @@ mutable struct TrajData
     state_eq
     fn_ineq
     fn_obj
+    min_τ
+    min_v
 end
 
 function add_state_eq!(traj_data, con_fn, con_indx)
@@ -54,7 +56,9 @@ function get_traj_data(mechanism::Mechanism,
                        env::Environment,
                        Δt::Real,
                        N::Int,
-                       implicit_contact::Bool)
+                       implicit_contact::Bool;
+                       min_τ=true,
+                       min_v=false)
 
     num_q = num_positions(mechanism)
     num_v = num_velocities(mechanism)
@@ -119,7 +123,7 @@ function get_traj_data(mechanism::Mechanism,
                          N,num_slack,num_xn,implicit_contact,
                          num_kin,num_dyn,num_comp,num_dist,num_pos,
                          num_dyn_eq,num_dyn_ineq,num_x,num_eq,num_ineq,state_eq,
-                         fn_ineq,fn_obj)
+                         fn_ineq,fn_obj,min_τ,min_v)
 
     traj_data
 end

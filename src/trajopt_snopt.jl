@@ -140,12 +140,20 @@ function traj_fn_snopt(traj_data)
     end
 
     input_selector_full = traj_data.num_q + traj_data.num_v + (1:traj_data.num_v)
+    vel_selector_full = traj_data.num_q + (1:traj_data.num_v)
     function eval_f(xv)
         x = reshape(xv,traj_data.num_xn,traj_data.N)
         J = 0.
 
-        u = x[input_selector_full,:]
-        J += .5*sum(u.^2)
+        if traj_data.min_τ
+            u = x[input_selector_full,:]
+            J += .5*sum(u.^2)
+        end
+
+        if traj_data.min_v
+            v = x[vel_selector_full,:]
+            J += .5*sum(v.^2)
+        end
 
         for i = 1:length(traj_data.fn_obj)
             J += traj_data.fn_obj[i][1](x[1:traj_data.num_q,traj_data.fn_obj[i][2]])
@@ -183,7 +191,7 @@ function traj_fn_snopt(traj_data)
     update_fn
 end
 
-function trajopt_snopt(traj_data)
+function trajopt_snopt(traj_data;opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6)
     # optimization bounds
     x_L = -1e19 * ones(traj_data.num_x)
     x_U = 1e19 * ones(traj_data.num_x)
@@ -193,9 +201,9 @@ function trajopt_snopt(traj_data)
     options = Dict{String, Any}()
     options["Derivative option"] = 1
     options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-    options["Major optimality tolerance"] = 1e-6
-    options["Major feasibility tolerance"] = 1e-6
-    options["Minor feasibility tolerance"] = 1e-6
+    options["Major optimality tolerance"] = opt_tol
+    options["Major feasibility tolerance"] = major_feas
+    options["Minor feasibility tolerance"] = minor_feas
     # options["Feasible point"] = true
 
     x0 = zeros(traj_data.num_xn,traj_data.N)
