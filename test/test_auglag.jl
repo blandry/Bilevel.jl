@@ -1,4 +1,4 @@
-using BilevelTrajOpt
+using Bilevel
 using LinearAlgebra
 
 a = rand(4)

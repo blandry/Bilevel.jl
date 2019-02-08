@@ -1,4 +1,4 @@
-name = "BilevelTrajOpt"
+name = "Bilevel"
 uuid = "9688c538-179f-11e9-3174-495cea6b7f67"
 authors = ["blandry <blandry@stanford.edu>"]
 version = "0.1.0"

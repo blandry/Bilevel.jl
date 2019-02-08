@@ -1,4 +1,4 @@
-module BilevelTrajOpt
+module Bilevel
 
 __precompile__(false)
 

@@ -1,4 +1,4 @@
-using BilevelTrajOpt
+using Bilevel
 using ForwardDiff
 
 z0 = rand(4)*200. .- 100.

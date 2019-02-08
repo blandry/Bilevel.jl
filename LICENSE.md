@@ -1,4 +1,4 @@
-The BilevelTrajOpt.jl package is licensed under the MIT "Expat" License:
+The Bilevel.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: Benoit Landry.
 >
