@@ -24,7 +24,9 @@ export HalfSpace,
        add_state_eq!,
        add_fn_ineq!,
        add_fn_obj!,
-       trajopt_snopt
+       trajopt_snopt,
+       get_sim_data_bilevel,
+       simulate_bilevel
 
 using Test
 using StaticArrays
@@ -51,5 +53,7 @@ include("simulation.jl")
 include("simulation_snopt.jl")
 include("trajopt.jl")
 include("trajopt_snopt.jl")
+include("simulation_bilevel.jl")
+include("contact_bilevel.jl")
 
 end # module
