@@ -38,9 +38,12 @@ mutable struct TrajData
     min_v
 end
 
-function add_state_eq!(traj_data, con_fn, con_indx)
-    push!(traj_data.state_eq, (con_fn,con_indx))
-    traj_data.num_eq += traj_data.num_q + traj_data.num_v
+function add_state_eq!(traj_data, con_fn, con_indx; con_len=nothing)
+    if isa(con_len,Nothing)
+        con_len = traj_data.num_q + traj_data.num_v
+    end
+    push!(traj_data.state_eq, (con_fn,con_indx,con_len))
+    traj_data.num_eq += con_len
 end
 
 function add_fn_ineq!(traj_data, con_fn, con_indx)
@@ -107,6 +110,8 @@ function get_traj_data(mechanism::Mechanism,
 
     num_dyn_eq = num_kin+num_dyn
     num_dyn_ineq = num_comp+num_dist+num_pos
+    # num_dyn_eq = num_kin+num_dyn+num_comp
+    # num_dyn_ineq = num_dist+num_pos
 
     num_x = N*num_xn
     num_eq = (N-1)*num_dyn_eq

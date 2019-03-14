@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<robot name="Compass">
+  
+  <link name="floor">
+    <!-- <visual>
+      <origin xyz="0 0 -0.05"/>
+      <geometry>
+        <box size="2.2 2.2 0.1"/>
+      </geometry>
+    </visual> -->
+    <collision>
+      <origin xyz="0 0 -0.05"/>
+      <geometry>
+        <box size="2.2 2.2 0.1"/>
+      </geometry>
+    </collision>
+    <collision>
+      <geometry>
+        <plane normal="0 0 1"/>
+      </geometry>
+    </collision>
+  </link>
+  
+  <link name="hip">
+    <inertial>
+      <mass value="10."/>
+      <inertia ixx="1e-6" ixy="0." ixz="0." iyy="1e-6" iyz="0." izz="1e-6"/>
+    </inertial> 
+    <visual>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="floating_base" type="planar">
+    <parent link="floor"/>
+    <child link="hip"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  
+  <link name="left_leg">
+    <inertial>
+      <mass value="1e-5"/>
+      <inertia ixx="1e-6" ixy="0." ixz="0." iyy="1e-6" iyz="0." izz="1e-6"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 -0.5"/>
+      <geometry>
+        <cylinder length="1.0" radius="0.0075"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0 0 -1.0"/>
+      <geometry>
+        <sphere radius=".025"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba=".9 .9 .2 1."/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -1.0"/>
+      <geometry>
+        <sphere radius="0"/>
+      </geometry>
+    </collision>
+  </link>
+  
+  <link name="right_leg">
+    <inertial>
+      <mass value="1e-5"/>
+      <inertia ixx="1e-6" ixy="0." ixz="0." iyy="1e-6" iyz="0." izz="1e-6"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 -0.5"/>
+      <geometry>
+        <cylinder length="1.0" radius="0.0075"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0 0 -1.0"/>
+      <geometry>
+        <sphere radius=".025"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba=".9 .9 .2 1."/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -1.0"/>
+      <geometry>
+        <sphere radius="0"/>
+      </geometry>
+    </collision>
+  </link>
+  
+  <joint name="left_leg_weld" type="fixed">
+    <parent link="hip"/>
+    <child link="left_leg"/>
+  </joint>
+  
+  <joint name="hip_pin" type="revolute">
+    <parent link="hip"/>
+    <child link="right_leg"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  
+  <link name="left_leg_mass">
+  <visual>
+    <origin xyz="0 0 -0.5"/>
+    <geometry>
+      <sphere radius="0.05"/>
+    </geometry>
+    <material name="red">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <inertial>
+    <origin xyz="0 0 -0.5"/>
+    <mass value="5"/>
+    <inertia ixx="1e-6" ixy="0." ixz="0." iyy="1e-6" iyz="0." izz="1e-6"/>
+  </inertial>
+  </link>
+  <joint name="left_leg_mass_weld" type="fixed">
+    <parent link="left_leg"/>
+    <child link="left_leg_mass"/>
+  </joint>
+  <link name="right_leg_mass">
+    <visual>
+      <origin xyz="0 0 -0.5"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 -0.5"/>
+      <mass value="5"/>
+      <inertia ixx="1e-6" ixy="0." ixz="0." iyy="1e-6" iyz="0." izz="1e-6"/>
+    </inertial>
+  </link>
+  <joint name="right_leg_mass_weld" type="fixed">
+    <parent link="right_leg"/>
+    <child link="right_leg_mass"/>
+  </joint>
+  
+</robot>

@@ -16,8 +16,11 @@ function traj_fn_snopt(traj_data)
 
     g_kin_selector = 1:traj_data.num_kin
     g_dyn_selector = g_kin_selector[end] .+ (1:traj_data.num_dyn)
+    g_dyn_eq_selector = vcat(g_kin_selector,g_dyn_selector)
+    g_dyn_ineq_selector = []
     if (traj_data.num_contacts > 0)
         g_dist_selector = g_dyn_selector[end] .+ (1:traj_data.num_dist)
+        g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_dist_selector)
         if traj_data.implicit_contact
             num_dyn_contact = traj_data.num_v
             num_comp_contact = traj_data.num_contacts*(2+traj_data.β_dim)
@@ -28,6 +31,9 @@ function traj_fn_snopt(traj_data)
         else
             g_comp_selector = g_dist_selector[end] .+ (1:traj_data.num_comp)
             g_pos_selector = g_comp_selector[end] .+ (1:traj_data.num_pos)
+            g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_comp_selector,g_pos_selector)
+            # g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_pos_selector)
+            # g_dyn_eq_selector = vcat(g_dyn_eq_selector,g_comp_selector)
         end
     end
 
@@ -57,7 +63,7 @@ function traj_fn_snopt(traj_data)
             Dtv = Matrix{T}(undef, traj_data.β_dim,traj_data.num_contacts)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, traj_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, traj_data.num_contacts)
-            geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, sim_data.num_contacts)
+            geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, traj_data.num_contacts)
             ϕs = Vector{T}(undef, traj_data.num_contacts)
             for i = 1:traj_data.num_contacts
                 v = point_velocity(twist_wrt_world(xnext,traj_data.bodies[i]), transform_to_root(xnext, traj_data.contact_points[i].frame) * traj_data.contact_points[i])
@@ -67,8 +73,8 @@ function traj_fn_snopt(traj_data)
                 rel_transforms[i] = (relative_transform(xnext, traj_data.obstacles[i].contact_face.outward_normal.frame, traj_data.world_frame),
                                               relative_transform(xnext, traj_data.contact_points[i].frame, traj_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, traj_data.paths[i])
-                if !isa(sim_data.surface_paths[i],Nothing)
-                    geo_jacobians_surfaces[i] = geometric_jacobian(xnext, sim_data.surface_paths[i])
+                if !isa(traj_data.surface_paths[i],Nothing)
+                    geo_jacobians_surfaces[i] = geometric_jacobian(xnext, traj_data.surface_paths[i])
                 else
                     geo_jacobians_surfaces[i] = nothing
                 end
@@ -82,10 +88,10 @@ function traj_fn_snopt(traj_data)
 
         if (traj_data.num_contacts > 0)
             if traj_data.implicit_contact
-                contact_x0_sol, contact_λ0_sol, contact_μ0_sol = solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
-                contact_bias = τ_total(contact_x0_sol,rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data)
+                contact_x0_sol, contact_λ0_sol, contact_μ0_sol = solve_implicit_contact_τ(traj_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+                contact_bias = τ_total(contact_x0_sol,rel_transforms,geo_jacobians,geo_jacobians_surfaces,traj_data)
             else
-                contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,traj_data)
+                contact_bias = τ_total(x[contact_selector],rel_transforms,geo_jacobians,geo_jacobians_surfaces,traj_data)
             end
         else
             contact_bias = zeros(traj_data.num_v)
@@ -102,6 +108,7 @@ function traj_fn_snopt(traj_data)
             g[g_dist_selector] = -ϕs
             if !traj_data.implicit_contact
                 g[g_comp_selector] = complementarity_contact_constraints_relaxed(x[contact_selector],slack,ϕs,Dtv,traj_data)
+                # g[g_comp_selector] = complementarity_contact_constraints(x[contact_selector],ϕs,Dtv,traj_data)
                 g[g_pos_selector] = pos_contact_constraints(x[contact_selector],Dtv,traj_data)
             end
         end
@@ -113,20 +120,22 @@ function traj_fn_snopt(traj_data)
         x = reshape(xv,traj_data.num_xn,traj_data.N)
         geq = zeros(T,traj_data.num_eq)
         gineq = zeros(T,traj_data.num_ineq)
+        
         for i = 1:traj_data.N-1
             xn = vcat(x[1:traj_data.num_q+traj_data.num_v,i],x[:,i+1])
             gn = eval_dyn(xn)
-            geq[(i-1)*traj_data.num_dyn_eq+1:i*traj_data.num_dyn_eq] = gn[1:traj_data.num_dyn_eq]
-            gineq[(i-1)*traj_data.num_dyn_ineq+1:i*traj_data.num_dyn_ineq] = gn[traj_data.num_dyn_eq+1:traj_data.num_dyn_eq+traj_data.num_dyn_ineq]
+            geq[(i-1)*traj_data.num_dyn_eq+1:i*traj_data.num_dyn_eq] = gn[g_dyn_eq_selector]
+            gineq[(i-1)*traj_data.num_dyn_ineq+1:i*traj_data.num_dyn_ineq] = gn[g_dyn_ineq_selector]
         end
 
         # TODO handle more types of constraints
         glasteqi = (traj_data.N-1)*traj_data.num_dyn_eq
         glastineqi = (traj_data.N-1)*traj_data.num_dyn_ineq
         for i = 1:length(traj_data.state_eq)
+            glen = traj_data.state_eq[i][3]
             gi = traj_data.state_eq[i][1](x[1:traj_data.num_q+traj_data.num_v,traj_data.state_eq[i][2]])
-            geq[glasteqi+1:glasteqi+traj_data.num_q+traj_data.num_v] = gi
-            glasteqi += traj_data.num_q+traj_data.num_v
+            geq[glasteqi+1:glasteqi+glen] = gi
+            glasteqi += glen
         end
         for i = 1:length(traj_data.fn_ineq)
             gi = traj_data.fn_ineq[i][1](x[1:traj_data.num_q,traj_data.fn_ineq[i][2]])
@@ -157,6 +166,11 @@ function traj_fn_snopt(traj_data)
 
         for i = 1:length(traj_data.fn_obj)
             J += traj_data.fn_obj[i][1](x[1:traj_data.num_q,traj_data.fn_obj[i][2]])
+        end
+
+        if (traj_data.num_slack > 0)
+            slack = x[slack_selector,:]
+            J += sum(slack.^2)
         end
 
         J
@@ -207,7 +221,7 @@ function trajopt_snopt(traj_data;opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6)
     # options["Feasible point"] = true
 
     x0 = zeros(traj_data.num_xn,traj_data.N)
-    x0[1,:] .= 1. # quaternion
+    # x0[1,:] .= 1. # quaternion
     x0 = x0[:]
 
     xopt, fopt, info = snopt(traj_fn, x0, x_L, x_U, options)

@@ -27,6 +27,7 @@ export HalfSpace,
        trajopt_snopt,
        get_sim_data_bilevel,
        simulate_bilevel
+       # solve_implicit_contact_τ_maxdiss
 
 using Test
 using StaticArrays

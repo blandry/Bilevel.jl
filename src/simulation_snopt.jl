@@ -13,8 +13,11 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
 
     g_kin_selector = 1:sim_data.num_kin
     g_dyn_selector = g_kin_selector[end] .+ (1:sim_data.num_dyn)
+    g_eq_selector = vcat(g_kin_selector,g_dyn_selector)
+    g_ineq_selector = []
     if (sim_data.num_contacts > 0)
         g_dist_selector = g_dyn_selector[end] .+ (1:sim_data.num_dist)
+        g_ineq_selector = vcat(g_ineq_selector,g_dist_selector)
         if sim_data.implicit_contact
             num_dyn_contact = sim_data.num_v
             num_comp_contact = sim_data.num_contacts*(2+sim_data.β_dim)
@@ -25,6 +28,9 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
         else
             g_comp_selector = g_dist_selector[end] .+ (1:sim_data.num_comp)
             g_pos_selector = g_comp_selector[end] .+ (1:sim_data.num_pos)
+            g_ineq_selector = vcat(g_ineq_selector,g_comp_selector,g_pos_selector)
+            # g_ineq_selector = vcat(g_ineq_selector,g_pos_selector)
+            # g_eq_selector = vcat(g_eq_selector,g_comp_selector)
         end
     end
 
@@ -94,6 +100,7 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
             g[g_dist_selector] = -ϕs
             if !sim_data.implicit_contact
                 g[g_comp_selector] = complementarity_contact_constraints_relaxed(x[contact_selector],slack,ϕs,Dtv,sim_data)
+                # g[g_comp_selector] = complementarity_contact_constraints(x[contact_selector],ϕs,Dtv,sim_data)
                 g[g_pos_selector] = pos_contact_constraints(x[contact_selector],Dtv,sim_data)
             end
         end
@@ -126,12 +133,12 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
         ForwardDiff.jacobian!(gres, eval_con, x, gcfg)
 
         g = DiffResults.value(gres)
-        ceq = g[1:sim_data.num_dyn_eq]
-        c = g[sim_data.num_dyn_eq+1:sim_data.num_dyn_eq+sim_data.num_dyn_ineq]
+        ceq = g[g_eq_selector]
+        c = g[g_ineq_selector]
 
         dgdx = DiffResults.jacobian(gres)
-        gceq = dgdx[1:sim_data.num_dyn_eq,:]
-        gc = dgdx[sim_data.num_dyn_eq+1:sim_data.num_dyn_eq+sim_data.num_dyn_ineq,:]
+        gceq = dgdx[g_eq_selector,:]
+        gc = dgdx[g_ineq_selector,:]
 
         fail = false
 
@@ -141,7 +148,7 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
     update_fn
 end
 
-function simulate_snopt(sim_data,control!,state0::MechanismState,N)
+function simulate_snopt(sim_data,control!,state0::MechanismState,N;opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6)
     # optimization bounds
     x_L = -1e19 * ones(sim_data.num_xn)
     x_U = 1e19 * ones(sim_data.num_xn)
@@ -167,11 +174,11 @@ function simulate_snopt(sim_data,control!,state0::MechanismState,N)
         options = Dict{String, Any}()
         options["Derivative option"] = 1
         options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = 1e-6
-        options["Major feasibility tolerance"] = 1e-6
+        options["Major optimality tolerance"] = opt_tol
+        options["Major feasibility tolerance"] = major_feas
+        options["Minor feasibility tolerance"] = minor_feas
         if sim_data.implicit_contact
             options["Feasible point"] = true
-            options["Major feasibility tolerance"] = 1e-6
         end
 
         xopt, fopt, info = snopt(update_fn, x, x_L, x_U, options)

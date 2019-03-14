@@ -4,6 +4,7 @@ struct ContactParams
     rel_transforms
     geo_jacobians
     geo_jacobians_surfaces
+    H
     HΔv
     bias
     contact_x0
@@ -171,6 +172,64 @@ function pos_contact_constraints(x,Dtv,sim_data)
     pos_con
 end
 
+function solve_implicit_contact_τ_maxdiss(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,H,bias,v0)
+    # just assume one contact point for now
+    j = 1
+    
+    p = transform(sim_data.contact_points[j], rel_transforms[j][2])
+    P = zeros(3,3)
+    P[1,2] = -p.v[3]
+    P[1,3] = p.v[2]
+    P[2,1] = p.v[3]
+    P[2,3] = -p.v[1]
+    P[3,1] = -p.v[2]
+    P[3,2] = p.v[1]
+    D = hcat(map(d->d.v,sim_data.Ds[j])...)
+    F = hcat(contact_normal(sim_data.obstacles[j]).v,D)
+    J = sim_data.total_weight*F'*(geo_jacobians[j].linear + P'*geo_jacobians[j].angular)
+    Hi = inv(H)
+    
+    Q = sim_data.Δt*J*Hi*J'
+    q = -J*(sim_data.Δt*Hi*bias + v0)
+    
+    num_comp = sim_data.num_contacts*(2+sim_data.β_dim)
+    num_pos = sim_data.num_contacts*(1+sim_data.β_dim) + 2*sim_data.num_contacts*(2+sim_data.β_dim)
+    x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim)+1)
+    λ0 = zeros(1)
+    μ0 = zeros(num_pos+num_comp)
+    
+    f = x̃ -> begin
+        slack = x̃[1]
+        x = x̃[2:end]
+        z = vcat(x[sim_data.c_n_selector],x[sim_data.β_selector])
+        .5*z'*Q*z + q'*z + slack^2
+    end
+    h = x̃ -> begin
+        x = x̃[2:end]
+        # cn = x[sim_data.c_n_selector] - 1.
+        # display(sim_data.Δt*J*Hi*J'*x)
+        # p = -(J*v0 - sim_data.Δt*J*Hi*J'*x + sim_data.Δt*J*Hi*bias)
+        # display(p)
+        p = x[sim_data.c_n_selector]
+        return p
+    end
+    g = x̃ -> begin
+        slack = x̃[1]
+        x = x̃[2:end]
+        p = pos_contact_constraints(x,Dtv,sim_data)
+        c = 1. * complementarity_contact_constraints_relaxed(x,slack,ϕs,Dtv,sim_data)
+        return vcat(p,c)
+    end
+
+    # if ip_method
+        # (x,λ,μ) = (ip_solve(x0,f,h,g,length(λ0),length(μ0)),λ0,μ0)
+    # else
+        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,in_place=false,num_fosteps=5,num_sosteps=10)
+    # end
+
+    return x[2:end], λ, μ
+end
+
 function solve_implicit_contact_τ(sim_data,ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,x0,λ0,μ0;ip_method=false,in_place=true,comp_scale=1.,num_fosteps=1,num_sosteps=9)
     f = x̃ -> begin
         return sum(x̃[sim_data.β_selector]) + sum(x̃[sim_data.c_n_selector])
@@ -211,6 +270,7 @@ function compute_contact_params(sim_data,q0::AbstractArray{T},v0::AbstractArray{
     # aug lag initial guesses
     contact_x0 = zeros(sim_data.num_contacts*(2+sim_data.β_dim))
     contact_λ0 = zeros(num_dyn+num_comp)
+    # contact_λ0 = zeros(num_comp)
     contact_μ0 = zeros(num_pos)
 
     Dtv = Matrix{M}(undef,sim_data.β_dim,sim_data.num_contacts)
@@ -238,7 +298,7 @@ function compute_contact_params(sim_data,q0::AbstractArray{T},v0::AbstractArray{
     HΔv = H * (vnext - v0)
     bias = u0 .- dynamics_bias(xnext)
 
-    contact_params = ContactParams(ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
+    contact_params = ContactParams(ϕs,Dtv,rel_transforms,geo_jacobians,geo_jacobians_surfaces,H,HΔv,bias,contact_x0,contact_λ0,contact_μ0)
 
     return contact_params
 end
@@ -249,6 +309,19 @@ function solve_implicit_contact_τ(sim_data,q0,v0,u0,qnext,vnext;ip_method=false
     x, λ, μ = solve_implicit_contact_τ(sim_data,contact_params.ϕs,contact_params.Dtv,contact_params.rel_transforms,contact_params.geo_jacobians,contact_params.geo_jacobians_surfaces,
                                        contact_params.HΔv,contact_params.bias,contact_params.contact_x0,contact_params.contact_λ0,contact_params.contact_μ0,
                                        ip_method=ip_method,in_place=in_place,comp_scale=comp_scale)
+
+    τ = τ_total(x,contact_params.rel_transforms,contact_params.geo_jacobians,contact_params.geo_jacobians_surfaces,sim_data)
+
+    return τ, x, λ, μ
+end
+
+function solve_implicit_contact_τ_maxdiss(sim_data,q0,v0,u0,qnext,vnext;ip_method=false,in_place=true)
+    contact_params = compute_contact_params(sim_data,q0,v0,u0,qnext,vnext)
+    
+    # sim_data,ϕs,rel_transforms,geo_jacobians,H,bias
+    x, λ, μ = solve_implicit_contact_τ_maxdiss(sim_data,contact_params.ϕs,contact_params.Dtv,
+                    contact_params.rel_transforms,contact_params.geo_jacobians,
+                    contact_params.H,contact_params.bias,v0)
 
     τ = τ_total(x,contact_params.rel_transforms,contact_params.geo_jacobians,contact_params.geo_jacobians_surfaces,sim_data)
 
