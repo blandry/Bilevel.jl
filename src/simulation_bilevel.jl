@@ -18,14 +18,6 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
     if (sim_data.num_contacts > 0)
         g_dist_selector = g_dyn_selector[end] .+ (1:sim_data.num_contacts)
         g_ineq_selector = vcat(g_ineq_selector,g_dist_selector)
-        if !sim_data.implicit_contact
-            g_compression_selector = g_dist_selector[end] .+ (1:sim_data.num_contacts)
-            g_cone_selector = g_compression_selector[end] .+ (1:sim_data.num_contacts)
-            g_comp_selector = g_cone_selector[end] .+ (1:2*sim_data.num_contacts)
-            g_eq_selector = vcat(g_eq_selector,g_comp_selector)
-            g_ineq_selector = vcat(g_ineq_selector,g_compression_selector,g_cone_selector)
-            # g_ineq_selector = vcat(g_ineq_selector,g_compression_selector,g_cone_selector,g_comp_selector)
-        end
     end
 
     x0 = MechanismState(sim_data.mechanism)
@@ -44,85 +36,42 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
         xnext = MechanismState{T}(sim_data.mechanism)
         set_configuration!(xnext, qnext)
         set_velocity!(xnext, vnext)
-        # H = mass_matrix(xnext)
 
         if (sim_data.num_contacts > 0)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
-            geo_jacobians_surfaces = Vector{Union{Nothing,GeometricJacobian{Matrix{T}}}}(undef, sim_data.num_contacts)
             ϕs = Vector{T}(undef, sim_data.num_contacts)
-            contact_vels = Vector{T}(undef, sim_data.num_contacts)
             for i = 1:sim_data.num_contacts
                 rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                               relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
-                if !isa(sim_data.surface_paths[i],Nothing)
-                    geo_jacobians_surfaces[i] = geometric_jacobian(xnext, sim_data.surface_paths[i])
-                else
-                    geo_jacobians_surfaces[i] = nothing
-                end
                 ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
-                # contact_vels[i] = point_jacobian(xnext, sim_data.paths[i], sim_data.contact_points[i]) * vnext
-                
-                v = point_velocity(twist_wrt_world(xnext,sim_data.bodies[i]), transform_to_root(xnext, sim_data.contact_points[i].frame) * sim_data.contact_points[i])
-                vd = transform(v,relative_transform(xnext,sim_data.world_frame,sim_data.obstacles[i].contact_face.outward_normal.frame))
-                contact_vels[i] = norm(vd)
             end
         end
-        # display(contact_vels)
 
         config_derivative = configuration_derivative(xnext)
-        HΔv = H * (vnext - v0)
         dyn_bias = dynamics_bias(xnext)
 
         if (sim_data.num_contacts > 0)
-            if sim_data.implicit_contact
-                # TODO 
-            else
-                contact_impulse = τ_total_bilevel(x[contact_selector],rel_transforms,geo_jacobians,geo_jacobians_surfaces,sim_data)
-            end
+            contact_force = solve_contact_τ(sim_data,rel_transforms,geo_jacobians,H,dyn_bias,v0,u0)
         else
-            contact_impulse = zeros(sim_data.num_v)
+            contact_force = zeros(sim_data.num_v)
         end
 
         g = zeros(T,sim_data.num_dyn_eq+sim_data.num_dyn_ineq)
 
         g[g_kin_selector] = qnext .- q0 .- sim_data.Δt .* config_derivative
-        g[g_dyn_selector] = HΔv .+ sim_data.Δt*dyn_bias .- sim_data.Δt*u0 + contact_impulse 
+        g[g_dyn_selector] = H * (vnext - v0) .+ sim_data.Δt*(dyn_bias .- u0 .+ contact_force)
 
         if (sim_data.num_contacts > 0)
             g[g_dist_selector] = -ϕs
-            if !sim_data.implicit_contact                
-                g[g_compression_selector] = bilevel_compression_con(x[contact_selector],sim_data)
-                g[g_cone_selector] = bilevel_cone_con(x[contact_selector],sim_data)
-                g[g_comp_selector] = bilevel_comp_con(x[contact_selector],ϕs,contact_vels,sim_data)                
-                # g[g_comp_selector] = bilevel_comp_con_relaxed(x[contact_selector],slack,ϕs,sim_data)                
-            end
         end
 
         g
     end
 
     function eval_f(x::AbstractArray{T}) where T
-        qnext = x[qnext_selector]
-        vnext = x[vnext_selector]
-
-        # xnext = MechanismState{T}(sim_data.mechanism)
-        # set_configuration!(xnext, qnext)
-        # set_velocity!(xnext, vnext)
-        # H = mass_matrix(xnext)
-
-        if (sim_data.num_slack > 0)
-            slack = x[slack_selector]
-        end
-
-        if sim_data.implicit_contact
-            # TODO
-            # f = bilevel_dissipation(q0,v0,u0,qnext,vnext,H)
-        else 
-            f = vnext' * H * vnext
-            # f = vnext' * H * vnext + slack'*slack
-        end
+        f = 0.
 
         f
     end
@@ -155,7 +104,7 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
     update_fn
 end
 
-function simulate_bilevel(sim_data,control!,state0::MechanismState,N)
+function simulate_bilevel(sim_data,control!,state0::MechanismState,N;opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6)
     # optimization bounds
     x_L = -1e19 * ones(sim_data.num_xn)
     x_U = 1e19 * ones(sim_data.num_xn)
@@ -181,8 +130,9 @@ function simulate_bilevel(sim_data,control!,state0::MechanismState,N)
         options = Dict{String, Any}()
         options["Derivative option"] = 1
         options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = 1e-6
-        options["Major feasibility tolerance"] = 1e-6
+        options["Major optimality tolerance"] = opt_tol
+        options["Major feasibility tolerance"] = major_feas
+        options["Minor feasibility tolerance"] = minor_feas
 
         xopt, fopt, info = snopt(update_fn, x, x_L, x_U, options)
         println(info)
