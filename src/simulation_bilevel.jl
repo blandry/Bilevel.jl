@@ -6,10 +6,6 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
         slack_selector = last_selector .+ (1:sim_data.num_slack)
         last_selector = slack_selector[end]
     end
-    if (sim_data.num_contacts > 0 && !sim_data.implicit_contact)
-        contact_selector = last_selector .+ (1:3*sim_data.num_contacts)
-        last_selector = contact_selector[end]
-    end
 
     g_kin_selector = 1:sim_data.num_q
     g_dyn_selector = g_kin_selector[end] .+ (1:sim_data.num_v)
@@ -41,11 +37,13 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
             ϕs = Vector{T}(undef, sim_data.num_contacts)
+            c_ns = Vector{T}(undef, sim_data.num_contacts)
             for i = 1:sim_data.num_contacts
                 rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
                                               relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
                 ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
+                # c_ns[i] = # TODO get value of dual instead of using an extra variable
             end
         end
 
@@ -53,7 +51,9 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
         dyn_bias = dynamics_bias(xnext)
 
         if (sim_data.num_contacts > 0)
-            contact_force = solve_contact_τ(sim_data,rel_transforms,geo_jacobians,H,dyn_bias,v0,u0)
+            # contact_force = solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0,c_ns,ip_method=false)
+            # contact_force = [0.,0.,0.,0.,0.,1.] .* slack[1]
+            contact_force, contact_x, contact_λ, contact_μ = solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0,slack[1],ip_method=false)
         else
             contact_force = zeros(sim_data.num_v)
         end
@@ -72,6 +72,11 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
 
     function eval_f(x::AbstractArray{T}) where T
         f = 0.
+        
+        if (sim_data.num_slack > 0)
+            slack = x[slack_selector]
+            f += slack'*slack
+        end
 
         f
     end

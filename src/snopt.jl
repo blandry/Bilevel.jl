@@ -365,6 +365,8 @@ function snopt(fun, x0, lb, ub, options;
         (Ref{Clong},),
         isumm)
 
+    # display(Fmul)
+
     return x, F[1], codes[INFO[1]]  # xstar, fstar, info
 
 end
