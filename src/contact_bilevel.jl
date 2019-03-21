@@ -63,10 +63,11 @@ function solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0
     if ip_method
         (x,λ,μ) = (ip_solve(x0,f,h,g,length(λ0),length(μ0)),λ0,μ0)
     else
-        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,in_place=in_place,num_fosteps=1,num_sosteps=5)
+        # (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,in_place=in_place,num_fosteps=1,num_sosteps=10)
+        (x,λ,μ) = auglag_solve(x0,λ0,μ0,f,h,g,in_place=in_place,num_fosteps=1,num_sosteps=10)
     end
 
-    τ = 0.
+    τ = zeros(sim_data.num_v)
     zs = vcat(c_ns',reshape(x,sim_data.β_dim,sim_data.num_contacts))
     for j = 1:sim_data.num_contacts
         τ += Js[j]'*Fs[j]*zs[:,j]

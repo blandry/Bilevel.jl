@@ -31,9 +31,9 @@ function traj_fn_snopt(traj_data)
         else
             g_comp_selector = g_dist_selector[end] .+ (1:traj_data.num_comp)
             g_pos_selector = g_comp_selector[end] .+ (1:traj_data.num_pos)
-            g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_comp_selector,g_pos_selector)
-            # g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_pos_selector)
-            # g_dyn_eq_selector = vcat(g_dyn_eq_selector,g_comp_selector)
+            # g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_comp_selector,g_pos_selector)
+            g_dyn_ineq_selector = vcat(g_dyn_ineq_selector,g_pos_selector)
+            g_dyn_eq_selector = vcat(g_dyn_eq_selector,g_comp_selector)
         end
     end
 
@@ -99,16 +99,14 @@ function traj_fn_snopt(traj_data)
 
         g = zeros(T, traj_data.num_dyn_eq+traj_data.num_dyn_ineq)
 
-        # == 0
         g[g_kin_selector] = qnext .- q0 .- traj_data.Δt .* config_derivative
         g[g_dyn_selector] = HΔv .- traj_data.Δt .* (bias .- contact_bias)
 
-        # <= 0
         if (traj_data.num_contacts > 0)
             g[g_dist_selector] = -ϕs
             if !traj_data.implicit_contact
-                g[g_comp_selector] = complementarity_contact_constraints_relaxed(x[contact_selector],slack,ϕs,Dtv,traj_data)
-                # g[g_comp_selector] = complementarity_contact_constraints(x[contact_selector],ϕs,Dtv,traj_data)
+                # g[g_comp_selector] = complementarity_contact_constraints_relaxed(x[contact_selector],slack,ϕs,Dtv,traj_data)
+                g[g_comp_selector] = complementarity_contact_constraints(x[contact_selector],ϕs,Dtv,traj_data)
                 g[g_pos_selector] = pos_contact_constraints(x[contact_selector],Dtv,traj_data)
             end
         end

@@ -113,7 +113,6 @@ function objcon_wrapper(status_::Ptr{Clong}, n::Clong, x_::Ptr{Cdouble},
         end
     end
 
-
     # check if solutions fails
     if fail
         unsafe_store!(status_, -1, 1)
@@ -366,6 +365,7 @@ function snopt(fun, x0, lb, ub, options;
         isumm)
 
     # display(Fmul)
+    # display(F)
 
     return x, F[1], codes[INFO[1]]  # xstar, fstar, info
 

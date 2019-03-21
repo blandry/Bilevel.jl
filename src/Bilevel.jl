@@ -27,7 +27,9 @@ export HalfSpace,
        trajopt_snopt,
        get_sim_data_bilevel,
        simulate_bilevel,
-       solve_contact_τ
+       solve_contact_τ,
+       get_traj_data_bilevel,
+       trajopt_bilevel
 
 using Test
 using StaticArrays
@@ -53,6 +55,7 @@ include("simulation.jl")
 include("simulation_snopt.jl")
 include("trajopt.jl")
 include("trajopt_snopt.jl")
+include("trajopt_bilevel.jl")
 include("simulation_bilevel.jl")
 include("contact_bilevel.jl")
 

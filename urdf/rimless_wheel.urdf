@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+
+<robot name="rimless_wheel">
+  <link name="floor">
+    <!-- <visual>
+      <origin xyz="0 0 -0.05"/>
+      <geometry>
+        <box size="2.2 2.2 0.1"/>
+      </geometry>
+    </visual> -->
+    <collision>
+      <origin xyz="0 0 -0.05"/>
+      <geometry>
+        <box size="2.2 2.2 0.1"/>
+      </geometry>
+    </collision>
+    <collision>
+      <geometry>
+        <plane normal="0 0 1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="wheel">
+  	<inertial>
+      <origin rpy="1.5707963267948966 0 0"/>
+  		<mass value="1.0"/>
+  		<inertia ixx="1" iyy="1" izz="1" ixy="0.0" ixz="0.0" iyz="0.0"/>
+  	</inertial>
+  	<visual>
+      <origin rpy="1.5707963267948966 0 0"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.02"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="floating_base" type="planar">
+    <axis xyz="0 -1 0"/>
+    <parent link="floor"/>
+    <child link="wheel"/>
+  </joint>
+
+  <link name="spoke1">
+    <visual>
+      <geometry>
+        <cylinder radius="0.005" length="0.5"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="spoke2">
+    <visual>
+      <geometry>
+        <cylinder radius="0.005" length="0.5"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="spoke3">
+    <visual>
+      <geometry>
+        <cylinder radius="0.005" length="0.5"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="spoke4">
+    <visual>
+      <geometry>
+        <cylinder radius="0.005" length="0.5"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.25"/>
+      <geometry>
+        <sphere radius="0.0"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="wheel_to_spoke1" type="fixed">
+    <parent link="wheel"/>
+    <child link="spoke1"/>
+  </joint>
+
+  <joint name="wheel_to_spoke2" type="fixed">
+    <origin rpy="0 0.7853981633974483 0"/>
+    <parent link="wheel"/>
+    <child link="spoke2"/>
+  </joint>
+
+  <joint name="wheel_to_spoke3" type="fixed">
+    <origin rpy="0 1.5707963267948966 0"/>
+    <parent link="wheel"/>
+    <child link="spoke3"/>
+  </joint>
+
+  <joint name="wheel_to_spoke4" type="fixed">
+    <origin rpy="0 2.356194490192345 0"/>
+    <parent link="wheel"/>
+    <child link="spoke4"/>
+  </joint>
+</robot>

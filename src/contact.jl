@@ -106,13 +106,13 @@ function complementarity_contact_constraints(x,ϕs,Dtv,sim_data)
     λpDtv = λ_all .+ Dtv
     β_all = reshape(x[β_selector],β_dim,num_contacts)
     for i = 1:num_contacts
-        # comp_con = vcat(comp_con, λpDtv[:,i]' * β_all[:,i])
-        comp_con = vcat(comp_con, fischer_burm(λpDtv[:,i],β_all[:,i]))
+        comp_con = vcat(comp_con, λpDtv[:,i] .* β_all[:,i])
+        # comp_con = vcat(comp_con, fischer_burm(λpDtv[:,i],β_all[:,i]))
     end
 
     # (μ * c_n - sum(β)) * λ = 0
-    # comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector])
-    comp_con = vcat(comp_con, fischer_burm((μs .* x[c_n_selector] - sum(β_all,dims=1)[:]),x[λ_selector]))
+    comp_con = vcat(comp_con, (μs .* x[c_n_selector] - sum(β_all,dims=1)[:]) .* x[λ_selector])
+    # comp_con = vcat(comp_con, fischer_burm((μs .* x[c_n_selector] - sum(β_all,dims=1)[:]),x[λ_selector]))
 
     comp_con
 end

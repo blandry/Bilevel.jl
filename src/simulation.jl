@@ -77,6 +77,7 @@ function get_sim_data(mechanism::Mechanism,
         num_xn = num_q+num_v+num_slack
     else
         num_slack = 1
+        # num_slack = 0
         num_xn = num_q+num_v+num_slack+num_contacts*(2+β_dim)
     end
 
@@ -88,6 +89,8 @@ function get_sim_data(mechanism::Mechanism,
 
     num_dyn_eq = num_kin+num_dyn
     num_dyn_ineq = num_comp+num_dist+num_pos
+    # num_dyn_eq = num_kin+num_dyn+num_comp
+    # num_dyn_ineq = num_dist+num_pos
 
     sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,
                        world,world_frame,total_weight,
@@ -161,10 +164,15 @@ function get_sim_data_bilevel(mechanism::Mechanism,
       end
     end
 
+    # num_slack = 0
+    # num_xn = num_q+num_v+num_contacts+num_slack
+    # num_dyn_eq = num_q+num_v+num_contacts
+    # num_dyn_ineq = 2*num_contacts
+    
     num_slack = 1
-    num_xn = num_q+num_v+num_slack
+    num_xn = num_q+num_v+num_contacts+num_slack
     num_dyn_eq = num_q+num_v
-    num_dyn_ineq = num_contacts
+    num_dyn_ineq = 3*num_contacts
 
     sim_data = SimDataBilevel(Δt,mechanism,world,world_frame,total_weight,bodies,
                               contact_points,obstacles,μs,Ds,paths,surface_paths,num_q,num_v,num_contacts,

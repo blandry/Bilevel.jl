@@ -91,11 +91,9 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
 
         g = zeros(T,sim_data.num_dyn_eq+sim_data.num_dyn_ineq)
 
-        # == 0
         g[g_kin_selector] = qnext .- q0 .- sim_data.Δt .* config_derivative # == 0
         g[g_dyn_selector] = HΔv .- sim_data.Δt .* (bias .- contact_bias)
 
-        # <= 0
         if (sim_data.num_contacts > 0)
             g[g_dist_selector] = -ϕs
             if !sim_data.implicit_contact
@@ -108,16 +106,18 @@ function sim_fn_snopt(sim_data,q0,v0,u0)
         g
     end
 
-    kreg = 0.
     function eval_f(x::AbstractArray{T}) where T
+        f = 0.
+
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
-        f = .5*slack'*slack + kreg*.5*x'*x
+        f += .5*slack'*slack
 
         f
     end
 
     function eval_dfdx(x::AbstractArray{T}) where T
-        dfdx = kreg*ones(length(x))
+        dfdx = zeros(sim_data.num_xn)
+        
         slack = x[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack]
         dfdx[sim_data.num_q+sim_data.num_v+1:sim_data.num_q+sim_data.num_v+sim_data.num_slack] += slack
 

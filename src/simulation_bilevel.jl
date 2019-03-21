@@ -2,6 +2,10 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
     qnext_selector = 1:sim_data.num_q
     vnext_selector = qnext_selector[end] .+ (1:sim_data.num_v)
     last_selector = vnext_selector[end]
+    if (sim_data.num_contacts > 0)
+        c_n_selector = last_selector .+ (1:sim_data.num_contacts)
+        last_selector = c_n_selector[end]
+    end
     if (sim_data.num_slack > 0)
         slack_selector = last_selector .+ (1:sim_data.num_slack)
         last_selector = slack_selector[end]
@@ -9,11 +13,17 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
 
     g_kin_selector = 1:sim_data.num_q
     g_dyn_selector = g_kin_selector[end] .+ (1:sim_data.num_v)
-    g_eq_selector = vcat(g_kin_selector,g_dyn_selector)
     g_ineq_selector = []
+    g_eq_selector = vcat(g_kin_selector,g_dyn_selector)
     if (sim_data.num_contacts > 0)
         g_dist_selector = g_dyn_selector[end] .+ (1:sim_data.num_contacts)
-        g_ineq_selector = vcat(g_ineq_selector,g_dist_selector)
+        g_norm_selector = g_dist_selector[end] .+ (1:sim_data.num_contacts)
+        g_comp_selector = g_norm_selector[end] .+ (1:sim_data.num_contacts)
+        
+        # g_ineq_selector = vcat(g_ineq_selector,g_dist_selector,g_norm_selector)
+        # g_eq_selector = vcat(g_eq_selector,g_comp_selector)
+        
+        g_ineq_selector = vcat(g_ineq_selector,g_dist_selector,g_norm_selector,g_comp_selector)
     end
 
     x0 = MechanismState(sim_data.mechanism)
@@ -24,7 +34,9 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
     function eval_con(x::AbstractArray{T}) where T
         qnext = x[qnext_selector]
         vnext = x[vnext_selector]
-
+        if (sim_data.num_contacts > 0)
+            c_ns = x[c_n_selector] # TODO get this from the dual not as a variable
+        end
         if (sim_data.num_slack > 0)
             slack = x[slack_selector]
         end
@@ -37,13 +49,10 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
             rel_transforms = Vector{Tuple{Transform3D{T}, Transform3D{T}}}(undef, sim_data.num_contacts) # force transform, point transform
             geo_jacobians = Vector{GeometricJacobian{Matrix{T}}}(undef, sim_data.num_contacts)
             ϕs = Vector{T}(undef, sim_data.num_contacts)
-            c_ns = Vector{T}(undef, sim_data.num_contacts)
             for i = 1:sim_data.num_contacts
-                rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),
-                                              relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
+                rel_transforms[i] = (relative_transform(xnext, sim_data.obstacles[i].contact_face.outward_normal.frame, sim_data.world_frame),relative_transform(xnext, sim_data.contact_points[i].frame, sim_data.world_frame))
                 geo_jacobians[i] = geometric_jacobian(xnext, sim_data.paths[i])
                 ϕs[i] = separation(sim_data.obstacles[i], transform(xnext, sim_data.contact_points[i], sim_data.obstacles[i].contact_face.outward_normal.frame))
-                # c_ns[i] = # TODO get value of dual instead of using an extra variable
             end
         end
 
@@ -51,9 +60,7 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
         dyn_bias = dynamics_bias(xnext)
 
         if (sim_data.num_contacts > 0)
-            # contact_force = solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0,c_ns,ip_method=false)
-            # contact_force = [0.,0.,0.,0.,0.,1.] .* slack[1]
-            contact_force, contact_x, contact_λ, contact_μ = solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0,slack[1],ip_method=false)
+            contact_force, contact_x, contact_λ, contact_μ = solve_contact_τ(sim_data,H,dyn_bias,rel_transforms,geo_jacobians,v0,u0,c_ns,ip_method=false,in_place=false)
         else
             contact_force = zeros(sim_data.num_v)
         end
@@ -65,6 +72,10 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
 
         if (sim_data.num_contacts > 0)
             g[g_dist_selector] = -ϕs
+            g[g_norm_selector] = -c_ns
+
+            # g[g_comp_selector] = ϕs .* c_ns
+            g[g_comp_selector] = ϕs .* c_ns - slack'*slack
         end
 
         g
@@ -138,6 +149,7 @@ function simulate_bilevel(sim_data,control!,state0::MechanismState,N;opt_tol=1e-
         options["Major optimality tolerance"] = opt_tol
         options["Major feasibility tolerance"] = major_feas
         options["Minor feasibility tolerance"] = minor_feas
+        # options["Feasible point"] = true
 
         xopt, fopt, info = snopt(update_fn, x, x_L, x_U, options)
         println(info)
