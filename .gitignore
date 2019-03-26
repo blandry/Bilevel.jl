@@ -2,5 +2,5 @@
 *.jl.*.cov
 *.jl.mem
 .DS_Store
-*/snopt-print.out
-*/snopt-summary.out
+*snopt-print.out
+*snopt-summary.out

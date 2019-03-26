@@ -32,7 +32,7 @@
   </inertial>
   </link>
 
-  <joint name="floor_to_ball" type="fixed">
+  <joint name="floor_to_ball" type="floating">
     <parent link="floor"/>
     <child link="ball"/>
     <origin xyz="0 0 0"/>

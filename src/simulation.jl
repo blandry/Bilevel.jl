@@ -1,182 +1,53 @@
-mutable struct SimData
-    Δt
-    mechanism
-    num_q
-    num_v
-    num_contacts
-    β_dim
-    world
-    world_frame
-    total_weight
-    bodies
-    contact_points
-    obstacles
-    μs
-    paths
-    surface_paths
-    Ds
-    β_selector
-    λ_selector
-    c_n_selector
-    num_slack
-    num_xn
-    implicit_contact
-    num_kin
-    num_dyn
-    num_comp
-    num_dist
-    num_pos
-    num_dyn_eq
-    num_dyn_ineq
+struct SimData
+    mechanism::Mechanism
+    x0_cache::StateCache
+    xnext_cache::StateCache
+    env_cache::Environment
+    Δt::Real
+    relax_comp::Bool
+    vs::VariableSelector
+    cs::ConstraintSelector
+    generate_solver_fn::Symbol
 end
 
-function get_sim_data(mechanism::Mechanism,
-                      env::Environment,
-                      Δt::Real,
-                      implicit_contact::Bool)
+function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
+                  opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
+    x_L = -1e19 * ones(sim_data.num_xn)
+    x_U = 1e19 * ones(sim_data.num_xn)
+    results = zeros(sim_data.num_xn)
+    results[1:sim_data.num_q] = configuration(state0)
+    results[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = velocity(state0)
 
-    num_q = num_positions(mechanism)
-    num_v = num_velocities(mechanism)
-    num_contacts = length(env.contacts)
-    if num_contacts > 0
-        β_dim = length(contact_basis(env.contacts[1][3]))
-    else
-        β_dim = Int(0)
+    x_ctrl = MechanismState(sim_data.mechanism)
+    u0 = zeros(sim_data.num_v)
+
+    for i in 1:N
+        x = results[:,end]
+        q0 = x[1:sim_data.num_q]
+        v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+
+        set_configuration!(x_ctrl,q0)
+        set_velocity!(x_ctrl,v0)
+        setdirty!(x_ctrl)
+        control!(u0, (i-1)*sim_data.Δt, x_ctrl)
+
+        solver_fn = eval(sim_data.generate_solver_fn)(sim_data,q0,v0,u0)
+
+        options = Dict{String, Any}()
+        options["Derivative option"] = 1
+        options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
+        options["Major optimality tolerance"] = opt_tol
+        options["Major feasibility tolerance"] = major_feas
+        options["Minor feasibility tolerance"] = minor_feas
+
+        xopt, fopt, info = snopt(solver_fn, x, x_L, x_U, options)
+        
+        if verbose >= 1
+            println(info)
+        end
+
+        results = hcat(results,xopt)
     end
 
-    # some constants throughout the simulation
-    world = root_body(mechanism)
-    world_frame = default_frame(world)
-    total_weight = mass(mechanism) * norm(mechanism.gravitational_acceleration)
-    bodies = []
-    contact_points = []
-    obstacles = []
-    μs = []
-    paths = []
-    surface_paths = []
-    Ds = []
-    for (body, contact_point, obstacle) in env.contacts
-      push!(bodies, body)
-      push!(contact_points, contact_point)
-      push!(obstacles, obstacle)
-      push!(μs, obstacle.μ)
-      push!(paths, path(mechanism, body, world))
-      if obstacle.is_floating
-          push!(surface_paths, path(mechanism, obstacle.body, world))
-      else
-          push!(surface_paths, nothing)
-      end
-      push!(Ds, contact_basis(obstacle))
-    end
-    β_selector = findall(x->x!=0,repeat(vcat(ones(β_dim),[0,0]),num_contacts))
-    λ_selector = findall(x->x!=0,repeat(vcat(zeros(β_dim),[1,0]),num_contacts))
-    c_n_selector = findall(x->x!=0,repeat(vcat(zeros(β_dim),[0,1]),num_contacts))
-
-    if implicit_contact
-        num_slack = 0
-        num_xn = num_q+num_v+num_slack
-    else
-        num_slack = 1
-        # num_slack = 0
-        num_xn = num_q+num_v+num_slack+num_contacts*(2+β_dim)
-    end
-
-    num_kin = num_q
-    num_dyn = num_v
-    num_comp = num_contacts*(2+β_dim)
-    num_dist = num_contacts
-    num_pos = num_contacts*(1+β_dim) + 2*num_contacts*(2+β_dim)
-
-    num_dyn_eq = num_kin+num_dyn
-    num_dyn_ineq = num_comp+num_dist+num_pos
-    # num_dyn_eq = num_kin+num_dyn+num_comp
-    # num_dyn_ineq = num_dist+num_pos
-
-    sim_data = SimData(Δt,mechanism,num_q,num_v,num_contacts,β_dim,
-                       world,world_frame,total_weight,
-                       bodies,contact_points,obstacles,μs,paths,surface_paths,Ds,
-                       β_selector,λ_selector,c_n_selector,
-                       num_slack,num_xn,implicit_contact,
-                       num_kin,num_dyn,num_comp,num_dist,num_pos,
-                       num_dyn_eq,num_dyn_ineq)
-
-    sim_data
-end
-
-mutable struct SimDataBilevel
-    Δt
-    mechanism
-    world
-    world_frame
-    total_weight
-    bodies
-    contact_points
-    obstacles
-    μs
-    Ds
-    paths
-    surface_paths
-    num_q
-    num_v
-    num_contacts
-    β_dim
-    num_slack
-    num_xn
-    num_dyn_eq
-    num_dyn_ineq
-end
-
-function get_sim_data_bilevel(mechanism::Mechanism,
-							  env::Environment,
-    			  			  Δt::Real)
-	
-	num_q = num_positions(mechanism)
-    num_v = num_velocities(mechanism)
-    num_contacts = length(env.contacts)
-    if num_contacts > 0
-        β_dim = length(contact_basis(env.contacts[1][3]))
-    else
-        β_dim = Int(0)
-    end
-    
-	# some constants throughout the simulation
-    world = root_body(mechanism)
-    world_frame = default_frame(world)
-    total_weight = mass(mechanism) * norm(mechanism.gravitational_acceleration)
-    bodies = []
-    contact_points = []
-    obstacles = []
-    μs = []
-    Ds = []
-    paths = []
-    surface_paths = []
-    for (body, contact_point, obstacle) in env.contacts
-      push!(bodies, body)
-      push!(contact_points, contact_point)
-      push!(obstacles, obstacle)
-      push!(μs, obstacle.μ)
-      push!(Ds, hcat(map(d->d.v,contact_basis(obstacle))...))
-      push!(paths, path(mechanism, body, world))
-      if obstacle.is_floating
-          push!(surface_paths, path(mechanism, obstacle.body, world))
-      else
-          push!(surface_paths, nothing)
-      end
-    end
-
-    # num_slack = 0
-    # num_xn = num_q+num_v+num_contacts+num_slack
-    # num_dyn_eq = num_q+num_v+num_contacts
-    # num_dyn_ineq = 2*num_contacts
-    
-    num_slack = 1
-    num_xn = num_q+num_v+num_contacts+num_slack
-    num_dyn_eq = num_q+num_v
-    num_dyn_ineq = 3*num_contacts
-
-    sim_data = SimDataBilevel(Δt,mechanism,world,world_frame,total_weight,bodies,
-                              contact_points,obstacles,μs,Ds,paths,surface_paths,num_q,num_v,num_contacts,
-                              β_dim,num_slack,num_xn,num_dyn_eq,num_dyn_ineq)
-
-    sim_data          
+    results
 end

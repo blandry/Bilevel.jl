@@ -1,4 +1,29 @@
-function sim_fn_bilevel(sim_data,q0,v0,u0)
+function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
+                             relax_comp=false)
+	num_q = num_positions(mechanism)
+    num_v = num_velocities(mechanism)
+    num_contacts = length(env.contacts)
+    if num_contacts > 0
+        β_dim = length(contact_basis(env.contacts[1][3]))
+    else
+        β_dim = 0
+    end
+    if relax_comp
+        num_slack = 1       
+    else
+        num_slack = 0
+    end
+    num_xn = num_q+num_v+num_contacts+num_slack
+
+    generate_solver_fn = :generate_solver_fn_sim_direct
+
+    sim_data = SimData(mechanism,env,Δt,num_q,num_v,num_contacts,β_dim,
+                       num_slack,num_xn,relax_comp,generate_solver_fn)
+
+    sim_data
+end
+
+function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
     qnext_selector = 1:sim_data.num_q
     vnext_selector = qnext_selector[end] .+ (1:sim_data.num_v)
     last_selector = vnext_selector[end]
@@ -118,44 +143,4 @@ function sim_fn_bilevel(sim_data,q0,v0,u0)
     end
 
     update_fn
-end
-
-function simulate_bilevel(sim_data,control!,state0::MechanismState,N;opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6)
-    # optimization bounds
-    x_L = -1e19 * ones(sim_data.num_xn)
-    x_U = 1e19 * ones(sim_data.num_xn)
-    results = zeros(sim_data.num_xn)
-    results[1:sim_data.num_q] = configuration(state0)
-    results[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = velocity(state0)
-
-    x_ctrl = MechanismState(sim_data.mechanism)
-    u0 = zeros(sim_data.num_v)
-
-    for i in 1:N
-        x = results[:,end]
-        q0 = x[1:sim_data.num_q]
-        v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
-
-        set_configuration!(x_ctrl,q0)
-        set_velocity!(x_ctrl,v0)
-        setdirty!(x_ctrl)
-        control!(u0, (i-1)*sim_data.Δt, x_ctrl)
-
-        update_fn = sim_fn_bilevel(sim_data,q0,v0,u0)
-
-        options = Dict{String, Any}()
-        options["Derivative option"] = 1
-        options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
-        options["Major optimality tolerance"] = opt_tol
-        options["Major feasibility tolerance"] = major_feas
-        options["Minor feasibility tolerance"] = minor_feas
-        # options["Feasible point"] = true
-
-        xopt, fopt, info = snopt(update_fn, x, x_L, x_U, options)
-        println(info)
-
-        results = hcat(results,xopt)
-    end
-
-    results
 end
