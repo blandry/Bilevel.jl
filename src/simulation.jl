@@ -1,10 +1,9 @@
 struct SimData
     mechanism::Mechanism
     x0_cache::StateCache
-    xnext_cache::StateCache
-    env_cache::Environment
+    xn_cache::StateCache
+    env_cache::EnvironmentCache
     Δt::Real
-    relax_comp::Bool
     vs::VariableSelector
     cs::ConstraintSelector
     generate_solver_fn::Symbol

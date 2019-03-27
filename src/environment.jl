@@ -22,13 +22,16 @@ end
 struct EnvironmentCache
     contact_jacobians::Vector{ContactJacobianCache}
     
-    function EnvironmentCache(env::Environment)
-        contact_jacobians = [ContactJacobianCache(contact) for contact in env.contacts] 
+    function EnvironmentCache(env::Environment, state::MechanismState{T}) where T
+        contact_jacobians = [ContactJacobianCache(contact, state) for contact in env.contacts] 
         
         new(contact_jacobians)
     end
 end
 
-function contact_distance(env_cache::EnvironmentCache)
-    # TODO
+function contact_jacobian!(env_c::EnvironmentCache, state::MechanismState{T}) where T
+    # TODO: parallel
+    for cj in env_c.contact_jacobians
+        contact_jacobian!(cj, state)
+    end
 end
