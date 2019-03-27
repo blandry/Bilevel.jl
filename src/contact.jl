@@ -42,7 +42,7 @@ mutable struct ContactJacobianCache{T<:Real}
         contact_rot = relative_transform(state, contact.obstacle.normal.frame, world_frame).mat[1:3,1:3]
         contact_trans = relative_transform(state, contact.point.frame, world_frame).mat[1:3,4]
         
-        p = contact.point.v - contact_trans
+        p = contact.point.v + contact_trans
         P = Matrix{T}([0. -p[3] p[2]; p[3] 0. -p[1]; -p[2] p[1] 0.])
         
         geo_jacobian = geometric_jacobian(state, path(contact.mechanism, contact.body, world))
@@ -69,7 +69,7 @@ function contact_jacobian!(cj::ContactJacobianCache, state::MechanismState)
     cj.contact_rot = relative_transform(state, contact.obstacle.normal.frame, world_frame).mat[1:3,1:3]
     cj.contact_trans = relative_transform(state, contact.point.frame, world_frame).mat[1:3,4]
     
-    p = contact.point.v - cj.contact_trans
+    p = contact.point.v + cj.contact_trans
     cj.P[1,2] = -p[3]
     cj.P[1,3] = p[2]
     cj.P[2,1] = p[3]
