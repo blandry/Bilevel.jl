@@ -1,8 +1,9 @@
 struct SimData
     mechanism::Mechanism
+    env::Environment
     x0_cache::StateCache
     xn_cache::StateCache
-    env_cache::EnvironmentCache
+    envj_cache::EnvironmentJacobianCache
     Δt::Real
     vs::VariableSelector
     cs::ConstraintSelector

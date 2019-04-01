@@ -1,3 +1,6 @@
+function valuetype end
+function makevalue end
+
 struct Environment
     contacts::Vector{Contact}
     
@@ -19,19 +22,34 @@ struct Environment
     end
 end
 
-struct EnvironmentCache
-    contact_jacobians::Vector{ContactJacobianCache}
+struct EnvironmentJacobian{T}
+    contact_jacobians::Vector{ContactJacobian{T}}
     
-    function EnvironmentCache(env::Environment, state::MechanismState{T}) where T
-        contact_jacobians = [ContactJacobianCache(contact, state) for contact in env.contacts] 
+    function EnvironmentJacobian{T}(env::Environment) where T
+        contact_jacobians = [ContactJacobian{T}(contact) for contact in env.contacts] 
         
-        new(contact_jacobians)
+        new{T}(contact_jacobians)
     end
 end
 
-function contact_jacobian!(env_c::EnvironmentCache, state::MechanismState{T}) where T
+struct EnvironmentJacobianCache <: RigidBodyDynamics.AbstractTypeDict
+    env::Environment
+    keys::Vector{Tuple{UInt64, Int}}
+    values::Vector{EnvironmentJacobian}
+end
+
+function EnvironmentJacobianCache(env::Environment)
+    EnvironmentJacobianCache(env, [], [])
+end
+
+Base.show(io::IO, ::EnvironmentJacobianCache) = print(io, "EnvironmentJacobianCache{…}(…)")
+
+@inline RigidBodyDynamics.valuetype(::Type{EnvironmentJacobianCache}, ::Type{T}) where {T} = EnvironmentJacobian{T}
+@inline RigidBodyDynamics.makevalue(envj_c::EnvironmentJacobianCache, ::Type{T}) where {T} = EnvironmentJacobian{T}(envj_c.env)
+
+function contact_jacobian!(envj::EnvironmentJacobian, state::MechanismState)
     # TODO: parallel
-    for cj in env_c.contact_jacobians
+    for cj in envj.contact_jacobians
         contact_jacobian!(cj, state)
     end
 end

@@ -20,7 +20,7 @@ function contact_basis(normal::FreeVector3D, μ::Real, motion_type::Symbol)
     end
 end
 
-mutable struct ContactJacobianCache{T<:Real}
+mutable struct ContactJacobian{T}
     contact::Contact
     F::Matrix{Float64}
     ϕ::T
@@ -31,7 +31,8 @@ mutable struct ContactJacobianCache{T<:Real}
     P::Matrix{T}
     J::Matrix{T}
 
-    function ContactJacobianCache(contact::Contact, state::MechanismState{T}) where T<:Real
+    function ContactJacobian{T}(contact::Contact) where T
+        state = MechanismState{T}(contact.mechanism)
         world = root_body(contact.mechanism)
         world_frame = default_frame(world)
         total_weight = mass(contact.mechanism) * norm(contact.mechanism.gravitational_acceleration)
@@ -59,7 +60,7 @@ mutable struct ContactJacobianCache{T<:Real}
     end
 end
 
-function contact_jacobian!(cj::ContactJacobianCache, state::MechanismState)
+function contact_jacobian!(cj::ContactJacobian, state::MechanismState)
     contact = cj.contact
     world = root_body(contact.mechanism)
     world_frame = default_frame(world) 
@@ -85,6 +86,6 @@ function contact_jacobian!(cj::ContactJacobianCache, state::MechanismState)
     end
 end
 
-function contact_τ(cj::ContactJacobianCache, c_n, β)
+function contact_τ(cj::ContactJacobian, c_n, β)
     cj.J * vcat(c_n, β)
 end

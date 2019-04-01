@@ -5,9 +5,12 @@ __precompile__(false)
 export Obstacle,
        Contact,
        Environment,
+       EnvironmentJacobian,
+       EnvironmentJacobianCache,
        SimData,
-       get_sim_data_indirect
-       
+       get_sim_data_indirect,
+       generate_solver_fn_sim_indirect
+              
 using Test
 using StaticArrays
 using LinearAlgebra

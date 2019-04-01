@@ -37,57 +37,58 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
     
     x0_cache = StateCache(mechanism)
     xn_cache = StateCache(mechanism)
-    env_cache = EnvironmentCache(env, xn_cache[ForwardDiff.Dual])
+    envj_cache = EnvironmentJacobianCache(env)
 
     generate_solver_fn = :generate_solver_fn_sim_indirect
 
-    sim_data = SimData(mechanism,x0_cache,xn_cache,env_cache,
+    sim_data = SimData(mechanism,env,
+                       x0_cache,xn_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn)
 
     sim_data
 end
 
-function contact_τ!(τ::AbstractArray{T}, sim_data::SimData, env_c::EnvironmentCache, x::AbstractArray{T}) where T
+function contact_τ!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T
     # TODO: parallel
-    τ .= mapreduce(+, enumerate(env_c.contact_jacobians)) do (i,cj)
+    τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
         contact_τ(cj, sim_data.vs(x, Symbol("c_n", i)), sim_data.vs(x, Symbol("β", i)))
     end
 end
 
 function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
-    x0_c = sim_data.x0_cache
-    xn_c = sim_data.xn_cache
-    env_c = sim_data.env_cache
+    x0 = sim_data.x0_cache[Float64]
     Δt = sim_data.Δt
     vs = sim_data.vs
     cs = sim_data.cs
     
     relax_comp = haskey(vs.vars, :slack)
-    num_contacts = length(env_c.contact_jacobians)
-
-    config_derivative = configuration(xn_c[ForwardDiff.Dual])
-    dyn_bias = velocity(xn_c[ForwardDiff.Dual])
-    contact_bias = zeros(ForwardDiff.Dual, num_velocities(x0_c[Float64]))
-    g = Vector{ForwardDiff.Dual}(undef, cs.num_eqs + cs.num_ineqs)
+    num_contacts = length(sim_data.env.contacts)
     
-    set_configuration!(x0_c[Float64], q0)
-    set_velocity!(x0_c[Float64], v0)
-    H = mass_matrix(x0_c[Float64])
+    set_configuration!(x0, q0)
+    set_velocity!(x0, v0)
+    H = mass_matrix(x0)
 
     function eval_dyn(x::AbstractArray{T}) where T
+        xn = sim_data.xn_cache[T]
+        envj = sim_data.envj_cache[T]
+        
+        contact_bias = Vector{T}(undef, num_velocities(sim_data.mechanism))
+        g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO pre-allocate
+
         qnext = vs(x, :qnext)
         vnext = vs(x, :vnext)
         if relax_comp
             slack = vs(x, :slack)
         end
         
-        set_configuration!(xn_c[T], qnext)
-        set_velocity!(xn_c[T], vnext)
-        configuration_derivative!(config_derivative, xn_c[T])
-        dynamics_bias!(dyn_bias, xn_c[T])
+        set_configuration!(xn, qnext)
+        set_velocity!(xn, vnext)
+        
+        config_derivative = configuration_derivative(xn) # TODO pre-allocate
+        dyn_bias = dynamics_bias(xn) # TODO pre-allocate
         if (num_contacts > 0)
-            contact_jacobian!(env_c, xn_c[T])
-            contact_τ!(contact_bias, sim_data, env_c, x)
+            contact_jacobian!(envj, xn)
+            contact_τ!(contact_bias, sim_data, envj, x)
         end
 
         # g[cs(:kin)] .= qnext .- q0 .- Δt .* config_derivative
@@ -101,8 +102,8 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         #     end
         #     indirect_comp_contact_constraints!(g[cs(:comp)], vs(x, :contact))
         # end
-        # 
-        # g
+        
+        g
     end
 
     # function eval_f(x::AbstractArray{T}) where T
