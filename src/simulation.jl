@@ -12,30 +12,31 @@ end
 
 function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
                   opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
-    x_L = -1e19 * ones(sim_data.num_xn)
-    x_U = 1e19 * ones(sim_data.num_xn)
-    results = zeros(sim_data.num_xn)
-    results[1:sim_data.num_q] = configuration(state0)
-    results[sim_data.num_q+1:sim_data.num_q+sim_data.num_v] = velocity(state0)
+                  
+    x_L = -1e19 * ones(sim_data.vs.num_vars)
+    x_U = 1e19 * ones(sim_data.vs.num_vars)
+    
+    results = zeros(sim_data.vs.num_vars)
+    results[sim_data.vs(:qnext)] = configuration(state0)
+    results[sim_data.vs(:vnext)] = velocity(state0)
 
     x_ctrl = MechanismState(sim_data.mechanism)
-    u0 = zeros(sim_data.num_v)
+    u0 = zeros(num_velocities(sim_data.mechanism))
 
     for i in 1:N
         x = results[:,end]
-        q0 = x[1:sim_data.num_q]
-        v0 = x[sim_data.num_q+1:sim_data.num_q+sim_data.num_v]
+        q0 = sim_data.vs(x, :qnext)
+        v0 = sim_data.vs(x, :vnext)
 
-        set_configuration!(x_ctrl,q0)
-        set_velocity!(x_ctrl,v0)
-        setdirty!(x_ctrl)
+        set_configuration!(x_ctrl, q0)
+        set_velocity!(x_ctrl, v0)
         control!(u0, (i-1)*sim_data.Δt, x_ctrl)
 
-        solver_fn = eval(sim_data.generate_solver_fn)(sim_data,q0,v0,u0)
+        solver_fn = eval(sim_data.generate_solver_fn)(sim_data, q0, v0, u0)
 
         options = Dict{String, Any}()
         options["Derivative option"] = 1
-        options["Verify level"] = -1 # -1 = 0ff, 0 = cheap
+        options["Verify level"] = -1 # -1 => 0ff, 0 => cheap
         options["Major optimality tolerance"] = opt_tol
         options["Major feasibility tolerance"] = major_feas
         options["Minor feasibility tolerance"] = minor_feas

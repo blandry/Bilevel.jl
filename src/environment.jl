@@ -8,7 +8,7 @@ struct Environment
         elements = visual_elements(mechanism, URDFVisuals(urdf; tag="collision"))
         point_elements = filter(e -> e.geometry isa GeometryTypes.HyperSphere && GeometryTypes.radius(e.geometry) == 0, elements)
         points = map(point_elements) do element
-            p = element.transform(GeometryTypes.origin(element.geometry))
+            p = element.transform(SVector(GeometryTypes.origin(element.geometry)))
             Point3D(element.frame, p)
         end
         contacts = vec(map(Base.Iterators.product(points, obstacles)) do p

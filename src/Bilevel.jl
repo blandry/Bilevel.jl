@@ -9,7 +9,7 @@ export Obstacle,
        EnvironmentJacobianCache,
        SimData,
        get_sim_data_indirect,
-       generate_solver_fn_sim_indirect
+       simulate
               
 using Test
 using StaticArrays
@@ -30,5 +30,6 @@ include("environment.jl")
 include("selector.jl")
 include("simulation.jl")
 include("simulation_indirect.jl")
+include(joinpath("solvers", "snopt.jl"))
 
 end # module

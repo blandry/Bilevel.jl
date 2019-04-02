@@ -24,38 +24,50 @@ function add_var!(selector::VariableSelector, name::Symbol, size::Int)
 end
 
 mutable struct ConstraintSelector
-    eqs::Dict{Symbol, UnitRange{Int}}
+    cons::Dict{Symbol, UnitRange{Int}}
+    eqs::Vector{Int}
+    ineqs::Vector{Int}
+    num_cons::Int
     num_eqs::Int
-    ineqs::Dict{Symbol, UnitRange{Int}}
     num_ineqs::Int
     
     function ConstraintSelector()
-        new(Dict{Symbol, UnitRange{Int}}(), 0, Dict{Symbol, UnitRange{Int}}(), 0)
+        new(Dict{Symbol, UnitRange{Int}}(), [], [], 0, 0, 0)
     end
 end
 
 function add_eq!(selector::ConstraintSelector, name::Symbol, size::Int)
-    if haskey(selector.eqs, name) || haskey(selector.ineqs, name)
+    if haskey(selector.cons, name)
         throw(ArgumentError("Constraint name '$name' already exists"))
     end
     if size < 1
         throw(ArgumentError("Constraint size must be greater than 0"))
     end
-    selector.eqs[name] = selector.num_eqs .+ (1:size)
+    
+    selector.cons[name] = selector.num_cons .+ (1:size)
+    push!(selector.eqs, collect(selector.cons[name])...)
+
+    selector.num_cons += size
     selector.num_eqs += size
     
     selector.num_eqs
 end
 
 function add_ineq!(selector::ConstraintSelector, name::Symbol, size::Int)
-    if haskey(selector.eqs, name) || haskey(selector.ineqs, name)
+    if haskey(selector.cons, name)
         throw(ArgumentError("Constraint name '$name' already exists"))
     end
     if size < 1
         throw(ArgumentError("Constraint size must be greater than 0"))
     end
-    selector.ineqs[name] = selector.num_ineqs .+ (1:size)
+    
+    selector.cons[name] = selector.num_cons .+ (1:size)
+    push!(selector.ineqs, collect(selector.cons[name])...)
+
+    selector.num_cons += size
     selector.num_ineqs += size
     
     selector.num_ineqs
 end
+
+(cs::ConstraintSelector)(name::Symbol) = cs.cons[name]
