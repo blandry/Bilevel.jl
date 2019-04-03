@@ -120,5 +120,9 @@ function auglag_solve(x0,λ0,μ0,f0,h0,g0;c0=1.,in_place=true,num_fosteps=1,num_
     λsol = λ[1:num_h0]
     μsol = λ[num_h0+1:num_h0+num_g0]
 
-    xsol, λsol, μsol
+    xsol
+end
+
+function auglag(fun)
+    
 end
