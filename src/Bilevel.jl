@@ -31,5 +31,7 @@ include("selector.jl")
 include("simulation.jl")
 include("simulation_indirect.jl")
 include(joinpath("solvers", "snopt.jl"))
+include(joinpath("solvers", "auglag.jl"))
+include(joinpath("solvers", "svd.jl"))
 
 end # module

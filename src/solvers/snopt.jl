@@ -84,22 +84,9 @@ function objcon_wrapper(status_::Ptr{Clong}, n::Clong, x_::Ptr{Cdouble},
     # x = unsafe_load(x_)  # TODO: test this
 
     # call function
-    res = objcon(x)
-    if length(res) == 3
-        J, c, fail = res
-        ceq = Float64[]
-        gradprovided = false
-    elseif length(res) == 4
-        J, c, ceq, fail = res
-        gradprovided = false
-    elseif length(res) == 5
-        J, c, gJ, gc, fail = res
-        ceq = Float64[]
-        gradprovided = true
-    else
-        J, c, ceq, gJ, gc, gceq, fail = res
-        gradprovided = true
-    end
+    J, ceq, c, gJ, gceq, gc, HJ = objcon(x)
+    fail = false
+    gradprovided = true
 
     # copy obj and con values into C pointer
     unsafe_store!(f_, J, 1)
@@ -147,32 +134,15 @@ const usrfun = @cfunction(objcon_wrapper, Cvoid, (Ptr{Clong}, Ref{Clong}, Ptr{Cd
     Ptr{Cchar}, Ref{Clong}, Ptr{Clong}, Ref{Clong}, Ptr{Cdouble}, Ref{Clong}))
 
 # main call to snopt
-function snopt(fun, x0, lb, ub, options;
-               printfile = "snopt-print.out", sumfile = "snopt-summary.out",
-               num_ineq = nothing, num_eq = nothing)
-
-    if isa(num_ineq,Nothing) || isa(num_eq,Nothing)
-        # call function
-        res = fun(x0)
-        if (length(res) == 3) || (length(res) == 5)
-            J, c, _ = res
-            ceq = Float64[]
-        else
-            J, c, ceq, _ = res
-        end
-        
-        num_ineq = length(c)
-        num_eq = length(ceq)
-    end
+function snopt(fun, num_eqs, num_ineqs, x0, options;
+               printfile = "snopt-print.out", sumfile = "snopt-summary.out")
 
     # TODO: there is a probably a better way than to use a global
     global objcon = fun
 
-    # TODO: set a timer
-
     # setup
     Start = 0  # cold start  # TODO: allow warm starts
-    nF = 1 + num_ineq + num_eq  # 1 objective + constraints
+    nF = 1 + num_ineqs + num_eqs  # 1 objective + constraints
     n = length(x0)  # number of design variables
     ObjAdd = 0.0  # no constant term added to objective (user can add themselves if desired)
     ObjRow = 1  # objective is first thing returned, then constraints
@@ -199,13 +169,13 @@ function snopt(fun, x0, lb, ub, options;
     end
 
     # bound constriaints (no infinite bounds for now)
-    xlow = lb
-    xupp = ub
+    xlow = -1e19*ones(n)
+    xupp = 1e19*ones(n)
     Flow = -1e20*ones(nF)  # TODO: check Infinite Bound size
     Fupp = zeros(nF)  # TODO: currently c <= 0, but perhaps change
 
-    if num_eq > 0 #equality constraints
-        Flow[nF - num_eq + 1 : nF] .= 0.0
+    if num_eqs > 0 #equality constraints
+        Flow[nF - num_eqs + 1 : nF] .= 0.0
     end
 
     # names
@@ -386,9 +356,6 @@ function snopt(fun, x0, lb, ub, options;
         (Ref{Clong},),
         isumm)
 
-    # display(Fmul)
-    # display(F)
-
-    return x, F[1], codes[INFO[1]]  # xstar, fstar, info
+    return x, codes[INFO[1]]  # xstar, info
 
 end

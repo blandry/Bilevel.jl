@@ -12,9 +12,6 @@ end
 
 function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
                   opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
-                  
-    x_L = -1e19 * ones(sim_data.vs.num_vars)
-    x_U = 1e19 * ones(sim_data.vs.num_vars)
     
     results = zeros(sim_data.vs.num_vars)
     results[sim_data.vs(:qnext)] = configuration(state0)
@@ -41,7 +38,7 @@ function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
         options["Major feasibility tolerance"] = major_feas
         options["Minor feasibility tolerance"] = minor_feas
 
-        xopt, fopt, info = snopt(solver_fn, x, x_L, x_U, options)
+        xopt, fopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x, options)
         
         if verbose >= 1
             println(info)
