@@ -165,7 +165,7 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         gceq = dgdx[cs.eqs,:]
         gc = dgdx[cs.ineqs,:]
     
-        J, c, ceq, gJ, gc, gceq, false
+        J, ceq, c, gJ, gceq, gc, 0.
     end
     
     solver_fn

@@ -38,7 +38,7 @@ function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
         options["Major feasibility tolerance"] = major_feas
         options["Minor feasibility tolerance"] = minor_feas
 
-        xopt, fopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x, options)
+        xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x, options)
         
         if verbose >= 1
             println(info)
