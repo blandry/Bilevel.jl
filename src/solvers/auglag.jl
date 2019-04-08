@@ -23,8 +23,8 @@ function L(x,λ,f,h,c)
 end
 
 function auglag(fun, num_eqs, num_ineqs, x0, options)
-    num_fosteps = get(options, "num_fosteps", 1)
-    num_sosteps = get(options, "num_sosteps", 3)
+    num_fosteps = get(options, "num_fosteps", 3)
+    num_sosteps = get(options, "num_sosteps", 2)
     c = get(options, "c", 1.)
     c_fos = get(options, "c_fos", 10.)
     c_sos = get(options, "c_sos", 10.)
@@ -49,14 +49,14 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         HL = Hf + c*∇h'*∇h
 
         # δx = (HL + (sqrt(sum(HL.^2))+rtol)*I) \ (-gL)
-        # δx = (pinv(HL) + rtol*I) * (-gL)
-        U,S,V = svd(HL)
-        tol = rtol*maximum(S) # TODO not smooth
-        ksig = 100.
-        Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
-        Sinv[isinf.(Sinv)] .= 0.
-        HLpinv = V * (Diagonal(Sinv) * U')
-        δx = HLpinv * (-gL)
+        δx = (HL + rtol*I) \ (-gL)
+        # U,S,V = svd(HL)
+        # tol = rtol*maximum(S) # TODO not smooth
+        # ksig = 100.
+        # Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
+        # Sinv[isinf.(Sinv)] .= 0.
+        # HLpinv = V * (Diagonal(Sinv) * U')
+        # δx = HLpinv * (-gL)
         δλ = -c * hx
 
         x += δx

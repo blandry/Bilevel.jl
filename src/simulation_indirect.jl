@@ -128,14 +128,14 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
             # λe + D'*v >= 0
             g[cs(Symbol("fric_pos", i))] .= -(λ .+ Dtv)
             # μ*c_n - sum(β) >= 0
-            g[cs(Symbol("cone_pos", i))] .= -(c.obstacle.μ .* c_n - sum(β))
+            g[cs(Symbol("cone_pos", i))] .= -(c.obstacle.μ .* c_n .- sum(β))
             if !relax_comp
                 # dist * c_n = 0
                 g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n
                 # (λe + Dtv)' * β = 0
                 g[cs(Symbol("fric_β_comp", i))] .= (λ .+ Dtv) .* β
                 # (μ * c_n - sum(β)) * λ = 0
-                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ
+                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ
             else
                 g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack^2
                 g[cs(Symbol("fric_β_comp", i))] .= (λ .+ Dtv) .* β .- slack^2

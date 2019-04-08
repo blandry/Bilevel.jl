@@ -37,11 +37,11 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real)
     end
    
     lower_options = Dict{String, Any}()
-    lower_options["num_fosteps"] = 1
-    lower_options["num_sosteps"] = 1
+    lower_options["num_fosteps"] = 3
+    lower_options["num_sosteps"] = 2
     lower_options["c"] = 1.
-    lower_options["c_fos"] = 1.
-    lower_options["c_sos"] = 1.
+    lower_options["c_fos"] = 10.
+    lower_options["c_sos"] = 10.
     
     SimData(mechanism,env,
             x0_cache,xn_cache,envj_cache,
@@ -51,6 +51,7 @@ end
 
 function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
                            dyn_bias,u0,v0,upper_x::AbstractArray{U}) where U  
+                           
     num_contacts = length(sim_data.env.contacts)
     Hi = inv(H)
     env = sim_data.env
@@ -90,7 +91,7 @@ function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
             # g[lower_cs(Symbol("fric_cone", i))] .= sum(β) - env.contacts[i].obstacle.μ * upper_vs(upper_x, Symbol("c_n", i))
             # TODO lucky this is all inequalities or indexing could break
             g = vcat(g, -β)
-            g = vcat(g, sum(β) - env.contacts[i].obstacle.μ * upper_vs(upper_x, Symbol("c_n", i)))
+            g = vcat(g, sum(β) .- env.contacts[i].obstacle.μ * upper_vs(upper_x, Symbol("c_n", i)))
         end
         
         g
@@ -107,6 +108,21 @@ function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
     τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
         contact_τ(cj, upper_vs(upper_x, Symbol("c_n", i)), lower_vs(xopt, Symbol("β", i)))
     end
+    
+    # usefull to tune the lower solver
+    # solver_fn_snopt = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
+    # options_snopt = Dict{String, Any}()
+    # options_snopt["Derivative option"] = 1
+    # options_snopt["Verify level"] = -1 # -1 => 0ff, 0 => cheap
+    # xopt_snopt, info_snopt = snopt(solver_fn_snopt, lower_cs.num_eqs, lower_cs.num_ineqs, x0, options_snopt)
+    # τ_snopt = zeros(length(τ))
+    # τ_snopt .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
+    #     contact_τ(cj, upper_vs(upper_x, Symbol("c_n", i)), lower_vs(xopt_snopt, Symbol("β", i)))
+    # end
+    # display(xopt)
+    # display(xopt_snopt)
+    # display(τ)
+    # display(τ_snopt)
 end
 
 function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
@@ -159,6 +175,6 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
 
         g
     end
-    
+        
     generate_autodiff_solver_fn(eval_obj,eval_cons,cs.eqs,cs.ineqs,vs.num_vars)
 end

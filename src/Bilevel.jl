@@ -11,7 +11,7 @@ export Obstacle,
        get_sim_data_indirect,
        get_sim_data_direct,
        simulate
-              
+                  
 using Test
 using StaticArrays
 using LinearAlgebra
