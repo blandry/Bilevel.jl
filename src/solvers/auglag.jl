@@ -12,9 +12,9 @@ end
 function gsoftmax(x;k=1.)
     thresh = 500.
     if any(k*x .> thresh)
-        full(Diagonal(1. .- exp.(-k*x) ./ (1. .+ exp.(-k*x))))
+        Matrix(Diagonal(1. .- exp.(-k*x) ./ (1. .+ exp.(-k*x))))
     else
-        full(Diagonal(exp.(k*x) ./ (exp.(k*x) .+ 1.)))
+        Matrix(Diagonal(exp.(k*x) ./ (exp.(k*x) .+ 1.)))
     end
 end
 
@@ -40,7 +40,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
         
         ∇f = vcat(gobj, zeros(num_ineqs))
-        Hf = zeros(num_x+num_ineqs, num_x+num_ineqs)
+        Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
         ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
@@ -70,7 +70,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
 
         ∇f = vcat(gobj, zeros(num_ineqs))
-        Hf = zeros(num_x+num_ineqs, num_x+num_ineqs)
+        Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
         
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
@@ -97,8 +97,6 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
     
         c *= c_sos
     end
-    
-    obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
-    
+        
     x[1:num_x], "Finished successfully"
 end

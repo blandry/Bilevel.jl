@@ -66,22 +66,39 @@ const SUMNUM = 19
 # callback function
 function objcon_wrapper(status_::Ptr{Clong}, n::Clong, x_::Ptr{Cdouble},
     needf::Clong, nF::Clong, f_::Ptr{Cdouble}, needG::Clong, lenG::Clong,
-    G_::Ptr{Cdouble}, cu::Ptr{Cchar}, lencu::Clong, iu::Ptr{Clong},
+    G_::Ptr{Cdouble}, cu_::Ptr{Cchar}, lencu::Clong, iu_::Ptr{Clong},
     leniu::Clong, ru_::Ptr{Cdouble}, lenru::Clong)
 
     status = unsafe_load(status_)
 
-    # check if solution finished, no need to calculate more
-    if status >= 2
-        return
-    end
+    # # check if solution finished, no need to calculate more
+    # if status >= 2
+    #     return
+    # end
 
     # unpack design variables
     x = zeros(n)
     for i = 1:n
         x[i] = unsafe_load(x_, i)
     end
-    # x = unsafe_load(x_)  # TODO: test this
+    
+    # cu = Array{Char}(lencu)
+    # for i = 1:lencu
+    #     cu[i] = unsafe_load(cu_, i)
+    # end
+    # 
+    # iu = Array{Int}(leniu)
+    # for i = 1:leniu
+    #     iu[i] = unsafe_load(iu_, i)
+    # end
+    # 
+    # ru = Array{Float64}(lenru)
+    # for i = 1:lenru
+    #     ru[i] = unsafe_load(ru_, i)
+    # end
+    # 
+    # dual_add = 348
+    # println(ru[iu[dual_add]:iu[dual_add]+nF])
 
     # call function
     J, ceq, c, gJ, gceq, gc, HJ = objcon(x)
@@ -202,13 +219,6 @@ function snopt(fun, num_eqs, num_ineqs, x0, options;
     nS = Clong[0]
     nInf = Clong[0]
     sInf = Cdouble[0]
-    lencu = 1
-    # cu = Array{UInt8}(undef, lencu, 8)
-    cu = zeros(UInt8, lencu, 8)
-    iu = Clong[0]
-    leniu = length(iu)
-    ru = [0.0]
-    lenru = length(ru)
 
     # open files for printing
     iprint = PRINTNUM
@@ -341,10 +351,10 @@ function snopt(fun, num_eqs, num_ineqs, x0, options;
         xlow, xupp, xnames, Flow, Fupp, Fnames,
         x, xstate, xmul, F, Fstate,
         Fmul, INFO, mincw, miniw, minrw, nS,
-        nInf, sInf, cu, lencu, iu, leniu,
-        ru, lenru, cw, lencw, iw, leniw,
+        nInf, sInf, cw, lencw, iw, leniw,
+        rw, lenrw, cw, lencw, iw, leniw,
         rw, lenrw,
-        sizeof(Prob),sizeof(xnames),sizeof(Fnames),sizeof(cu),sizeof(cw))
+        sizeof(Prob),sizeof(xnames),sizeof(Fnames),sizeof(cw),sizeof(cw))
 
     # println("done")
 
@@ -355,6 +365,9 @@ function snopt(fun, num_eqs, num_ineqs, x0, options;
     ccall( (:snclose_, snoptlib), Cvoid,
         (Ref{Clong},),
         isumm)
+        
+    # display(F)
+    # println(Fmul)
 
     return x, codes[INFO[1]]  # xstar, info
 

@@ -9,6 +9,7 @@ export Obstacle,
        EnvironmentJacobianCache,
        SimData,
        get_sim_data_indirect,
+       get_sim_data_direct,
        simulate
               
 using Test
@@ -30,8 +31,10 @@ include("environment.jl")
 include("selector.jl")
 include("simulation.jl")
 include("simulation_indirect.jl")
+include("simulation_direct.jl")
 include(joinpath("solvers", "snopt.jl"))
 include(joinpath("solvers", "auglag.jl"))
 include(joinpath("solvers", "svd.jl"))
+include(joinpath("solvers", "autodiff.jl"))
 
 end # module

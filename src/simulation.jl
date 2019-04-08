@@ -8,6 +8,9 @@ struct SimData
     vs::VariableSelector
     cs::ConstraintSelector
     generate_solver_fn::Symbol
+    lower_vs::Union{Nothing,VariableSelector}
+    lower_cs::Union{Nothing,ConstraintSelector}
+    lower_options::Union{Nothing,Dict}
 end
 
 function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;

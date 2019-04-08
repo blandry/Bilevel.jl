@@ -43,12 +43,13 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
 
     sim_data = SimData(mechanism,env,
                        x0_cache,xn_cache,envj_cache,
-                       Δt,vs,cs,generate_solver_fn)
+                       Δt,vs,cs,generate_solver_fn,
+                       nothing,nothing,nothing)
 
     sim_data
 end
 
-function contact_τ!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T
+function contact_τ_indirect!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T
     # TODO: parallel
     τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
         contact_τ(cj, sim_data.vs(x, Symbol("c_n", i)), sim_data.vs(x, Symbol("β", i)))
@@ -70,8 +71,19 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
     set_configuration!(x0, q0)
     set_velocity!(x0, v0)
     H = mass_matrix(x0)
+    
+    function eval_obj(x::AbstractArray{T}) where T
+        f = 0.
+    
+        if relax_comp
+            slack = vs(x, :slack)
+            f += .5 * slack' * slack
+        end
+    
+        f
+    end
 
-    function eval_dyn(x::AbstractArray{T}) where T
+    function eval_cons(x::AbstractArray{T}) where T
         xn = sim_data.xn_cache[T]
         envj = sim_data.envj_cache[T]
         
@@ -91,7 +103,7 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         dyn_bias = dynamics_bias(xn) # TODO preallocate
         if (num_contacts > 0)
             contact_jacobian!(envj, xn)
-            contact_τ!(contact_bias, sim_data, envj, x)
+            contact_τ_indirect!(contact_bias, sim_data, envj, x)
         end
 
         g[cs(:kin)] .= qnext .- q0 .- Δt .* config_derivative
@@ -133,40 +145,6 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
                 
         g
     end
-
-    function eval_f(x::AbstractArray{T}) where T
-        f = 0.
     
-        if relax_comp
-            slack = vs(x, :slack)
-            f += .5 * slack' * slack
-        end
-    
-        f
-    end
-    
-    fres = DiffResults.GradientResult(zeros(vs.num_vars))
-    fcfg = ForwardDiff.GradientConfig(eval_f, zeros(vs.num_vars))
-    gres = DiffResults.JacobianResult(zeros(cs.num_cons), zeros(vs.num_vars))
-    gcfg = ForwardDiff.JacobianConfig(eval_dyn, zeros(vs.num_vars))
-    function solver_fn(x)        
-        ForwardDiff.gradient!(fres, eval_f, x, fcfg)
-    
-        J = DiffResults.value(fres)
-        gJ = DiffResults.gradient(fres)
-    
-        ForwardDiff.jacobian!(gres, eval_dyn, x, gcfg)
-    
-        g = DiffResults.value(gres)
-        ceq = g[cs.eqs]
-        c = g[cs.ineqs]
-    
-        dgdx = DiffResults.jacobian(gres)
-        gceq = dgdx[cs.eqs,:]
-        gc = dgdx[cs.ineqs,:]
-    
-        J, ceq, c, gJ, gceq, gc, 0.
-    end
-    
-    solver_fn
+    generate_autodiff_solver_fn(eval_obj,eval_cons,cs.eqs,cs.ineqs,vs.num_vars)
 end
