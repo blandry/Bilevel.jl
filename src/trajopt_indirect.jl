@@ -196,9 +196,9 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
                     # (μ * c_n - sum(β)) * λ = 0
                     g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ
                 else
-                    g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack^2
-                    g[cs(Symbol("fric_β_comp", i, "_", n))] .= (λ .+ Dtv) .* β .- slack^2
-                    g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack^2
+                    g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack' * slack
+                    g[cs(Symbol("fric_β_comp", i, "_", n))] .= (λ .+ Dtv) .* β .- slack' * slack
+                    g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack' * slack
                 end
             end
         end

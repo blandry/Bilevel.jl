@@ -1,9 +1,13 @@
-function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real)
+function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
+                             relax_comp=false)
     num_contacts = length(env.contacts)
 
     vs = VariableSelector()
     add_var!(vs, :qnext, num_positions(mechanism))
     add_var!(vs, :vnext, num_velocities(mechanism))
+    if relax_comp
+        add_var!(vs, :slack, 1)
+    end
     for i = 1:num_contacts
         add_var!(vs, Symbol("c_n", i), 1)
     end
@@ -14,7 +18,11 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real)
     for i = 1:num_contacts
         add_ineq!(cs, Symbol("ϕ_pos", i), 1)
         add_ineq!(cs, Symbol("c_n_pos", i), 1)
-        add_eq!(cs, Symbol("ϕ_c_n_comp", i), 1)
+        if relax_comp
+            add_ineq!(cs, Symbol("ϕ_c_n_comp", i), 1)
+        else
+            add_eq!(cs, Symbol("ϕ_c_n_comp", i), 1)
+        end
     end
     
     x0_cache = StateCache(mechanism)
@@ -159,6 +167,7 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
     vs = sim_data.vs
     cs = sim_data.cs
     
+    relax_comp = haskey(vs.vars, :slack)
     num_contacts = length(sim_data.env.contacts)
     num_vel = num_velocities(sim_data.mechanism)
 
@@ -168,6 +177,11 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
     
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
+    
+        if relax_comp
+            slack = vs(x, :slack)
+            f += .5 * slack' * slack
+        end
     
         f
     end
@@ -181,6 +195,9 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
 
         qnext = vs(x, :qnext)
         vnext = vs(x, :vnext)
+        if relax_comp
+            slack = vs(x, :slack)
+        end
         
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
@@ -198,7 +215,11 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
             c_n = vs(x, Symbol("c_n", i))
             g[cs(Symbol("ϕ_pos", i))] .= -envj.contact_jacobians[i].ϕ
             g[cs(Symbol("c_n_pos", i))] .= -c_n
-            g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n
+            if !relax_comp
+                g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n
+            else
+                g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n - slack' * slack
+            end
         end
 
         g
