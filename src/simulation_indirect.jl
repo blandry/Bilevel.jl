@@ -40,13 +40,46 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
     envj_cache = EnvironmentJacobianCache(env)
 
     generate_solver_fn = :generate_solver_fn_sim_indirect
+    extract_sol = :extract_sol_sim_indirect
 
     sim_data = SimData(mechanism,env,
                        x0_cache,xn_cache,envj_cache,
-                       Δt,vs,cs,generate_solver_fn,
-                       nothing,nothing,nothing)
+                       Δt,vs,cs,generate_solver_fn,extract_sol,
+                       nothing,nothing,nothing,1,[],[])
 
     sim_data
+end
+
+function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}) where T    
+    vs = sim_data.vs
+    relax_comp = haskey(vs.vars, :slack)
+    env = sim_data.env
+    N = size(results,2)
+
+    qtraj = []
+    vtraj = []
+    utraj = []
+    contact_traj = []
+    slack_traj = []
+    for n = 1:N
+        push!(qtraj, vs(results[:,n], Symbol("qnext")))
+        push!(vtraj, vs(results[:,n], Symbol("vnext")))
+        if relax_comp
+            push!(slack_traj, vs(results[:,n], Symbol("slack")))
+        end
+        for i = 1:length(env.contacts)
+            contact_sol = vcat(vs(results[:,n], Symbol("c_n", i)),
+                               vs(results[:,n], Symbol("β", i)),
+                               vs(results[:,n], Symbol("λ", i)))
+            push!(contact_traj, contact_sol)
+        end
+    end
+    
+    # some other usefull vectors
+    ttraj = [(i-1)*sim_data.Δt for i = 1:N]
+    qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
+    
+    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
 function contact_τ_indirect!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T

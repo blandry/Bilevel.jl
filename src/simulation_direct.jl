@@ -22,6 +22,7 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real)
     envj_cache = EnvironmentJacobianCache(env)
 
     generate_solver_fn = :generate_solver_fn_sim_direct
+    extract_sol = :extract_sol_sim_direct
 
     lower_vs = VariableSelector()
     for i = 1:length(env.contacts)
@@ -45,8 +46,35 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real)
     
     SimData(mechanism,env,
             x0_cache,xn_cache,envj_cache,
-            Δt,vs,cs,generate_solver_fn,
-            lower_vs,lower_cs,lower_options)
+            Δt,vs,cs,generate_solver_fn,extract_sol,
+            lower_vs,lower_cs,lower_options,1,[],[])
+end
+
+function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) where T    
+    vs = sim_data.vs
+    relax_comp = haskey(vs.vars, :slack)
+    env = sim_data.env
+    N = size(results,2)
+
+    qtraj = []
+    vtraj = []
+    utraj = []
+    contact_traj = []
+    slack_traj = []
+    for n = 1:N
+        push!(qtraj, vs(results[:,n], Symbol("qnext")))
+        push!(vtraj, vs(results[:,n], Symbol("vnext")))
+        if relax_comp
+            push!(slack_traj, vs(results[:,n], Symbol("slack")))
+        end
+        # TODO compute contact force for comparison purposes
+    end
+    
+    # some other usefull vectors
+    ttraj = [(i-1)*sim_data.Δt for i = 1:N]
+    qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
+
+    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
 function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
