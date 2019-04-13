@@ -54,7 +54,7 @@ function get_trajopt_data_indirect(mechanism::Mechanism,env::Environment,Δt::Re
     sim_data = SimData(mechanism,env,
                        x0_cache,xn_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn,extract_sol,
-                       nothing,nothing,nothing,N,[],[])
+                       [],[],[],N,[],[])
 
     sim_data
 end
@@ -78,11 +78,14 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
             if relax_comp
                 push!(slack_traj, vs(xopt, Symbol("slack", n)))
             end
+            contact_sol = []
             for i = 1:length(env.contacts)
-                contact_sol = vcat(vs(xopt, Symbol("c_n", i, "_", n)),
-                                   vs(xopt, Symbol("β", i, "_", n)),                                 vs(xopt, Symbol("λ", i, "_", n)))
-                push!(contact_traj, contact_sol)
+                contact_sol = vcat(contact_sol,
+                                   vs(xopt, Symbol("c_n", i, "_", n)),
+                                   vs(xopt, Symbol("β", i, "_", n)),                                 
+                                   vs(xopt, Symbol("λ", i, "_", n)))
             end
+            push!(contact_traj, contact_sol)
         end
     end
     

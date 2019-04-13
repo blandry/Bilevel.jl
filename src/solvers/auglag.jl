@@ -48,8 +48,9 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
+        δx = (HL + (sum(HL.^2)+rtol)*I) \ (-gL)
         # δx = (HL + (sqrt(sum(HL.^2))+rtol)*I) \ (-gL)
-        δx = (HL + rtol*I) \ (-gL)
+        # δx = (HL + rtol*I) \ (-gL)
         # U,S,V = svd(HL)
         # tol = rtol*maximum(S) # TODO not smooth
         # ksig = 100.

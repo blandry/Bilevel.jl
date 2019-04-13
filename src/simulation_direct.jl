@@ -32,30 +32,30 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
     generate_solver_fn = :generate_solver_fn_sim_direct
     extract_sol = :extract_sol_sim_direct
 
-    lower_vs = VariableSelector()
+    l_vs = VariableSelector()
     for i = 1:length(env.contacts)
         β_dim = size(env.contacts[i].obstacle.basis,2)
-        add_var!(lower_vs, Symbol("β", i), β_dim)
+        add_var!(l_vs, Symbol("β", i), β_dim)
     end
 
-    lower_cs = ConstraintSelector()
+    l_cs = ConstraintSelector()
     for i = 1:length(env.contacts)
         β_dim = size(env.contacts[i].obstacle.basis,2)
-        add_ineq!(lower_cs, Symbol("β_pos", i), β_dim)
-        add_ineq!(lower_cs, Symbol("fric_cone", i), 1)
+        add_ineq!(l_cs, Symbol("β_pos", i), β_dim)
+        add_ineq!(l_cs, Symbol("fric_cone", i), 1)
     end
    
-    lower_options = Dict{String, Any}()
-    lower_options["num_fosteps"] = 3
-    lower_options["num_sosteps"] = 2
-    lower_options["c"] = 1.
-    lower_options["c_fos"] = 10.
-    lower_options["c_sos"] = 10.
+    l_options = Dict{String, Any}()
+    l_options["num_fosteps"] = 3
+    l_options["num_sosteps"] = 2
+    l_options["c"] = 1.
+    l_options["c_fos"] = 10.
+    l_options["c_sos"] = 10.
     
     SimData(mechanism,env,
             x0_cache,xn_cache,envj_cache,
             Δt,vs,cs,generate_solver_fn,extract_sol,
-            lower_vs,lower_cs,lower_options,1,[],[])
+            [l_vs],[l_cs],[l_options],1,[],[])
 end
 
 function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) where T    
@@ -92,8 +92,9 @@ function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
     Hi = inv(H)
     env = sim_data.env
     upper_vs = sim_data.vs
-    lower_vs = sim_data.lower_vs
-    lower_cs = sim_data.lower_cs
+    lower_vs = sim_data.lower_vs[1]
+    lower_cs = sim_data.lower_cs[1]
+    lower_options = sim_data.lower_options[1]
 
     Qds = []
     rds = []
@@ -139,7 +140,7 @@ function contact_τ_direct!(τ,sim_data::SimData,H,envj::EnvironmentJacobian,
 
     x0 = zeros(lower_vs.num_vars)
 
-    xopt, info = auglag(solver_fn_, lower_cs.num_eqs, lower_cs.num_ineqs, x0, sim_data.lower_options)
+    xopt, info = auglag(solver_fn_, lower_cs.num_eqs, lower_cs.num_ineqs, x0, lower_options)
     
     τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
         contact_τ(cj, upper_vs(upper_x, Symbol("c_n", i)), lower_vs(xopt, Symbol("β", i)))

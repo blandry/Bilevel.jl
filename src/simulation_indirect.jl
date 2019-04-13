@@ -45,7 +45,7 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
     sim_data = SimData(mechanism,env,
                        x0_cache,xn_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn,extract_sol,
-                       nothing,nothing,nothing,1,[],[])
+                       [],[],[],1,[],[])
 
     sim_data
 end

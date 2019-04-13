@@ -9,9 +9,9 @@ struct SimData
     cs::ConstraintSelector
     generate_solver_fn::Symbol
     extract_sol::Symbol
-    lower_vs::Union{Nothing,VariableSelector}
-    lower_cs::Union{Nothing,ConstraintSelector}
-    lower_options::Union{Nothing,Dict}
+    lower_vs::Vector{VariableSelector}
+    lower_cs::Vector{ConstraintSelector}
+    lower_options::Vector{Dict}
     N::Int
     con_fns::Vector{Tuple{Symbol,Any}}
     obj_fns::Vector{Tuple{Symbol,Any}}

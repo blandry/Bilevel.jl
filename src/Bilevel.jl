@@ -11,6 +11,7 @@ export Obstacle,
        get_sim_data_indirect,
        get_sim_data_direct,
        get_trajopt_data_indirect,
+       get_trajopt_data_direct,
        add_eq!,
        add_ineq!,
        add_obj!,
@@ -39,6 +40,7 @@ include("simulation_indirect.jl")
 include("simulation_direct.jl")
 include("trajopt.jl")
 include("trajopt_indirect.jl")
+include("trajopt_direct.jl")
 include(joinpath("solvers", "snopt.jl"))
 include(joinpath("solvers", "auglag.jl"))
 include(joinpath("solvers", "svd.jl"))
