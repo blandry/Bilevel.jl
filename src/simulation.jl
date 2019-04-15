@@ -37,6 +37,18 @@ function add_obj!(sim_data::SimData, name::Symbol, fun)
     sim_data.obj_fns
 end
 
+function add_box_con!(sim_data::SimData, name::Symbol, var_name::Symbol, min::AbstractArray{T}, max::AbstractArray{T}) where T
+    min_name = Symbol(name, "_min")
+    add_ineq!(sim_data.cs, min_name, length(min))
+    push!(sim_data.con_fns, (min_name, x -> min - sim_data.vs(x, var_name)))
+    
+    max_name = Symbol(name, "_max")
+    add_ineq!(sim_data.cs, max_name, length(max))
+    push!(sim_data.con_fns, (max_name, x -> sim_data.vs(x, var_name) - max))
+    
+    sim_data.con_fns
+end
+
 function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
                   opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
     

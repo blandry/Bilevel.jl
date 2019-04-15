@@ -7,6 +7,7 @@ function get_trajopt_data_indirect(mechanism::Mechanism,env::Environment,Δt::Re
         add_var!(vs, Symbol("v", n), num_velocities(mechanism))
         if n < N
             add_var!(vs, Symbol("u", n), num_velocities(mechanism))
+            add_var!(vs, Symbol("h", n), 1)
             if relax_comp
                 add_var!(vs, Symbol("slack", n), 1)
             end
@@ -24,6 +25,7 @@ function get_trajopt_data_indirect(mechanism::Mechanism,env::Environment,Δt::Re
     for n = 1:N-1
         add_eq!(cs, Symbol("kin", n), num_positions(mechanism))
         add_eq!(cs, Symbol("dyn", n), num_velocities(mechanism))
+        add_ineq!(cs, Symbol("h_pos", n), 1)
         for i = 1:length(env.contacts)
             β_dim = size(env.contacts[i].obstacle.basis,2)
             add_ineq!(cs, Symbol("β_pos", i, "_", n), β_dim)
@@ -68,6 +70,7 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
     qtraj = []
     vtraj = []
     utraj = []
+    htraj = []
     contact_traj = []
     slack_traj = []
     for n = 1:N
@@ -75,6 +78,7 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
         push!(vtraj, vs(xopt, Symbol("v", n)))
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
+            push!(htraj, vs(xopt, Symbol("h", n)))
             if relax_comp
                 push!(slack_traj, vs(xopt, Symbol("slack", n)))
             end
@@ -89,11 +93,11 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
         end
     end
     
-    # some other usefull vectors
-    ttraj = [(i-1)*sim_data.Δt for i = 1:N]
-    qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
+    # some other useful vectors
+    ttraj = vcat(0., cumsum(htraj)...)
+    qv_mat = vcat(hcat(qtraj...), hcat(vtraj...))
     
-    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
+    qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
 function contact_τ_indirect!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T},n::Int) where T
@@ -105,7 +109,6 @@ end
 
 function generate_solver_fn_trajopt_indirect(sim_data::SimData)    
     N = sim_data.N
-    Δt = sim_data.Δt
     vs = sim_data.vs
     cs = sim_data.cs
     
@@ -141,6 +144,7 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
+            h = vs(x, Symbol("h", n))
             if relax_comp
                 slack = vs(x, Symbol("slack", n))
             end
@@ -167,8 +171,9 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
                 contact_τ_indirect!(contact_bias, sim_data, envj, x, n)
             end
 
-            g[cs(Symbol("kin", n))] .= qnext .- q0 .- Δt .* config_derivative
-            g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- Δt .* (u0 .- dyn_bias .- contact_bias)
+            g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
+            g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias)
+            g[cs(Symbol("h_pos", n))] .= -h
         
             for i = 1:num_contacts
                 cj = envj.contact_jacobians[i]
