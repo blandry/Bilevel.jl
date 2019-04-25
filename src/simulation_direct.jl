@@ -131,6 +131,7 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
+        # g = zeros(ForwardDiff.Dual, lower_cs.num_eqs + lower_cs.num_ineqs)
         # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
         g = []
 
@@ -145,10 +146,10 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
         g
     end
 
-    # fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
-    # gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
-    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
-    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
+    fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
+    gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
+    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
@@ -199,6 +200,7 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
+        # g = zeros(ForwardDiff.Dual, lower_cs.num_eqs + lower_cs.num_ineqs)
         # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
         g = []
         
@@ -214,10 +216,10 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
         g
     end
 
-    # fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
-    # gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
-    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
-    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
+    fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
+    gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
+    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
