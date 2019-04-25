@@ -56,7 +56,7 @@ function get_trajopt_data_indirect(mechanism::Mechanism,env::Environment,Δt::Re
     sim_data = SimData(mechanism,env,
                        x0_cache,xn_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn,extract_sol,
-                       [],[],[],N,[],[])
+                       [],[],[],[],[],[],[],[],[],N,[],[])
 
     sim_data
 end

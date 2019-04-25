@@ -45,11 +45,11 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         # TODO inplace
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
         
-        ∇f = vcat(gobj, zeros(num_ineqs))
+        ∇f = vcat(gobj, zeros(eltype(gobj), num_ineqs))
         Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
-        ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
+        ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(eltype(x),num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
         
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
@@ -67,17 +67,17 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         # TODO inplace
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
 
-        ∇f = vcat(gobj, zeros(num_ineqs))
+        ∇f = vcat(gobj, zeros(eltype(gobj),num_ineqs))
         Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
         
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
-        ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
-    
+        ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(eltype(x),num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
+
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
             
-        A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_eqs+num_ineqs,num_eqs+num_ineqs)))
+        A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(eltype(∇h),num_eqs+num_ineqs,num_eqs+num_ineqs)))
         U,S,V = svd(A)
         tol = rtol*maximum(S)
         ksig = 100.

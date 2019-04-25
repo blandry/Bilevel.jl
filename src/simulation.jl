@@ -12,6 +12,12 @@ struct SimData
     lower_vs::Vector{VariableSelector}
     lower_cs::Vector{ConstraintSelector}
     lower_options::Vector{Dict}
+    normal_vs::Vector{VariableSelector}
+    normal_cs::Vector{ConstraintSelector}
+    normal_options::Vector{Dict}
+    fric_vs::Vector{VariableSelector}
+    fric_cs::Vector{ConstraintSelector}
+    fric_options::Vector{Dict}
     N::Int
     con_fns::Vector{Tuple{Symbol,Any}}
     obj_fns::Vector{Tuple{Symbol,Any}}

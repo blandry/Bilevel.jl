@@ -20,15 +20,15 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
     generate_solver_fn = :generate_solver_fn_sim_direct
     extract_sol = :extract_sol_sim_direct
 
-    cn_vs = VariableSelector()
+    normal_vs = VariableSelector()
     for i = 1:length(env.contacts)
-        add_var!(cn_vs, Symbol("c_n", i), 1)
+        add_var!(normal_vs, Symbol("c_n", i), 1)
     end
 
-    cn_cs = ConstraintSelector()
+    normal_cs = ConstraintSelector()
     for i = 1:length(env.contacts)
-        add_ineq!(cn_cs, Symbol("c_n_pos", i), 1)
-        add_ineq!(cn_cs, Symbol("ϕ", i), 1)
+        add_ineq!(normal_cs, Symbol("c_n_pos", i), 1)
+        add_ineq!(normal_cs, Symbol("ϕ", i), 1)
     end
    
     num_fos = 1
@@ -37,12 +37,12 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
     c_fos = 10
     c_sos = 1
    
-    cn_options = Dict{String, Any}()
-    cn_options["num_fosteps"] = num_fos
-    cn_options["num_sosteps"] = num_sos
-    cn_options["c"] = c0
-    cn_options["c_fos"] = c_fos
-    cn_options["c_sos"] = c_sos
+    normal_options = Dict{String, Any}()
+    normal_options["num_fosteps"] = num_fos
+    normal_options["num_sosteps"] = num_sos
+    normal_options["c"] = c0
+    normal_options["c_fos"] = c_fos
+    normal_options["c_sos"] = c_sos
     
     fric_vs = VariableSelector()
     for i = 1:length(env.contacts)
@@ -67,7 +67,7 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
     SimData(mechanism,env,
             x0_cache,xn_cache,envj_cache,
             Δt,vs,cs,generate_solver_fn,extract_sol,
-            [cn_vs,fric_vs],[cn_cs,fric_cs],[cn_options,fric_options],1,[],[])
+            [],[],[],[normal_vs],[normal_cs],[normal_options],[fric_vs],[fric_cs],[fric_options],1,[],[])
 end
 
 function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) where T    
@@ -97,12 +97,12 @@ function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) 
     qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
-function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U}) where U
+function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
-    lower_vs = sim_data.lower_vs[1]
-    lower_cs = sim_data.lower_cs[1]
-    lower_options = sim_data.lower_options[1]
+    lower_vs = sim_data.normal_vs[n]
+    lower_cs = sim_data.normal_cs[n]
+    lower_options = sim_data.normal_options[n]
     h = sim_data.Δt
     
     ϕAs = []
@@ -131,20 +131,24 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
-        g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        g = []
 
         for i = 1:num_contacts
             c_n = lower_vs(x, Symbol("c_n", i))
-            g[lower_cs(Symbol("c_n_pos", i))] .= -c_n
-            g[lower_cs(Symbol("ϕ", i))] .= ϕAs[i]*vcat(c_n, zeros(4)) + ϕbs[i] # TODO use β_dim
+            # g[lower_cs(Symbol("c_n_pos", i))] .= -c_n
+            # g[lower_cs(Symbol("ϕ", i))] .= ϕAs[i]*vcat(c_n, zeros(4)) + ϕbs[i] # TODO use β_dim
+            g = vcat(g, -c_n)
+            g = vcat(g, ϕAs[i]*vcat(c_n, zeros(4)) + ϕbs[i])
         end
         
         g
     end
 
-    fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
-    gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
-    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    # fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
+    # gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
+    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
@@ -158,13 +162,13 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     xopt
 end
 
-function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal) where U
+function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal,n::Int) where U
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
-    normal_vs = sim_data.lower_vs[1]
-    lower_vs = sim_data.lower_vs[2]
-    lower_cs = sim_data.lower_cs[2]
-    lower_options = sim_data.lower_options[2]
+    normal_vs = sim_data.normal_vs[n]
+    lower_vs = sim_data.fric_vs[n]
+    lower_cs = sim_data.fric_cs[n]
+    lower_options = sim_data.fric_options[n]
     h = sim_data.Δt
     
     Qds = []
@@ -195,21 +199,25 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
-        g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
-
+        # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        g = []
+        
         for i = 1:num_contacts
             c_n = normal_vs(x_normal, Symbol("c_n", i))
             β = lower_vs(x, Symbol("β", i))
-            g[lower_cs(Symbol("β_pos", i))] .= -β
-            g[lower_cs(Symbol("fric_cone", i))] .= sum(β) .- env.contacts[i].obstacle.μ * c_n
+            # g[lower_cs(Symbol("β_pos", i))] .= -β
+            # g[lower_cs(Symbol("fric_cone", i))] .= sum(β) .- env.contacts[i].obstacle.μ * c_n
+            g = vcat(g, -β)
+            g = vcat(g, sum(β) .- env.contacts[i].obstacle.μ * c_n)
         end
         
         g
     end
 
-    fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
-    gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
-    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    # fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
+    # gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
+    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
+    solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
@@ -240,7 +248,8 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
     Hi = inv(H)
     
     contact_jacobian!(envj, x0)
-    
+    dyn_bias0 = dynamics_bias(x0) # TODO preallocate
+
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
     
@@ -268,15 +277,15 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
         
-        config_derivative = configuration_derivative(xn) # TODO preallocate
-        dyn_bias = dynamics_bias(xn) # TODO preallocate
         if (num_contacts > 0)
             # compute normal forces
-            x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x)
+            x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, 1)
                         
             # compute friction forces
-            contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, x_normal)
+            contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, x_normal, 1)
         end
+        config_derivative = configuration_derivative(xn) # TODO preallocate
+        dyn_bias = dynamics_bias(xn) # TODO preallocate
 
         g[cs(:kin)] .= qnext .- q0 .- Δt .* config_derivative
         g[cs(:dyn)] .= H * (vnext - v0) .- Δt .* (u0 .- dyn_bias .- contact_bias)
