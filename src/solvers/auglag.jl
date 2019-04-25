@@ -1,21 +1,27 @@
 function softmax(x;k=1.)
     thresh = 500.
-    if any(k*x .< -thresh)
-        (log.(1. .+ exp.(k*x)))/k
-    elseif any(k*x .> thresh)
-        (k*x + log.(1. .+ exp.(-k*x)))/k
-    else
-        log.(exp.(k*x) .+ 1.)/k
+    g = map(x) do xi
+        if k*xi < -thresh
+            (log(1. + exp(k*xi)))/k
+        elseif k*xi > thresh
+            (k*xi + log(1. + exp(-k*xi)))/k
+        else
+            log(exp(k*xi) + 1.)/k
+        end        
     end
+    g
 end
 
 function gsoftmax(x;k=1.)
     thresh = 500.
-    if any(k*x .> thresh)
-        Matrix(Diagonal(1. .- exp.(-k*x) ./ (1. .+ exp.(-k*x))))
-    else
-        Matrix(Diagonal(exp.(k*x) ./ (exp.(k*x) .+ 1.)))
+    g = map(x) do xi
+        if k*xi > thresh
+            1. / (1. + exp(-k*xi))
+        else
+            exp(k*xi) / (1. + exp(k*xi))
+        end
     end
+    Matrix(Diagonal(g))
 end
 
 function L(x,λ,f,h,c)
@@ -70,7 +76,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
     
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
-    
+            
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(num_eqs+num_ineqs,num_eqs+num_ineqs)))
         U,S,V = svd(A)
         tol = rtol*maximum(S)
@@ -78,7 +84,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
         Sinv[isinf.(Sinv)] .= 0.
         Apinv = V * (Diagonal(Sinv) * U')
-    
+        
         δxλ = Apinv * (-vcat(gL,hx))
     
         δx = δxλ[1:num_x+num_ineqs]

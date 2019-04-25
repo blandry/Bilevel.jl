@@ -5,7 +5,6 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
     Av = map(ForwardDiff.value,A)
     Ap = map(ForwardDiff.partials,A)
     
-    # Av[isnan.(Av)] .= 0. # TODO shouldn't happen
     Uv,sv,Vv = svd(Av)
     
     Sv = Matrix(Diagonal(sv))

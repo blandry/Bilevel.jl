@@ -33,9 +33,9 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
    
     num_fos = 1
     num_sos = 10
-    c0 = 100
+    c0 = 10
     c_fos = 10
-    c_sos = 10
+    c_sos = 1
    
     cn_options = Dict{String, Any}()
     cn_options["num_fosteps"] = num_fos
