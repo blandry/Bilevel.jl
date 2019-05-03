@@ -104,6 +104,11 @@ function objcon_wrapper(status_::Ptr{Clong}, n::Clong, x_::Ptr{Cdouble},
     J, ceq, c, gJ, gceq, gc, HJ = objcon(x)
     fail = false
     gradprovided = true
+    
+    # callback
+    if ~isa(callback_fn_, Nothing)
+        callback_fn_(x)
+    end
 
     # copy obj and con values into C pointer
     unsafe_store!(f_, J, 1)
@@ -152,10 +157,11 @@ const usrfun = @cfunction(objcon_wrapper, Cvoid, (Ptr{Clong}, Ref{Clong}, Ptr{Cd
 
 # main call to snopt
 function snopt(fun, num_eqs, num_ineqs, x0, options;
-               printfile = "snopt-print.out", sumfile = "snopt-summary.out")
+               printfile = "snopt-print.out", sumfile = "snopt-summary.out", callback_fn = nothing)
 
     # TODO: there is a probably a better way than to use a global
     global objcon = fun
+    global callback_fn_ = callback_fn
 
     # setup
     Start = 0  # cold start  # TODO: allow warm starts

@@ -1,5 +1,4 @@
-function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real,N::Int;
-                                 relax_comp=false)
+function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real,N::Int)
     vs = VariableSelector()
         
     for n = 1:N
@@ -8,9 +7,6 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
         if n < N
             add_var!(vs, Symbol("u", n), num_velocities(mechanism))
             add_var!(vs, Symbol("h", n), 1)
-            if relax_comp
-                add_var!(vs, Symbol("slack", n), 1)
-            end
         end
     end
 
@@ -98,7 +94,6 @@ end
 function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) where T    
     N = sim_data.N
     vs = sim_data.vs
-    relax_comp = haskey(vs.vars, :slack1)
     env = sim_data.env
 
     qtraj = []
@@ -113,9 +108,6 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
             push!(htraj, vs(xopt, Symbol("h", n)))        
-            if relax_comp
-                push!(slack_traj, vs(xopt, Symbol("slack", n)))
-            end
             contact_sol = []
             push!(contact_traj, contact_sol)
         end
@@ -133,7 +125,6 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     vs = sim_data.vs
     cs = sim_data.cs
     
-    relax_comp = haskey(vs.vars, :slack1)
     num_contacts = length(sim_data.env.contacts)
     num_vel = num_velocities(sim_data.mechanism)
     world = root_body(sim_data.mechanism)
@@ -141,13 +132,6 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
-    
-        if relax_comp
-            for n = 1:N-1
-                slack = vs(x, Symbol("slack", n))
-                f += .5 * slack' * slack
-            end
-        end
         
         # extra user-defined objective
         for i = 1:length(sim_data.obj_fns)
@@ -161,14 +145,11 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        for n = 1:N-1
+        @threads for n = 1:N-1
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
             h = vs(x, Symbol("h", n))
-            if relax_comp
-                slack = vs(x, Symbol("slack", n))
-            end
             qnext = vs(x, Symbol("q", n+1))
             vnext = vs(x, Symbol("v", n+1))
         
@@ -183,6 +164,8 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             set_velocity!(x0, v0)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
+            # normalize_configuration!(x0)
+            # normalize_configuration!(xn)
         
             H = mass_matrix(x0)
             Hi = inv(H)

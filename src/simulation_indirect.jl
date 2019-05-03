@@ -3,14 +3,14 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
     vs = VariableSelector()
     add_var!(vs, :qnext, num_positions(mechanism))
     add_var!(vs, :vnext, num_velocities(mechanism))
-    if relax_comp
-        add_var!(vs, :slack, 1)
-    end
     for i = 1:length(env.contacts)
         β_dim = size(env.contacts[i].obstacle.basis,2)
         add_var!(vs, Symbol("β", i), β_dim)
         add_var!(vs, Symbol("λ", i), 1)
         add_var!(vs, Symbol("c_n", i), 1)
+        if relax_comp
+            add_var!(vs, Symbol("slack", i), 3)
+        end
     end
 
     cs = ConstraintSelector()
@@ -25,6 +25,7 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
         add_ineq!(cs, Symbol("fric_pos", i), β_dim)
         add_ineq!(cs, Symbol("cone_pos", i), 1)
         if relax_comp
+            add_ineq!(cs, Symbol("slack_pos", i), 3)
             add_ineq!(cs, Symbol("ϕ_c_n_comp", i), 1)
             add_ineq!(cs, Symbol("fric_β_comp", i), β_dim)
             add_ineq!(cs, Symbol("cone_λ_comp", i), 1)
@@ -52,22 +53,22 @@ end
 
 function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}) where T    
     vs = sim_data.vs
-    relax_comp = haskey(vs.vars, :slack)
+    relax_comp = haskey(vs.vars, :slack1)
     env = sim_data.env
     N = size(results,2)
 
-    qtraj = []
-    vtraj = []
-    utraj = []
-    contact_traj = []
-    slack_traj = []
+    qtraj = Array{Array{Float64,1},1}(undef, 0)
+    vtraj = Array{Array{Float64,1},1}(undef, 0)
+    utraj = Array{Array{Float64,1},1}(undef, 0)
+    contact_traj = Array{Array{Float64,1},1}(undef, 0)
+    slack_traj = Array{Array{Float64,1},1}(undef, 0)
     for n = 1:N
         push!(qtraj, vs(results[:,n], Symbol("qnext")))
         push!(vtraj, vs(results[:,n], Symbol("vnext")))
-        if relax_comp
-            push!(slack_traj, vs(results[:,n], Symbol("slack")))
-        end
         for i = 1:length(env.contacts)
+            if relax_comp
+                push!(slack_traj, vs(results[:,n], Symbol("slack", i)))
+            end
             contact_sol = vcat(vs(results[:,n], Symbol("c_n", i)),
                                vs(results[:,n], Symbol("β", i)),
                                vs(results[:,n], Symbol("λ", i)))
@@ -77,7 +78,7 @@ function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}
     
     # some other usefull vectors
     ttraj = [(i-1)*sim_data.Δt for i = 1:N]
-    qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
+    qv_mat = [] #vcat(hcat(qtraj...),hcat(vtraj...))
     
     qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
@@ -95,7 +96,7 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
     vs = sim_data.vs
     cs = sim_data.cs
     
-    relax_comp = haskey(vs.vars, :slack)
+    relax_comp = haskey(vs.vars, :slack1)
     num_contacts = length(sim_data.env.contacts)
     num_vel = num_velocities(sim_data.mechanism)
     world = root_body(sim_data.mechanism)
@@ -109,8 +110,11 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         f = 0.
     
         if relax_comp
-            slack = vs(x, :slack)
-            f += .5 * slack' * slack
+            for i = 1:num_contacts
+                slack = vs(x, Symbol("slack", i))
+                # f += .5 * slack' * slack
+                f += sum(slack)
+            end
         end
     
         f
@@ -125,9 +129,6 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
 
         qnext = vs(x, :qnext)
         vnext = vs(x, :vnext)
-        if relax_comp
-            slack = vs(x, :slack)
-        end
         
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
@@ -170,9 +171,11 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
                 # (μ * c_n - sum(β)) * λ = 0
                 g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ
             else
-                g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack' * slack
-                g[cs(Symbol("fric_β_comp", i))] .= (λ .+ Dtv) .* β .- slack' * slack
-                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack' * slack
+                slack = vs(x, Symbol("slack", i))
+                g[cs(Symbol("slack_pos", i))] .= -slack
+                g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack[1]
+                g[cs(Symbol("fric_β_comp", i))] .= (λ .+ Dtv) .* β .- slack[2]
+                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack[3]
             end
         end
                 

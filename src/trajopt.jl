@@ -8,7 +8,7 @@ end
 
 function trajopt(sim_data::SimData;
                  x0=nothing,quaternion_state=false,
-                 opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
+                 opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0,callback_fn=nothing)
 
     solver_fn = eval(sim_data.generate_solver_fn)(sim_data)
 
@@ -36,7 +36,7 @@ function trajopt(sim_data::SimData;
     options["Major feasibility tolerance"] = major_feas
     options["Minor feasibility tolerance"] = minor_feas
 
-    xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x0, options)
+    xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x0, options, callback_fn=callback_fn)
 
     if verbose >= 1
         println(info)

@@ -98,13 +98,13 @@
     <geometry>
       <capsule radius="0.012" length="0.09" />
     </geometry>
-  </collision>
+  </collision> -->
   <collision group="feet">
     <origin xyz="-0.0265 0 -0.0985"/>
     <geometry>
-      <sphere radius="0.0103"/>
+      <sphere radius="0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <joint name="front_left_knee" type="revolute">
@@ -176,13 +176,13 @@
     <geometry>
       <capsule radius="0.012" length="0.09" />
     </geometry>
-  </collision>
+  </collision> -->
   <collision group="feet">
     <origin xyz="-0.0265 0 -0.0985"/>
     <geometry>
-      <sphere radius="0.0103"/>
+      <sphere radius="0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <joint name="front_right_knee" type="revolute">
@@ -252,13 +252,13 @@
     <geometry>
       <capsule radius="0.012" length="0.09" />
     </geometry>
-  </collision>
+  </collision> -->
   <collision group="feet">
     <origin xyz="0.0265 0 -0.0985"/>
     <geometry>
-      <sphere radius="0.0103"/>
+      <sphere radius="0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <joint name="back_left_knee" type="revolute">
@@ -330,13 +330,13 @@
       <geometry>
         <capsule radius="0.012" length="0.09" />
       </geometry>
-    </collision>
+    </collision> -->
     <collision group="feet">
       <origin xyz="0.0265 0 -0.0985"/>
       <geometry>
-        <sphere radius="0.0103"/>
+        <sphere radius="0"/>
       </geometry>
-    </collision> -->
+    </collision>
   </link>
 
   <joint name="back_right_knee" type="revolute">
