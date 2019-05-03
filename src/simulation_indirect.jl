@@ -78,7 +78,7 @@ function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}
     
     # some other usefull vectors
     ttraj = [(i-1)*sim_data.Δt for i = 1:N]
-    qv_mat = [] #vcat(hcat(qtraj...),hcat(vtraj...))
+    qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
     
     qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
