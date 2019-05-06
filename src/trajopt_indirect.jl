@@ -96,7 +96,7 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
     
     # some other useful vectors
     ttraj = vcat(0., cumsum(max.(0.,htraj))...)
-    qv_mat = [] #vcat(hcat(qtraj...), hcat(vtraj...))
+    qv_mat = vcat(hcat(qtraj...), hcat(vtraj...))
     
     qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat
 end
@@ -144,7 +144,8 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        @threads for n = 1:N-1
+        # @threads for n = 1:N-1
+        for n = 1:N-1
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -211,7 +212,7 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
                     g[cs(Symbol("slack_pos", i, "_", n))] .= -slack
                     g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack[1]
                     g[cs(Symbol("fric_β_comp", i, "_", n))] .= (λ .+ Dtv) .* β .- slack[2]
-                    g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack[3]
+                    g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ .- slack[3]
                 end
             end
         end

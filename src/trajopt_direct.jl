@@ -34,17 +34,17 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
     
     n_options = Dict{String, Any}()
     n_options["num_fosteps"] = 1
-    n_options["num_sosteps"] = 10
-    n_options["c"] = 10.
+    n_options["num_sosteps"] = 15
+    n_options["c"] = 1000.
     n_options["c_fos"] = 10.
-    n_options["c_sos"] = 1.
+    n_options["c_sos"] = 10.
 
     f_options = Dict{String, Any}()
     f_options["num_fosteps"] = 1
-    f_options["num_sosteps"] = 10
-    f_options["c"] = 10.
+    f_options["num_sosteps"] = 9
+    f_options["c"] = 1000.
     f_options["c_fos"] = 10.
-    f_options["c_sos"] = 1.
+    f_options["c_sos"] = 10.
     
     for n = 1:N-1
         n_vs = VariableSelector()
@@ -145,7 +145,8 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        @threads for n = 1:N-1
+        # @threads for n = 1:N-1
+        for n = 1:N-1
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
