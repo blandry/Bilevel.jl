@@ -175,7 +175,7 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
                 g[cs(Symbol("slack_pos", i))] .= -slack
                 g[cs(Symbol("ϕ_c_n_comp", i))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack[1]
                 g[cs(Symbol("fric_β_comp", i))] .= (λ .+ Dtv) .* β .- slack[2]
-                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n - sum(β)) .* λ .- slack[3]
+                g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ .- slack[3]
             end
         end
                 

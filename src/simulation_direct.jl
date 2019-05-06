@@ -31,18 +31,12 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
         add_ineq!(normal_cs, Symbol("ϕ", i), 1)
     end
    
-    num_fos = 1
-    num_sos = 10
-    c0 = 10
-    c_fos = 10
-    c_sos = 1
-   
     normal_options = Dict{String, Any}()
-    normal_options["num_fosteps"] = num_fos
-    normal_options["num_sosteps"] = num_sos
-    normal_options["c"] = c0
-    normal_options["c_fos"] = c_fos
-    normal_options["c_sos"] = c_sos
+    normal_options["num_fosteps"] = 1
+    normal_options["num_sosteps"] = 10
+    normal_options["c"] = 10
+    normal_options["c_fos"] = 10
+    normal_options["c_sos"] = 1
     
     fric_vs = VariableSelector()
     for i = 1:length(env.contacts)
@@ -58,11 +52,11 @@ function get_sim_data_direct(mechanism::Mechanism,env::Environment,Δt::Real;
     end
    
     fric_options = Dict{String, Any}()
-    fric_options["num_fosteps"] = num_fos
-    fric_options["num_sosteps"] = num_sos
-    fric_options["c"] = c0
-    fric_options["c_fos"] = c_fos
-    fric_options["c_sos"] = c_sos
+    fric_options["num_fosteps"] = 1
+    fric_options["num_sosteps"] = 10
+    fric_options["c"] = 10
+    fric_options["c_fos"] = 10
+    fric_options["c_sos"] = 1
     
     SimData(mechanism,env,
             x0_cache,xn_cache,envj_cache,
