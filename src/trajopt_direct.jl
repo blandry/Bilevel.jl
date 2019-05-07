@@ -1,4 +1,5 @@
-function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real,N::Int)
+function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real,N::Int;
+                                 relax_comp=false)
     vs = VariableSelector()
         
     for n = 1:N
@@ -7,6 +8,9 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
         if n < N
             add_var!(vs, Symbol("u", n), num_velocities(mechanism))
             add_var!(vs, Symbol("h", n), 1)
+            if relax_comp
+                add_var!(vs, Symbol("slack", n), num_velocities(mechanism))
+            end
         end
     end
 
@@ -33,18 +37,18 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
     fric_options = []
     
     n_options = Dict{String, Any}()
-    n_options["num_fosteps"] = 1
-    n_options["num_sosteps"] = 15
-    n_options["c"] = 1000.
-    n_options["c_fos"] = 10.
-    n_options["c_sos"] = 10.
+    n_options["num_fosteps"] = 0
+    n_options["num_sosteps"] = 20
+    n_options["c"] = 1.
+    n_options["c_fos"] = 1.
+    n_options["c_sos"] = 1.
 
     f_options = Dict{String, Any}()
-    f_options["num_fosteps"] = 1
-    f_options["num_sosteps"] = 9
-    f_options["c"] = 1000.
-    f_options["c_fos"] = 10.
-    f_options["c_sos"] = 10.
+    f_options["num_fosteps"] = 0
+    f_options["num_sosteps"] = 20
+    f_options["c"] = 1.
+    f_options["c_fos"] = 1.
+    f_options["c_sos"] = 1.
     
     for n = 1:N-1
         n_vs = VariableSelector()
@@ -107,7 +111,8 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
         push!(vtraj, vs(xopt, Symbol("v", n)))
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
-            push!(htraj, vs(xopt, Symbol("h", n)))        
+            push!(htraj, vs(xopt, Symbol("h", n)))
+            push!(slack_traj, vs(xopt, Symbol("slack", n)))        
             contact_sol = []
             push!(contact_traj, contact_sol)
         end
@@ -129,9 +134,18 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     num_vel = num_velocities(sim_data.mechanism)
     world = root_body(sim_data.mechanism)
     world_frame = default_frame(world)
+    relax_comp = haskey(vs.vars, :slack1)
     
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
+        
+        if relax_comp
+            for n = 1:N-1
+                slack = vs(x, Symbol("slack", n))
+                # f += .5 * slack' * slack
+                f += sum(abs.(slack))
+            end
+        end
         
         # extra user-defined objective
         for i = 1:length(sim_data.obj_fns)
@@ -153,6 +167,9 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             h = vs(x, Symbol("h", n))
             qnext = vs(x, Symbol("q", n+1))
             vnext = vs(x, Symbol("v", n+1))
+            if relax_comp
+                slack = vs(x, Symbol("slack", n))
+            end
         
             x0 = sim_data.x0_cache[T]
             xn = sim_data.xn_cache[T]
@@ -185,7 +202,11 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             dyn_bias = dynamics_bias(xn) # TODO preallocate
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
-            g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias)
+            if !relax_comp
+                g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias)
+            else
+                g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias) .+ slack
+            end
             g[cs(Symbol("h_pos", n))] .= -h
         end
         

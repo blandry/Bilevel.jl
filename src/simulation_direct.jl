@@ -291,21 +291,3 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
         
     generate_autodiff_solver_fn(eval_obj,eval_cons,cs.eqs,cs.ineqs,vs.num_vars)
 end
-
-# # usefull to tune the lower solver
-# solver_fn_snopt = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
-# options_snopt = Dict{String, Any}()
-# options_snopt["Derivative option"] = 1
-# options_snopt["Verify level"] = -1 # -1 => 0ff, 0 => cheap
-# xopt_snopt, info_snopt = snopt(solver_fn_snopt, lower_cs.num_eqs, lower_cs.num_ineqs, x0, options_snopt)
-# display(info_snopt)
-# τ_snopt = zeros(length(τ))
-# τ_snopt .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
-#     contact_τ(cj, lower_vs(xopt_snopt, Symbol("c_n", i)), zeros(4))
-# end
-# display("snopt")
-# display(xopt_snopt)
-# display(τ_snopt)
-# display("auglag")
-# display(xopt)
-# display(τ)
