@@ -99,6 +99,7 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
     N = sim_data.N
     vs = sim_data.vs
     env = sim_data.env
+    relax_comp = haskey(vs.vars, :slack1)
 
     qtraj = []
     vtraj = []
@@ -112,7 +113,9 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
             push!(htraj, vs(xopt, Symbol("h", n)))
-            push!(slack_traj, vs(xopt, Symbol("slack", n)))        
+            if relax_comp
+                push!(slack_traj, vs(xopt, Symbol("slack", n)))        
+            end
             contact_sol = []
             push!(contact_traj, contact_sol)
         end
@@ -142,8 +145,7 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
         if relax_comp
             for n = 1:N-1
                 slack = vs(x, Symbol("slack", n))
-                # f += .5 * slack' * slack
-                f += sum(abs.(slack))
+                f += .5 * slack' * slack
             end
         end
         
@@ -182,8 +184,6 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             set_velocity!(x0, v0)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
-            # normalize_configuration!(x0)
-            # normalize_configuration!(xn)
         
             H = mass_matrix(x0)
             Hi = inv(H)

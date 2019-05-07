@@ -163,8 +163,6 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             set_velocity!(x0, v0)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
-            # normalize_configuration!(x0)
-            # normalize_configuration!(xn)
         
             H = mass_matrix(x0)
         
