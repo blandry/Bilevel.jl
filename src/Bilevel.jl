@@ -19,7 +19,7 @@ export Obstacle,
        add_box_con!,
        simulate,
        trajopt
-                  
+
 using Test
 using StaticArrays
 using LinearAlgebra
@@ -38,7 +38,7 @@ include("contact.jl")
 include("environment.jl")
 include("selector.jl")
 include("simulation.jl")
-include("contact_direct.jl")
+include("contact_sim.jl")
 include("simulation_indirect.jl")
 include("simulation_direct.jl")
 include("trajopt.jl")

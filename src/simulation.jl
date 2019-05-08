@@ -1,9 +1,8 @@
 struct SimData
     mechanism::Mechanism
     env::Environment
-    x0_cache::StateCache
-    xn_cache::StateCache
-    envj_cache::EnvironmentJacobianCache
+    state_cache::Vector{StateCache}
+    envj_cache::Vector{EnvironmentJacobianCache}
     Δt::Real
     vs::VariableSelector
     cs::ConstraintSelector
@@ -26,7 +25,7 @@ end
 function add_eq!(sim_data::SimData, name::Symbol, size::Int, fun)
     add_eq!(sim_data.cs, name, size)
     push!(sim_data.con_fns, (name, fun))
-    
+
     sim_data.con_fns
 end
 
@@ -39,7 +38,7 @@ end
 
 function add_obj!(sim_data::SimData, name::Symbol, fun)
     push!(sim_data.obj_fns, (name, fun))
-    
+
     sim_data.obj_fns
 end
 
@@ -47,17 +46,17 @@ function add_box_con!(sim_data::SimData, name::Symbol, var_name::Symbol, min::Ab
     min_name = Symbol(name, "_min")
     add_ineq!(sim_data.cs, min_name, length(min))
     push!(sim_data.con_fns, (min_name, x -> min - sim_data.vs(x, var_name)))
-    
+
     max_name = Symbol(name, "_max")
     add_ineq!(sim_data.cs, max_name, length(max))
     push!(sim_data.con_fns, (max_name, x -> sim_data.vs(x, var_name) - max))
-    
+
     sim_data.con_fns
 end
 
 function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
                   opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0)
-    
+
     results = zeros(sim_data.vs.num_vars, N)
     results[sim_data.vs(:qnext), 1] = configuration(state0)
     results[sim_data.vs(:vnext), 1] = velocity(state0)
@@ -84,15 +83,15 @@ function simulate(sim_data::SimData,control!,state0::MechanismState,N::Int;
         options["Minor feasibility tolerance"] = minor_feas
 
         xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x, options)
-        
+
         if verbose >= 1
             println(info)
         end
 
         results[:,i] .= xopt
     end
-    
+
     sol = eval(sim_data.extract_sol)(sim_data, results)
-    
+
     sol
 end

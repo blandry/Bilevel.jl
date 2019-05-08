@@ -35,23 +35,22 @@ function get_sim_data_indirect(mechanism::Mechanism,env::Environment,Δt::Real;
             add_eq!(cs, Symbol("cone_λ_comp", i), 1)
         end
     end
-    
-    x0_cache = StateCache(mechanism)
-    xn_cache = StateCache(mechanism)
-    envj_cache = EnvironmentJacobianCache(env)
+
+    state_cache = [StateCache(mechanism) for n = 1:2]
+    envj_cache = [EnvironmentJacobianCache(env) for n = 1:2]
 
     generate_solver_fn = :generate_solver_fn_sim_indirect
     extract_sol = :extract_sol_sim_indirect
 
     sim_data = SimData(mechanism,env,
-                       x0_cache,xn_cache,envj_cache,
+                       state_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn,extract_sol,
                        [],[],[],[],[],[],[],[],[],1,[],[])
 
     sim_data
 end
 
-function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}) where T    
+function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}) where T
     vs = sim_data.vs
     relax_comp = haskey(vs.vars, :slack1)
     env = sim_data.env
@@ -75,40 +74,33 @@ function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}
             push!(contact_traj, contact_sol)
         end
     end
-    
+
     # some other usefull vectors
     ttraj = [(i-1)*sim_data.Δt for i = 1:N]
     qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
-    
+
     qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
-function contact_τ_indirect!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T
-    # TODO: parallel
-    τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
-        contact_τ(cj, sim_data.vs(x, Symbol("c_n", i)), sim_data.vs(x, Symbol("β", i)))
-    end
-end
-
 function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
-    x0 = sim_data.x0_cache[Float64]
+    x0 = sim_data.state_cache[1][Float64]
     Δt = sim_data.Δt
     vs = sim_data.vs
     cs = sim_data.cs
-    
+
     relax_comp = haskey(vs.vars, :slack1)
     num_contacts = length(sim_data.env.contacts)
     num_vel = num_velocities(sim_data.mechanism)
     world = root_body(sim_data.mechanism)
     world_frame = default_frame(world)
-    
+
     set_configuration!(x0, q0)
     set_velocity!(x0, v0)
     H = mass_matrix(x0)
-    
+
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
-    
+
         if relax_comp
             for i = 1:num_contacts
                 slack = vs(x, Symbol("slack", i))
@@ -116,23 +108,23 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
                 f += sum(slack)
             end
         end
-    
+
         f
     end
 
     function eval_cons(x::AbstractArray{T}) where T
-        xn = sim_data.xn_cache[T]
-        envj = sim_data.envj_cache[T]
-        
+        xn = sim_data.state_cache[2][T]
+        envj = sim_data.envj_cache[2][T]
+
         contact_bias = Vector{T}(undef, num_vel)
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
         qnext = vs(x, :qnext)
         vnext = vs(x, :vnext)
-        
+
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
-        
+
         config_derivative = configuration_derivative(xn) # TODO preallocate
         dyn_bias = dynamics_bias(xn) # TODO preallocate
         if (num_contacts > 0)
@@ -145,16 +137,16 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         for i = 1:num_contacts
             cj = envj.contact_jacobians[i]
             c = cj.contact
-            
+
             # TODO preallocate
             contact_v = cj.contact_rot' * point_jacobian(xn, path(sim_data.mechanism, world, c.body), transform(xn, c.point, world_frame)).J * vnext
-            
+
             β = vs(x, Symbol("β", i))
             λ = vs(x, Symbol("λ", i))
             c_n = vs(x, Symbol("c_n", i))
-            
+
             Dtv = c.obstacle.basis' * contact_v
-            
+
             g[cs(Symbol("β_pos", i))] .= -β
             g[cs(Symbol("λ_pos", i))] .= -λ
             g[cs(Symbol("c_n_pos", i))] .= -c_n
@@ -178,9 +170,9 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
                 g[cs(Symbol("cone_λ_comp", i))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ .- slack[3]
             end
         end
-                
+
         g
     end
-    
+
     generate_autodiff_solver_fn(eval_obj,eval_cons,cs.eqs,cs.ineqs,vs.num_vars)
 end

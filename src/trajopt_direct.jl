@@ -1,7 +1,7 @@
 function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real,N::Int;
                                  relax_comp=false)
     vs = VariableSelector()
-        
+
     for n = 1:N
         add_var!(vs, Symbol("q", n), num_positions(mechanism))
         add_var!(vs, Symbol("v", n), num_velocities(mechanism))
@@ -21,10 +21,10 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
         add_eq!(cs, Symbol("dyn", n), num_velocities(mechanism))
         add_ineq!(cs, Symbol("h_pos", n), 1)
     end
-    
-    x0_cache = StateCache(mechanism)
-    xn_cache = StateCache(mechanism)
-    envj_cache = EnvironmentJacobianCache(env)
+
+    # this is needed for parralelization
+    state_cache = [StateCache(mechanism) for n = 1:N]
+    envj_cache = [EnvironmentJacobianCache(env) for n = 1:N]
 
     generate_solver_fn = :generate_solver_fn_trajopt_direct
     extract_sol = :extract_sol_trajopt_direct
@@ -35,7 +35,7 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
     fric_vs = []
     fric_cs = []
     fric_options = []
-    
+
     n_options = Dict{String, Any}()
     n_options["num_fosteps"] = 0
     n_options["num_sosteps"] = 20
@@ -49,7 +49,7 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
     f_options["c"] = 1.
     f_options["c_fos"] = 1.
     f_options["c_sos"] = 1.
-    
+
     for n = 1:N-1
         n_vs = VariableSelector()
         for i = 1:length(env.contacts)
@@ -61,11 +61,11 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
             add_ineq!(n_cs, Symbol("c_n_pos", i), 1)
             add_ineq!(n_cs, Symbol("ϕ", i), 1)
         end
-        
+
         push!(normal_vs, n_vs)
         push!(normal_cs, n_cs)
-        push!(normal_options, n_options) 
-        
+        push!(normal_options, n_options)
+
         f_vs = VariableSelector()
         for i = 1:length(env.contacts)
             β_dim = size(env.contacts[i].obstacle.basis,2)
@@ -78,14 +78,14 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
             add_ineq!(f_cs, Symbol("β_pos", i), β_dim)
             add_ineq!(f_cs, Symbol("fric_cone", i), 1)
         end
-        
+
         push!(fric_vs, f_vs)
         push!(fric_cs, f_cs)
-        push!(fric_options, f_options) 
+        push!(fric_options, f_options)
     end
 
     sim_data = SimData(mechanism,env,
-                       x0_cache,xn_cache,envj_cache,
+                       state_cache,envj_cache,
                        Δt,vs,cs,generate_solver_fn,extract_sol,
                        [],[],[],
                        normal_vs,normal_cs,normal_options,
@@ -95,7 +95,7 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
     sim_data
 end
 
-function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) where T    
+function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) where T
     N = sim_data.N
     vs = sim_data.vs
     env = sim_data.env
@@ -114,52 +114,63 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
             push!(utraj, vs(xopt, Symbol("u", n)))
             push!(htraj, vs(xopt, Symbol("h", n)))
             if relax_comp
-                push!(slack_traj, vs(xopt, Symbol("slack", n)))        
+                push!(slack_traj, vs(xopt, Symbol("slack", n)))
             end
             contact_sol = []
             push!(contact_traj, contact_sol)
         end
     end
-    
+
     # some other useful vectors
     ttraj = vcat(0., cumsum(htraj)...)
     qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
-    
+
     qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat
 end
 
-function generate_solver_fn_trajopt_direct(sim_data::SimData)    
+function generate_solver_fn_trajopt_direct(sim_data::SimData)
     N = sim_data.N
     vs = sim_data.vs
     cs = sim_data.cs
-    
+
     num_contacts = length(sim_data.env.contacts)
     num_vel = num_velocities(sim_data.mechanism)
     world = root_body(sim_data.mechanism)
     world_frame = default_frame(world)
     relax_comp = haskey(vs.vars, :slack1)
-    
+
     function eval_obj(x::AbstractArray{T}) where T
         f = 0.
-        
+
         if relax_comp
             for n = 1:N-1
                 slack = vs(x, Symbol("slack", n))
                 f += .5 * slack' * slack
             end
         end
-        
+
         # extra user-defined objective
         for i = 1:length(sim_data.obj_fns)
             obj_name, obj_fn = sim_data.obj_fns[i]
             f += obj_fn(x)
         end
-    
+
         f
     end
 
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
+
+        # for n = 1:N
+        #     state = sim_data.state_cache[]
+        #
+        #     q = vs(x, Symbol("q", n))
+        #     v = vs(x, Symbol("v", n))
+        #     u = vs(x, Symbol("u", n))
+        #
+        #     set_configuration!(x0, q0)
+        #     set_velocity!(x0, v0)
+        # end
 
         # @threads for n = 1:N-1
         for n = 1:N-1
@@ -172,29 +183,29 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             if relax_comp
                 slack = vs(x, Symbol("slack", n))
             end
-        
-            x0 = sim_data.x0_cache[T]
+
+            x0 = sim_data.state_cache[T]
             xn = sim_data.xn_cache[T]
             envj = sim_data.envj_cache[T]
-        
+
             normal_bias = Vector{T}(undef, num_vel)
             contact_bias = Vector{T}(undef, num_vel)
-        
+
             set_configuration!(x0, q0)
             set_velocity!(x0, v0)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
-        
+
             H = mass_matrix(x0)
             Hi = inv(H)
-            
+
             contact_jacobian!(envj, x0)
             dyn_bias0 = dynamics_bias(x0) # TODO preallocate
-        
-            if (num_contacts > 0)                
+
+            if (num_contacts > 0)
                 # compute normal forces
                 x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, n)
-                            
+
                 # compute friction forces
                 contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, x_normal, n)
             end
@@ -209,15 +220,15 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             end
             g[cs(Symbol("h_pos", n))] .= -h
         end
-        
+
         # extra user-defined constraints
         for i = 1:length(sim_data.con_fns)
             con_name, con_fn = sim_data.con_fns[i]
             g[cs(con_name)] .= con_fn(x)
         end
-        
+
         g
     end
-    
+
     generate_autodiff_solver_fn(eval_obj,eval_cons,cs.eqs,cs.ineqs,vs.num_vars)
 end
