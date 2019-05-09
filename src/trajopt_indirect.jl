@@ -48,7 +48,8 @@ function get_trajopt_data_indirect(mechanism::Mechanism,env::Environment,Δt::Re
     end
 
     # this is needed for parralelization
-    state_cache = [StateCache(mechanism) for n = 1:N]
+    mechs = [deepcopy(mechanism) for n = 1:N] 
+    state_cache = [StateCache(mechs[n]) for n = 1:N]
     envj_cache = [EnvironmentJacobianCache(env) for n = 1:N]
 
     generate_solver_fn = :generate_solver_fn_trajopt_indirect
@@ -135,17 +136,19 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
     end
 
     function eval_cons(x::AbstractArray{T}) where T
-        g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
+        # g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
+        g = zeros(T, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        @threads for n = 1:N
-        # for n = 1:N
+        # @threads for n = 1:N
+        for n = 1:N
             state = sim_data.state_cache[n][T]
             set_configuration!(state, vs(x, Symbol("q", n)))
             set_velocity!(state, vs(x, Symbol("v", n)))
+            setdirty!(state)
         end
 
         @threads for n = 1:(N-1)
-        # for n = 1:N-1
+        # for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -174,16 +177,16 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             for i = 1:num_contacts
                 cj = envj.contact_jacobians[i]
                 c = cj.contact
-
+            
                 # TODO preallocate
                 contact_v = cj.contact_rot' * point_jacobian(xn, path(sim_data.mechanism, world, c.body), transform(xn, c.point, world_frame)).J * vnext
-
+            
                 β = vs(x, Symbol("β", i, "_", n))
                 λ = vs(x, Symbol("λ", i, "_", n))
                 c_n = vs(x, Symbol("c_n", i, "_", n))
-
+            
                 Dtv = c.obstacle.basis' * contact_v
-
+            
                 g[cs(Symbol("β_pos", i, "_", n))] .= -β
                 g[cs(Symbol("λ_pos", i, "_", n))] .= -λ
                 g[cs(Symbol("c_n_pos", i, "_", n))] .= -c_n

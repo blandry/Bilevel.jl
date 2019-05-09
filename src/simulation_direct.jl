@@ -103,6 +103,7 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
 
     set_configuration!(x0, q0)
     set_velocity!(x0, v0)
+    setdirty!(x0)
     H = mass_matrix(x0)
     Hi = inv(H)
 
@@ -135,6 +136,7 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
 
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
+        setdirty!(xn)
 
         if (num_contacts > 0)
             # compute normal forces
