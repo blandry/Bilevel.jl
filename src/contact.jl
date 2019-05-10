@@ -33,33 +33,23 @@ mutable struct ContactJacobian{T}
     J::Matrix{T}
 
     function ContactJacobian{T}(contact::Contact) where T
-        state = MechanismState{T}(contact.mechanism)
+        total_weight = mass(contact.mechanism) * norm(contact.mechanism.gravitational_acceleration)
         world = root_body(contact.mechanism)
         world_frame = default_frame(world)
-        total_weight = mass(contact.mechanism) * norm(contact.mechanism.gravitational_acceleration)
+        nv = num_velocities(contact.mechanism)
+        β_dim = size(contact.obstacle.basis, 2)
+
         F = total_weight * hcat(contact.obstacle.normal.v, contact.obstacle.basis)
-        
-        cp = transform(state, contact.point, contact.obstacle.normal.frame)
-        
-        ϕ = separation(contact.obstacle, cp)
-        N = contact.obstacle.normal.v' * point_jacobian(state, path(contact.mechanism, contact.obstacle.body, contact.body), cp).J
 
-        contact_rot = relative_transform(state, contact.obstacle.normal.frame, world_frame).mat[1:3,1:3]
-        contact_trans = relative_transform(state, contact.point.frame, world_frame).mat[1:3,4]
-        
-        p = contact.point.v + contact_trans
-        P = Matrix{T}([0. -p[3] p[2]; p[3] 0. -p[1]; -p[2] p[1] 0.])
-        
-        geo_jacobian = geometric_jacobian(state, path(contact.mechanism, contact.body, world))
-        J = (geo_jacobian.linear' + geo_jacobian.angular' * P) * contact_rot * F
+        ϕ = zero(T)
+        N = Matrix{T}(undef, 1, nv)
+        contact_rot = Matrix{T}(undef, 3, 3)
+        contact_trans = Vector{T}(undef, 3)
+        geo_jacobian = GeometricJacobian(world_frame, default_frame(contact.body), root_frame(contact.mechanism), Matrix{T}(undef, 3, nv), Matrix{T}(undef, 3, nv))
+        geo_jacobian_surface = GeometricJacobian(world_frame, default_frame(contact.obstacle.body), root_frame(contact.mechanism), Matrix{T}(undef, 3, nv), Matrix{T}(undef, 3, nv))
+        P = zeros(T, 3, 3)
+        J = Matrix{T}(undef, nv, 1 + β_dim)
 
-        if contact.obstacle.is_floating
-            geo_jacobian_surface = geometric_jacobian(state, path(contact.mechanism, contact.obstacle.body, world))
-            J += -(geo_jacobian_surface.linear' + geo_jacobian_surface.angular' * P) * contact_rot * F
-        else
-            geo_jacobian_surface = nothing
-        end
-        
         new{T}(contact,F,ϕ,N,contact_rot,contact_trans,geo_jacobian,geo_jacobian_surface,P,J)
     end
 end
@@ -67,26 +57,16 @@ end
 function contact_jacobian!(cj::ContactJacobian, state::MechanismState)
     contact = cj.contact
     world = root_body(contact.mechanism)
-    world_frame = default_frame(world) 
-    
+    world_frame = default_frame(world)
+
     cp = transform(state, contact.point, contact.obstacle.normal.frame)
-        
+
     cj.ϕ = separation(contact.obstacle, cp)
     cj.N .= contact.obstacle.normal.v' * point_jacobian(state, path(contact.mechanism, contact.obstacle.body, contact.body), cp).J
 
-    # println(cj.N * RigidBodyDynamics.configuration_derivative_to_velocity_jacobian(state))
-    # function tmp_dist(x::AbstractArray{T}) where T
-    #     s = MechanismState{T}(contact.mechanism)
-    #     set_configuration!(s, x)
-    #     normalize_configuration!(s)
-    #     separation(contact.obstacle, transform(s, contact.point, contact.obstacle.normal.frame))
-    # end
-    # println(ForwardDiff.gradient(tmp_dist, configuration(state))')
-    # println("")
-    
     cj.contact_rot = relative_transform(state, contact.obstacle.normal.frame, world_frame).mat[1:3,1:3]
     cj.contact_trans = relative_transform(state, contact.point.frame, world_frame).mat[1:3,4]
-    
+
     p = contact.point.v + cj.contact_trans
     cj.P[1,2] = -p[3]
     cj.P[1,3] = p[2]

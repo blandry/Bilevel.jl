@@ -3,7 +3,7 @@ function makevalue end
 
 struct Environment
     contacts::Vector{Contact}
-    
+
     function Environment(mechanism, urdf, obstacles)
         elements = visual_elements(mechanism, URDFVisuals(urdf; tag="collision"))
         point_elements = filter(e -> e.geometry isa GeometryTypes.HyperSphere && GeometryTypes.radius(e.geometry) == 0, elements)
@@ -24,10 +24,10 @@ end
 
 struct EnvironmentJacobian{T}
     contact_jacobians::Vector{ContactJacobian{T}}
-    
+
     function EnvironmentJacobian{T}(env::Environment) where T
-        contact_jacobians = [ContactJacobian{T}(contact) for contact in env.contacts] 
-        
+        contact_jacobians = [ContactJacobian{T}(contact) for contact in env.contacts]
+
         new{T}(contact_jacobians)
     end
 end
