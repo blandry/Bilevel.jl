@@ -32,7 +32,6 @@ using RigidBodyDynamics
 using MechanismGeometries
 using Compat
 using Base.Threads
-using Distributed
 
 include("obstacle.jl")
 include("contact.jl")

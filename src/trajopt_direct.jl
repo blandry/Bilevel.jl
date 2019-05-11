@@ -22,9 +22,8 @@ function get_trajopt_data_direct(mechanism::Mechanism,env::Environment,Δt::Real
         add_ineq!(cs, Symbol("h_pos", n), 1)
     end
 
-    # this is needed for parralelization
-    state_cache = [StateCache(mechanism) for n = 1:N]
-    envj_cache = [EnvironmentJacobianCache(env) for n = 1:N]
+    state_cache = [StateCache(mechanism) for n = 1:2]
+    envj_cache = [EnvironmentJacobianCache(env) for n = 1:2]
 
     generate_solver_fn = :generate_solver_fn_trajopt_direct
     extract_sol = :extract_sol_trajopt_direct
@@ -161,22 +160,7 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        # # @distributed for n = 1:N
-        # @threads for n = 1:N
-        # # for n = 1:N
-        #     state = sim_data.state_cache[n][T]
-        #     set_configuration!(state, vs(x, Symbol("q", n)))
-        #     set_velocity!(state, vs(x, Symbol("v", n)))
-        #     setdirty!(state)
-        # end
-
-        states0 = [MechanismState{T}(sim_data.mechanism) for n = 1:nthreads()]
-        statesn = [MechanismState{T}(sim_data.mechanism) for n = 1:nthreads()]
-        envjs = [EnvironmentJacobian{T}(sim_data.env) for n = 1:nthreads()]
-
-        # @distributed for n = 1:(N-1)
         @threads for n = 1:(N-1)
-        # for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -187,13 +171,10 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
                 slack = vs(x, Symbol("slack", n))
             end
 
-            # x0 = sim_data.state_cache[n][T]
-            # xn = sim_data.state_cache[n+1][T]
-            # envj = sim_data.envj_cache[n][T]
+            x0 = sim_data.state_cache[1][T]
+            xn = sim_data.state_cache[2][T]
+            envj = sim_data.envj_cache[2][T]
 
-            x0 = states0[threadid()]
-            xn = statesn[threadid()]
-            envj = envjs[threadid()]
             set_configuration!(x0, q0)
             set_velocity!(x0, v0)
             setdirty!(x0)
@@ -203,18 +184,17 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
 
             H = mass_matrix(x0)
             Hi = inv(H)
-            dyn_bias0 = dynamics_bias(x0) # TODO preallocate
             config_derivative = configuration_derivative(xn) # TODO preallocate
             dyn_bias = dynamics_bias(xn) # TODO preallocate
 
-            contact_jacobian!(envj, x0)
+            contact_jacobian!(envj, xn)
             normal_bias = Vector{T}(undef, num_vel)
             contact_bias = Vector{T}(undef, num_vel)
             if (num_contacts > 0)
                 # compute normal forces
-                x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, n)
+                x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, n)
                 # compute friction forces
-                contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias0, u0, v0, x, x_normal, n)
+                contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)
             end
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
