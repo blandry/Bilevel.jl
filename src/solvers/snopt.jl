@@ -156,7 +156,7 @@ const usrfun = @cfunction(objcon_wrapper, Cvoid, (Ptr{Clong}, Ref{Clong}, Ptr{Cd
     Ptr{Cchar}, Ref{Clong}, Ptr{Clong}, Ref{Clong}, Ptr{Cdouble}, Ref{Clong}))
 
 # main call to snopt
-function snopt(fun, num_eqs, num_ineqs, x0, options;
+function snopt(fun, num_eqs, num_ineqs, x0, options; x_min = nothing, x_max = nothing,
                printfile = "snopt-print.out", sumfile = "snopt-summary.out", callback_fn = nothing)
 
     # TODO: there is a probably a better way than to use a global
@@ -192,8 +192,16 @@ function snopt(fun, num_eqs, num_ineqs, x0, options;
     end
 
     # bound constriaints (no infinite bounds for now)
-    xlow = -1e19*ones(n)
-    xupp = 1e19*ones(n)
+    if isa(x_min, Nothing)
+        xlow = -1e19*ones(n)
+    else
+        xlow = x_min
+    end
+    if isa(x_max, Nothing)
+        xupp = 1e19*ones(n)
+    else
+        xupp = x_max
+    end
     Flow = -1e20*ones(nF)  # TODO: check Infinite Bound size
     Fupp = zeros(nF)  # TODO: currently c <= 0, but perhaps change
 

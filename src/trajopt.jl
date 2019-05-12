@@ -6,8 +6,15 @@ function add_box_con!(sim_data::SimData, name::Symbol, var_name::Symbol, min::Ab
     sim_data.con_fns
 end
 
+function add_box_con_snopt!(x_min::AbstractArray{T}, x_max::AbstractArray{T}, sim_data::SimData, var_name::Symbol, min::AbstractArray{T}, max::AbstractArray{T}, range::UnitRange) where T 
+    for n = range
+        x_min[sim_data.vs(Symbol(var_name, n))] .= min
+        x_max[sim_data.vs(Symbol(var_name, n))] .= max
+    end
+end
+
 function trajopt(sim_data::SimData;
-                 x0=nothing,quaternion_state=false,
+                 x0=nothing,quaternion_state=false,x_min=nothing,x_max=nothing,
                  opt_tol=1e-6,major_feas=1e-6,minor_feas=1e-6,verbose=0,callback_fn=nothing)
 
     solver_fn = eval(sim_data.generate_solver_fn)(sim_data)
@@ -36,7 +43,7 @@ function trajopt(sim_data::SimData;
     options["Major feasibility tolerance"] = major_feas
     options["Minor feasibility tolerance"] = minor_feas
 
-    xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x0, options, callback_fn=callback_fn)
+    xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x0, options, x_min=x_min,x_max=x_max,callback_fn=callback_fn)
 
     if verbose >= 1
         println(info)

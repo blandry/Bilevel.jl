@@ -17,6 +17,7 @@ export Obstacle,
        add_ineq!,
        add_obj!,
        add_box_con!,
+       add_box_con_snopt!,
        simulate,
        trajopt
 
