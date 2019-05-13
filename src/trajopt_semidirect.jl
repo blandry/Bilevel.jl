@@ -48,7 +48,7 @@ function get_trajopt_data_semidirect(mechanism::Mechanism,env::Environment,Δt::
     f_options = Dict{String, Any}()
     f_options["num_fosteps"] = 1
     f_options["num_sosteps"] = 10
-    f_options["c"] = 100.
+    f_options["c"] = 1.
     f_options["c_fos"] = 1.
     f_options["c_sos"] = 1.
 
@@ -99,7 +99,7 @@ function extract_sol_trajopt_semidirect(sim_data::SimData, xopt::AbstractArray{T
         push!(vtraj, vs(xopt, Symbol("v", n)))
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
-            push!(htraj, vs(xopt, Symbol("h", n)))
+            push!(htraj, vs(xopt, Symbol("h", n))[1])
             if relax_comp
                 push!(slack_traj, vs(xopt, Symbol("slack", n)))
             end
