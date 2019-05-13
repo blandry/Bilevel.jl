@@ -22,14 +22,14 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/body.obj"/>
+        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/body.obj"/>
       </geometry>
       <material name="black">
       	<color rgba="0.1 0.1 0.1 1" />
       </material>
     </visual>
   </link>
-   
+
   <joint name="floor_to_body" type="floating">
     <parent link="floor"/>
     <child link="body"/>
@@ -48,7 +48,7 @@
       <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000015" iyz="0" izz="0.000015" />
     </inertial>
   </link>
-    
+
   <joint name="front_left_hip_roll" type="revolute">
     <parent link="body" />
     <child link="front_left_hip" />
@@ -56,7 +56,7 @@
     <axis xyz="1 0 0" />
     <limit lower="-.6" upper=".6"/>
   </joint>
-  
+
   <link name="front_left_upper_leg">
     <inertial>
       <origin xyz="0.000000 0.000000 -0.016600" rpy="0 0 0" />
@@ -66,12 +66,12 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_upper.obj"/>
+        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_upper.obj"/>
       </geometry>
       <material name="black" />
     </visual>
   </link>
-  
+
   <joint name="front_left_hip_pitch" type="revolute">
     <parent link="front_left_hip" />
     <child link="front_left_upper_leg" />
@@ -79,8 +79,8 @@
     <axis xyz="0 1 0" />
     <limit lower="-3.5" upper="2.4"/>
   </joint>
-  
-  <link name="front_left_lower_leg"> 
+
+  <link name="front_left_lower_leg">
   <inertial>
     <origin xyz="0.000000 0.000000 -0.020200" rpy="0 0 0" />
     <mass value="0.046400" />
@@ -89,7 +89,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_lower.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_lower.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -134,7 +134,7 @@
    <axis xyz="1 0 0" />
    <limit lower="-.6" upper=".6"/>
  </joint>
- 
+
  <link name="front_right_upper_leg">
   <inertial>
     <origin xyz="0.000000 0.000000 -0.016600" rpy="0 0 0" />
@@ -144,12 +144,12 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_upper.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_upper.obj"/>
     </geometry>
     <material name="black"/>
   </visual>
   </link>
-  
+
   <joint name="front_right_hip_pitch" type="revolute">
     <parent link="front_right_hip" />
     <child link="front_right_upper_leg" />
@@ -157,8 +157,8 @@
     <axis xyz="0 1 0" />
     <limit lower="-3.5" upper="2.4"/>
   </joint>
-  
-  <link name="front_right_lower_leg"> 
+
+  <link name="front_right_lower_leg">
   <inertial>
     <origin xyz="0.000000 0.000000 -0.020200" rpy="0 0 0" />
     <mass value="0.046400" />
@@ -167,7 +167,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_lower.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_lower.obj"/>
     </geometry>
     <material name="black"/>
   </visual>
@@ -220,7 +220,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_upper.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_upper.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -234,7 +234,7 @@
   <limit lower="-2.4" upper="3.5"/>
 </joint>
 
-<link name="back_left_lower_leg"> 
+<link name="back_left_lower_leg">
   <inertial>
     <origin xyz="0.000000 0.000000 -0.020200" rpy="0 0 0" />
     <mass value="0.046400" />
@@ -243,7 +243,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_lower.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_lower.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -298,7 +298,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_upper.obj"/>
+      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_upper.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -312,7 +312,7 @@
   <limit lower="-2.4" upper="3.5"/>
 </joint>
 
-<link name="back_right_lower_leg"> 
+<link name="back_right_lower_leg">
     <inertial>
       <origin xyz="0.000000 0.000000 -0.020200" rpy="0 0 0" />
       <mass value="0.046400" />
@@ -321,7 +321,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="/Users/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_lower.obj"/>
+        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_lower.obj"/>
       </geometry>
       <material name="black" />
     </visual>
