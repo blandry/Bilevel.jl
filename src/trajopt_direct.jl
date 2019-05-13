@@ -100,12 +100,12 @@ function extract_sol_trajopt_direct(sim_data::SimData, xopt::AbstractArray{T}) w
     env = sim_data.env
     relax_comp = haskey(vs.vars, :slack1)
 
-    qtraj = []
-    vtraj = []
-    utraj = []
-    htraj = []
-    contact_traj = []
-    slack_traj = []
+    qtraj = Array{Array{Float64,1},1}(undef, 0)
+    vtraj = Array{Array{Float64,1},1}(undef, 0)
+    utraj = Array{Array{Float64,1},1}(undef, 0)
+    htraj = Array{Float64,1}(undef, 0)
+    contact_traj = Array{Array{Float64,1},1}(undef, 0)
+    slack_traj = Array{Array{Float64,1},1}(undef, 0)
     for n = 1:N
         push!(qtraj, vs(xopt, Symbol("q", n)))
         push!(vtraj, vs(xopt, Symbol("v", n)))

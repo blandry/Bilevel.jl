@@ -48,7 +48,7 @@ function get_trajopt_data_semidirect(mechanism::Mechanism,env::Environment,Δt::
     f_options = Dict{String, Any}()
     f_options["num_fosteps"] = 1
     f_options["num_sosteps"] = 10
-    f_options["c"] = 1.
+    f_options["c"] = 100.
     f_options["c_fos"] = 1.
     f_options["c_sos"] = 1.
 
@@ -88,12 +88,12 @@ function extract_sol_trajopt_semidirect(sim_data::SimData, xopt::AbstractArray{T
     env = sim_data.env
     relax_comp = haskey(vs.vars, :slack1)
 
-    qtraj = []
-    vtraj = []
-    utraj = []
-    htraj = []
-    contact_traj = []
-    slack_traj = []
+    qtraj = Array{Array{Float64,1},1}(undef, 0)
+    vtraj = Array{Array{Float64,1},1}(undef, 0)
+    utraj = Array{Array{Float64,1},1}(undef, 0)
+    htraj = Array{Float64,1}(undef, 0)
+    contact_traj = Array{Array{Float64,1},1}(undef, 0)
+    slack_traj = Array{Array{Float64,1},1}(undef, 0)
     for n = 1:N
         push!(qtraj, vs(xopt, Symbol("q", n)))
         push!(vtraj, vs(xopt, Symbol("v", n)))
