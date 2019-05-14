@@ -252,10 +252,10 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[LoopThrottle]]
-deps = ["Compat"]
-git-tree-sha1 = "90a056cc8261d47828b5ee05b3a166d691660628"
+deps = ["Test"]
+git-tree-sha1 = "037fdda7c47bf8fc2f46b1096972afabd26fa636"
 uuid = "39f5be34-8529-5463-bac7-bf6867c840a3"
-version = "0.0.3"
+version = "0.1.0"
 
 [[LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
@@ -520,10 +520,9 @@ uuid = "0796e94c-ce3b-5d07-9a54-7f471281c624"
 version = "0.5.3"
 
 [[TypeSortedCollections]]
-deps = ["Test"]
-git-tree-sha1 = "bc360a93d6f2f45e1313875964853f745890f143"
+git-tree-sha1 = "d539b357e7695d80c75f5b066cec5d8c45886ab2"
 uuid = "94a5cd58-49a0-5741-bd07-fa4f4be8babf"
-version = "1.0.0"
+version = "1.1.0"
 
 [[URIParser]]
 deps = ["Test", "Unicode"]
