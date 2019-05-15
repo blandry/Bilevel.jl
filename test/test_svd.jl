@@ -1,12 +1,23 @@
 using Bilevel
 using ForwardDiff
+using Bilevel: svd, svd_finite
+using LinearAlgebra
 
-z0 = rand(4)*200. .- 100.
+A = rand(3,3)
+d = svd(A)
+# d.S[3] = d.S[2]
+A = d.U*Diagonal(d.S)*d.V'
+z0 = A[:]
+# z0 = rand(4)*200. .- 100.
 
 function f(a)
     n = Int(sqrt(length(a)))
-    A = reshape(a,n,n)
-    U,s,V = svd(A)
+    A = reshape(a,n,n) .* 2.
+    if eltype(A) <: ForwardDiff.Dual
+        U,s,V = svd_finite(A)
+    else
+        U,s,V = svd(A)     
+    end
     return vcat(U[:],s[:],V[:])
 end
 
@@ -24,9 +35,13 @@ for i = 1:length(z0)
     J_num[:,i] = (f(z0 + δ) .- sol)/ϵ
 end
 
-println(sol)
-println(J_auto)
-println(J_num)
+display(sol)
+println("")
+display(J_auto)
+println("")
+display(J_num)
+println("")
 
 err = maximum(abs.(J_auto .- J_num))
-println(err)
+display(err)
+println("")

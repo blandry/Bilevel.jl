@@ -50,5 +50,6 @@ include(joinpath("solvers", "snopt.jl"))
 include(joinpath("solvers", "auglag.jl"))
 include(joinpath("solvers", "svd.jl"))
 include(joinpath("solvers", "autodiff.jl"))
+include(joinpath("solvers", "svd_finite.jl"))
 
 end # module
