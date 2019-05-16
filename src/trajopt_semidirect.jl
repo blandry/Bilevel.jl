@@ -46,7 +46,7 @@ function get_trajopt_data_semidirect(mechanism::Mechanism,env::Environment,Δt::
     fric_options = []
 
     f_options = Dict{String, Any}()
-    f_options["num_fosteps"] = 1
+    f_options["num_fosteps"] = 0
     f_options["num_sosteps"] = 10
     f_options["c"] = 1.
     f_options["c_fos"] = 1.
@@ -156,6 +156,7 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
         @threads for n = 1:(N-1)
+        # for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
