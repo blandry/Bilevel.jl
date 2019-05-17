@@ -10,7 +10,7 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
     UvtApVv = Uv'*Ap*Vv
     sp = diag(UvtApVv)
 
-    if allunique(Av)
+    if allunique(sv)
         # If all unique, then gradient well defined
         Sv = Matrix(Diagonal(sv))
         svi = 1. ./ sv
@@ -42,7 +42,11 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
                     for l = 1:n
                         D = [sv[l] sv[k]; sv[k] sv[l]]
                         u = [Uv[i,k]*Vv[j,l], -Uv[i,l]*Vv[j,k]]
-                        Ω = pinv(D) * u
+                        if (sv[l] == sv[k])
+                            Ω = pinv(D) * u
+                        else
+                            Ω = D \ u
+                        end
                         dU[k,l,i,j] = Ω[1]
                         dV[k,l,i,j] = Ω[2]
                     end
