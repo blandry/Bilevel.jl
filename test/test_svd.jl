@@ -53,3 +53,7 @@ println("")
 err = maximum(abs.(J_auto .- J_num))
 display(err)
 println("")
+
+err = sort(abs.(J_auto .- J_num)[:])
+display(err)
+println("")

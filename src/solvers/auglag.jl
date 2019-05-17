@@ -82,7 +82,6 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         tol = rtol*maximum(S)
         ksig = 100.
         Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
-        # Sinv = 1. ./ S
         Sinv[isinf.(Sinv)] .= 0.
         Apinv = V * (Diagonal(Sinv) * U')
 
@@ -96,14 +95,6 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
 
         c *= c_sos
     end
-
-    # if eltype(x) <: ForwardDiff.Dual
-    #     xp = map(ForwardDiff.partials, x)
-    #     xp = vcat([[y for y in x.values] for x in xp]...)
-    #     if any(abs.(xp) .> 1e5)
-    #         println("Large dx\n")
-    #     end
-    # end
 
     x[1:num_x], "Finished successfully"
 end
