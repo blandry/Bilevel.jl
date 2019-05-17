@@ -7,7 +7,7 @@ function softmax(x;k=1.)
             (k*xi + log(1. + exp(-k*xi)))/k
         else
             log(exp(k*xi) + 1.)/k
-        end        
+        end
     end
     g
 end
@@ -34,23 +34,23 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
     c = get(options, "c", 1.)
     c_fos = get(options, "c_fos", 10.)
     c_sos = get(options, "c_sos", 10.)
-    
+
     num_x = length(x0)
     rtol = eps(1.) * (num_eqs + num_ineqs)
-    
+
     x = vcat(copy(x0), zeros(num_ineqs))
     λ = zeros(num_eqs + num_ineqs)
-    
+
     for i = 1:num_fosteps
         # TODO inplace
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
-        
+
         ∇f = vcat(gobj, zeros(eltype(gobj), num_ineqs))
         Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
         ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(eltype(x),num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
-        
+
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
 
@@ -62,7 +62,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
 
         c *= c_fos
     end
-    
+
     for i = 1:num_sosteps
         # TODO inplace
         obj, eqs, ineqs, gobj, geqs, gineqs, Hobj = fun(x[1:num_x])
@@ -70,31 +70,40 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         ∇f = vcat(gobj, zeros(eltype(gobj),num_ineqs))
         Hf = zeros(eltype(Hobj), num_x+num_ineqs, num_x+num_ineqs)
         Hf[1:num_x, 1:num_x] .= Hobj
-        
+
         hx = vcat(eqs, ineqs + softmax(x[num_x+1:end]))
         ∇h = hcat(vcat(geqs, gineqs), vcat(zeros(eltype(x),num_eqs,num_ineqs),gsoftmax(x[num_x+1:end])))
 
         gL = ∇f - ∇h'*λ + c*∇h'*hx
         HL = Hf + c*∇h'*∇h
-            
+
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(eltype(∇h),num_eqs+num_ineqs,num_eqs+num_ineqs)))
         U,S,V = svd(A)
         tol = rtol*maximum(S)
         ksig = 100.
         Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
+        # Sinv = 1. ./ S
         Sinv[isinf.(Sinv)] .= 0.
         Apinv = V * (Diagonal(Sinv) * U')
-        
+
         δxλ = Apinv * (-vcat(gL,hx))
-    
+
         δx = δxλ[1:num_x+num_ineqs]
         δλ = δxλ[num_x+num_ineqs+1:num_x+num_ineqs+num_eqs+num_ineqs]
-    
+
         x += δx
         λ += δλ
-    
+
         c *= c_sos
     end
-        
+
+    # if eltype(x) <: ForwardDiff.Dual
+    #     xp = map(ForwardDiff.partials, x)
+    #     xp = vcat([[y for y in x.values] for x in xp]...)
+    #     if any(abs.(xp) .> 1e5)
+    #         println("Large dx\n")
+    #     end
+    # end
+
     x[1:num_x], "Finished successfully"
 end

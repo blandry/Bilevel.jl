@@ -5,7 +5,7 @@ using LinearAlgebra
 
 A = rand(3,3)
 d = svd(A)
-# d.S[3] = d.S[2]
+d.S[3] = d.S[2]
 A = d.U*Diagonal(d.S)*d.V'
 z0 = A[:]
 # z0 = rand(4)*200. .- 100.
@@ -13,17 +13,17 @@ z0 = A[:]
 function f(a)
     n = Int(sqrt(length(a)))
     A = reshape(a,n,n) .* 2.
-    if eltype(A) <: ForwardDiff.Dual
-        U,s,V = svd_finite(A)
-    else
-        U,s,V = svd(A)     
-    end
+    # if eltype(A) <: ForwardDiff.Dual
+        # U,s,V = svd_finite(A)
+    # else
+        U,s,V = svd(A)
+    # end
     return vcat(U[:],s[:],V[:])
 end
 
 sol = f(z0)
 
-# autodiff 
+# autodiff
 J_auto = ForwardDiff.jacobian(f,z0)
 
 # # numerical
@@ -37,9 +37,17 @@ end
 
 display(sol)
 println("")
+println("Auto")
 display(J_auto)
 println("")
+display(maximum(abs.(J_auto)))
+println("")
+println("")
+println("Finite diff")
 display(J_num)
+println("")
+display(maximum(abs.(J_num)))
+println("")
 println("")
 
 err = maximum(abs.(J_auto .- J_num))

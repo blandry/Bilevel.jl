@@ -1,6 +1,6 @@
 module Bilevel
 
-__precompile__(false)
+# __precompile__(false)
 
 export Obstacle,
        Contact,
