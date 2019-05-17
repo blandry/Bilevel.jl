@@ -5,7 +5,7 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
 
     Av = map(ForwardDiff.value,A)
     Uv,sv,Vv = svd(Av)
-    
+
     Ap = map(ForwardDiff.partials,A)
     UvtApVv = Uv'*Ap*Vv
     sp = diag(UvtApVv)
@@ -16,7 +16,7 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
         svi = 1. ./ sv
         svi[isinf.(svi)] .= 0.
         Svi = Matrix(Diagonal(svi))
-        
+
         F = zeros((m,n))
         for i = 1:m
             for j = 1:n
@@ -27,21 +27,27 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
             end
         end
         F[isinf.(F)] .= 0.
-        
+
         VvtApUv = Vv'*Ap[reshape(1:m*n,(m,n))']*Uv
-        
+
         Up = Uv*(F .* (UvtApVv*Sv + Sv*VvtApUv)) + (I - Uv*Uv')*Ap*Vv*Svi
         Vp = Vv*(F .* (Sv*UvtApVv+VvtApUv*Sv)) + (I - Vv*Vv')*Ap[reshape(1:m*n,(m,n))']*Uv*Svi
     else
         # Otherwise need to least-squares
         dU = zeros(size(Uv,1),size(Uv,2),size(A,1),size(A,2))
         dV = zeros(size(Vv,1),size(Vv,2),size(A,1),size(A,2))
+        D = Array{Float64, 2}(undef, 2, 2)
+        u = Array{Float64, 1}(undef, 2)
         for i = 1:m
             for j = 1:n
                 for k = 1:m
                     for l = 1:n
-                        D = [sv[l] sv[k]; sv[k] sv[l]]
-                        u = [Uv[i,k]*Vv[j,l], -Uv[i,l]*Vv[j,k]]
+                        D[1,1] = sv[l]
+                        D[1,2] = sv[k]
+                        D[2,1] = sv[k]
+                        D[2,2] = sv[l]
+                        u[1] = Uv[i,k]*Vv[j,l]
+                        u[2] =  -Uv[i,l]*Vv[j,k]
                         if (sv[l] == sv[k])
                             Ω = pinv(D) * u
                         else
