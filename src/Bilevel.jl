@@ -1,6 +1,6 @@
 module Bilevel
 
-# __precompile__(false)
+__precompile__(false)
 
 export Obstacle,
        Contact,
@@ -32,6 +32,7 @@ using GeometryTypes
 using RigidBodyDynamics
 using MechanismGeometries
 using Compat
+using SparseArrays
 using Base.Threads
 
 include("obstacle.jl")

@@ -2,10 +2,11 @@ using Bilevel
 using ForwardDiff
 using Bilevel: svd, svd_finite
 using LinearAlgebra
+using BenchmarkTools
 
 A = rand(3,3)
 d = svd(A)
-d.S[3] = d.S[2]
+# d.S[3] = d.S[2]
 A = d.U*Diagonal(d.S)*d.V'
 z0 = A[:]
 # z0 = rand(4)*200. .- 100.
@@ -21,39 +22,39 @@ function f(a)
     return vcat(U[:],s[:],V[:])
 end
 
-sol = f(z0)
+# sol = f(z0)
 
 # autodiff
 J_auto = ForwardDiff.jacobian(f,z0)
 
-# # numerical
-ϵ = sqrt(eps(1.))
-J_num = zeros(size(J_auto))
-for i = 1:length(z0)
-    δ = zeros(length(z0))
-    δ[i] = ϵ
-    J_num[:,i] = (f(z0 + δ) .- sol)/ϵ
-end
-
-display(sol)
-println("")
-println("Auto")
-display(J_auto)
-println("")
-display(maximum(abs.(J_auto)))
-println("")
-println("")
-println("Finite diff")
-display(J_num)
-println("")
-display(maximum(abs.(J_num)))
-println("")
-println("")
-
-err = maximum(abs.(J_auto .- J_num))
-display(err)
-println("")
-
-err = sort(abs.(J_auto .- J_num)[:])
-display(err)
-println("")
+# # # numerical
+# ϵ = sqrt(eps(1.))
+# J_num = zeros(size(J_auto))
+# for i = 1:length(z0)
+#     δ = zeros(length(z0))
+#     δ[i] = ϵ
+#     J_num[:,i] = (f(z0 + δ) .- sol)/ϵ
+# end
+#
+# display(sol)
+# println("")
+# println("Auto")
+# display(J_auto)
+# println("")
+# display(maximum(abs.(J_auto)))
+# println("")
+# println("")
+# println("Finite diff")
+# display(J_num)
+# println("")
+# display(maximum(abs.(J_num)))
+# println("")
+# println("")
+#
+# err = maximum(abs.(J_auto .- J_num))
+# display(err)
+# println("")
+#
+# err = sort(abs.(J_auto .- J_num)[:])
+# display(err)
+# println("")
