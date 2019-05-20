@@ -79,6 +79,15 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
 
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(eltype(∇h),num_eqs+num_ineqs,num_eqs+num_ineqs)))
         b = -vcat(gL,hx)
+
+        # U,S,V = svd(A)
+        # tol = rtol*maximum(S)
+        # ksig = 100.
+        # Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)	
+        # Sinv[isinf.(Sinv)] .= 0.	
+        # Apinv = V * (Diagonal(Sinv) * U')
+        # δxλ = Apinv * b
+
         δxλ = least_squares(A,b)
 
         δx = δxλ[1:num_x+num_ineqs]

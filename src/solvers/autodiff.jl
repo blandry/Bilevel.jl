@@ -1,8 +1,12 @@
-function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs) 
+function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs;hessian=true) 
     function solver_fn(x)
         J = eval_obj(x)
         gJ = ForwardDiff.gradient(eval_obj, x)
-        HJ = ForwardDiff.hessian(eval_obj, x)
+        if hessian
+            HJ = ForwardDiff.hessian(eval_obj, x)
+        else
+            HJ = zeros(length(x),length(x))
+        end
 
         g = eval_cons(x)
         dgdx = ForwardDiff.jacobian(eval_cons, x)
@@ -18,13 +22,17 @@ function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs)
     solver_fn
 end
 
-function generate_autodiff_solver_fn(eval_obj,fres,fcfg,eval_cons,gres,gcfg,cs_eqs,cs_ineqs)    
+function generate_autodiff_solver_fn(eval_obj,fres,fcfg,eval_cons,gres,gcfg,cs_eqs,cs_ineqs;hessian=true)    
     function solver_fn(x)     
         ForwardDiff.hessian!(fres, eval_obj, x, fcfg)
         J = DiffResults.value(fres)
         gJ = DiffResults.gradient(fres)
-        HJ = DiffResults.hessian(fres)
-
+        if hessian
+            HJ = DiffResults.hessian(fres)
+        else
+            HJ = zeros(length(x),length(x))
+        end
+        
         ForwardDiff.jacobian!(gres, eval_cons, x, gcfg)
         g = DiffResults.value(gres)
         dgdx = DiffResults.jacobian(gres)
@@ -40,13 +48,17 @@ function generate_autodiff_solver_fn(eval_obj,fres,fcfg,eval_cons,gres,gcfg,cs_e
     solver_fn
 end
 
-function generate_autodiff_solver_fn(eval_obj,fres,eval_cons,gres,cs_eqs,cs_ineqs)    
+function generate_autodiff_solver_fn(eval_obj,fres,eval_cons,gres,cs_eqs,cs_ineqs;hessian=true)    
     function solver_fn(x)     
         ForwardDiff.hessian!(fres, eval_obj, x)
         J = DiffResults.value(fres)
         gJ = DiffResults.gradient(fres)
-        HJ = DiffResults.hessian(fres)
-
+        if hessian
+            HJ = DiffResults.hessian(fres)
+        else
+            HJ = zeros(length(x),length(x))
+        end
+        
         ForwardDiff.jacobian!(gres, eval_cons, x)
         g = DiffResults.value(gres)
         dgdx = DiffResults.jacobian(gres)
@@ -62,7 +74,7 @@ function generate_autodiff_solver_fn(eval_obj,fres,eval_cons,gres,cs_eqs,cs_ineq
     solver_fn
 end
 
-function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs,vs_num_vars)    
+function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs,vs_num_vars;hessian=true)    
     cs_num_cons = length(cs_eqs) + length(cs_ineqs)
     
     fres = DiffResults.HessianResult(zeros(vs_num_vars))
@@ -70,5 +82,5 @@ function generate_autodiff_solver_fn(eval_obj,eval_cons,cs_eqs,cs_ineqs,vs_num_v
     gres = DiffResults.JacobianResult(zeros(cs_num_cons), zeros(vs_num_vars))
     gcfg = ForwardDiff.JacobianConfig(eval_cons, zeros(vs_num_vars))
     
-    generate_autodiff_solver_fn(eval_obj,fres,fcfg,eval_cons,gres,gcfg,cs_eqs,cs_ineqs)
+    generate_autodiff_solver_fn(eval_obj,fres,fcfg,eval_cons,gres,gcfg,cs_eqs,cs_ineqs,hessian=hessian)
 end

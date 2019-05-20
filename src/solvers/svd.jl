@@ -21,8 +21,7 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
         for i = 1:m
             for j = 1:n
                 if i!=j
-                    d = (sv[j]^2 - sv[i]^2)
-                    F[i,j] = 1. / d
+                    F[i,j] = 1. / (sv[j]^2 - sv[i]^2)
                 end
             end
         end
