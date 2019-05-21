@@ -88,11 +88,11 @@
     </geometry>
   </collision>
   </link>
-  
-  <joint name="floor_to_box" type="fixed">
+
+  <joint name="floor_to_box" type="floating">
     <parent link="floor"/>
     <child link="box"/>
     <origin xyz="0 0 0"/> <!-- this is important once we make it float -->
   </joint>
-  
+
 </robot>

@@ -69,11 +69,11 @@ function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) 
     env = sim_data.env
     N = size(results,2)
 
-    qtraj = []
-    vtraj = []
-    utraj = []
-    contact_traj = []
-    slack_traj = []
+    qtraj = Array{Array{Float64,1},1}(undef, 0)
+    vtraj = Array{Array{Float64,1},1}(undef, 0)
+    utraj = Array{Array{Float64,1},1}(undef, 0)
+    contact_traj = Array{Array{Float64,1},1}(undef, 0)
+    slack_traj = Array{Array{Float64,1},1}(undef, 0)
     for n = 1:N
         push!(qtraj, vs(results[:,n], Symbol("qnext")))
         push!(vtraj, vs(results[:,n], Symbol("vnext")))
