@@ -34,6 +34,7 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
     c = get(options, "c", 1.)
     c_fos = get(options, "c_fos", 10.)
     c_sos = get(options, "c_sos", 10.)
+    ls_method = get(options, "ls_method", :pinv)
 
     num_x = length(x0)
     rtol = eps(1.) * (num_eqs + num_ineqs)
@@ -80,15 +81,20 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(eltype(∇h),num_eqs+num_ineqs,num_eqs+num_ineqs)))
         b = -vcat(gL,hx)
 
-        # U,S,V = svd(A)
-        # tol = rtol*maximum(S)
-        # ksig = 100.
-        # Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)	
-        # Sinv[isinf.(Sinv)] .= 0.	
-        # Apinv = V * (Diagonal(Sinv) * U')
-        # δxλ = Apinv * b
-
-        δxλ = least_squares(A,b)
+        if (ls_method == :pinv)
+            Apinv = pinv(A)
+            δxλ = Apinv * b
+        elseif (ls_method == :least_squares)
+            δxλ = least_squares(A,b)
+        else
+            U,S,V = svd(A)
+            tol = rtol*maximum(S)
+            ksig = 100.
+            Sinv = 1. ./ (1. .+ exp.(-ksig*(S .- tol)/tol)) .* (1. ./ S)
+            Sinv[isinf.(Sinv)] .= 0.
+            Apinv = V * (Diagonal(Sinv) * U')
+            δxλ = Apinv * b
+        end
 
         δx = δxλ[1:num_x+num_ineqs]
         δλ = δxλ[num_x+num_ineqs+1:num_x+num_ineqs+num_eqs+num_ineqs]

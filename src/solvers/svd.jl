@@ -17,7 +17,7 @@ function LinearAlgebra.svd(A::Array{T,2}) where T<:ForwardDiff.Dual
         svi[isinf.(svi)] .= 0.
         Svi = Matrix(Diagonal(svi))
 
-        F = zeros((m,n))
+        F = zeros(eltype(Av),m,n)
         for i = 1:m
             for j = 1:n
                 if i!=j
