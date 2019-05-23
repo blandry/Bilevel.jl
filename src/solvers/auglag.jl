@@ -81,6 +81,11 @@ function auglag(fun, num_eqs, num_ineqs, x0, options)
         A = vcat(hcat(HL,∇h'),hcat(∇h,zeros(eltype(∇h),num_eqs+num_ineqs,num_eqs+num_ineqs)))
         b = -vcat(gL,hx)
 
+        # for numerical stability
+        tol = 1e-12
+        A[abs.(A) .<= tol] .= 0.
+        b[abs.(b) .<= tol] .= 0.
+
         if (ls_method == :pinv)
             Apinv = pinv(A)
             δxλ = Apinv * b
