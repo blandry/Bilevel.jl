@@ -32,14 +32,11 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
-        # g = zeros(ForwardDiff.Dual, lower_cs.num_eqs + lower_cs.num_ineqs)
-        # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        # TODO use the cs
         g = []
 
         for i = 1:num_contacts
             c_n = lower_vs(x, Symbol("c_n", i))
-            # g[lower_cs(Symbol("c_n_pos", i))] .= -c_n
-            # g[lower_cs(Symbol("ϕ", i))] .= ϕAs[i]*vcat(c_n, zeros(4)) + ϕbs[i] # TODO use β_dim
             g = vcat(g, -c_n)
             g = vcat(g, ϕAs[i]*vcat(c_n, zeros(4)) + ϕbs[i])
         end
@@ -50,7 +47,6 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
     gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
     solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
-    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
@@ -101,15 +97,12 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
-        # g = zeros(ForwardDiff.Dual, lower_cs.num_eqs + lower_cs.num_ineqs)
-        # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        # TODO use the cs
         g = []
 
         for i = 1:num_contacts
             c_n = normal_vs(x_normal, Symbol("c_n", i))
             β = lower_vs(x, Symbol("β", i))
-            # g[lower_cs(Symbol("β_pos", i))] .= -β
-            # g[lower_cs(Symbol("fric_cone", i))] .= sum(β) .- env.contacts[i].obstacle.μ * c_n
             g = vcat(g, -β)
             g = vcat(g, sum(β) .- env.contacts[i].obstacle.μ * c_n)
         end
@@ -120,7 +113,6 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
     gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
     solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
-    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 
@@ -171,15 +163,12 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     end
 
     function eval_cons_(x::AbstractArray{L}) where L
-        # g = zeros(ForwardDiff.Dual, lower_cs.num_eqs + lower_cs.num_ineqs)
-        # g = zeros(Real, lower_cs.num_eqs + lower_cs.num_ineqs)
+        # TODO use the cs
         g = []
 
         for i = 1:num_contacts
             c_n = upper_vs(x_upper, Symbol("c_n", i, "_", n))
             β = lower_vs(x, Symbol("β", i))
-            # g[lower_cs(Symbol("β_pos", i))] .= -β
-            # g[lower_cs(Symbol("fric_cone", i))] .= sum(β) .- env.contacts[i].obstacle.μ * c_n
             g = vcat(g, -β)
             g = vcat(g, sum(β) .- env.contacts[i].obstacle.μ * c_n)
         end
@@ -190,7 +179,6 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     fres = DiffResults.HessianResult(zeros(U, lower_vs.num_vars))
     gres = DiffResults.JacobianResult(zeros(U, lower_cs.num_cons), zeros(U, lower_vs.num_vars))
     solver_fn_ = generate_autodiff_solver_fn(eval_obj_,fres,eval_cons_,gres,lower_cs.eqs,lower_cs.ineqs)
-    # solver_fn_ = generate_autodiff_solver_fn(eval_obj_,eval_cons_,lower_cs.eqs,lower_cs.ineqs)
 
     x0 = zeros(lower_vs.num_vars)
 

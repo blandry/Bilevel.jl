@@ -94,8 +94,12 @@ function extract_sol_trajopt_semidirect(sim_data::SimData, xopt::AbstractArray{T
     htraj = Array{Float64,1}(undef, 0)
     contact_traj = Array{Array{Float64,1},1}(undef, 0)
     slack_traj = Array{Array{Float64,1},1}(undef, 0)
+    x = MechanismState(sim_data.mechanism)
     for n = 1:N
-        push!(qtraj, vs(xopt, Symbol("q", n)))
+        set_configuration!(x, vs(xopt, Symbol("q", n)))
+        normalize_configuration!(x)
+        q = configuration(x)
+        push!(qtraj, q)
         push!(vtraj, vs(xopt, Symbol("v", n)))
         if n < N
             push!(utraj, vs(xopt, Symbol("u", n)))
@@ -154,8 +158,7 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        # @threads for n = 1:(N-1)
-        for n = 1:(N-1)
+        @threads for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -176,6 +179,9 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
             setdirty!(xn)
+
+            normalize_configuration!(x0)
+            normalize_configuration!(xn)
 
             H = mass_matrix(x0)
             Hi = inv(H)

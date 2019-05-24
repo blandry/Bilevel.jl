@@ -59,27 +59,32 @@ function extract_sol_sim_indirect(sim_data::SimData, results::AbstractArray{T,2}
     qtraj = Array{Array{Float64,1},1}(undef, 0)
     vtraj = Array{Array{Float64,1},1}(undef, 0)
     utraj = Array{Array{Float64,1},1}(undef, 0)
-    contact_traj = Array{Array{Float64,1},1}(undef, 0)
+    contact_traj = Array{Array{Array{Float64,1},1},1}(undef, 0)
     slack_traj = Array{Array{Float64,1},1}(undef, 0)
+    x = MechanismState(sim_data.mechanism)
     for n = 1:N
-        push!(qtraj, vs(results[:,n], Symbol("qnext")))
+        set_configuration!(x, vs(results[:,n], Symbol("qnext")))
+        normalize_configuration!(x)
+        qnext = configuration(x)
+        push!(qtraj, qnext)
         push!(vtraj, vs(results[:,n], Symbol("vnext")))
+        contact_sol = Array{Array{Float64,1},1}(undef, 0)
         for i = 1:length(env.contacts)
             if relax_comp
                 push!(slack_traj, vs(results[:,n], Symbol("slack", i)))
             end
-            contact_sol = vcat(vs(results[:,n], Symbol("c_n", i)),
+            push!(contact_sol, vcat(vs(results[:,n], Symbol("c_n", i)),
                                vs(results[:,n], Symbol("β", i)),
-                               vs(results[:,n], Symbol("λ", i)))
-            push!(contact_traj, contact_sol)
+                               vs(results[:,n], Symbol("λ", i))))
         end
+        push!(contact_traj, contact_sol)
     end
 
     # some other usefull vectors
     ttraj = [(i-1)*sim_data.Δt for i = 1:N]
     qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
 
-    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
+    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat, results
 end
 
 function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
@@ -105,7 +110,6 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         if relax_comp
             for i = 1:num_contacts
                 slack = vs(x, Symbol("slack", i))
-                # f += .5 * slack' * slack
                 f += sum(slack)
             end
         end
@@ -126,6 +130,8 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
         setdirty!(xn)
+        
+        normalize_configuration!(xn)
 
         config_derivative = configuration_derivative(xn) # TODO preallocate
         dyn_bias = dynamics_bias(xn) # TODO preallocate

@@ -74,8 +74,12 @@ function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) 
     utraj = Array{Array{Float64,1},1}(undef, 0)
     contact_traj = Array{Array{Float64,1},1}(undef, 0)
     slack_traj = Array{Array{Float64,1},1}(undef, 0)
+    x = MechanismState(sim_data.mechanism)
     for n = 1:N
-        push!(qtraj, vs(results[:,n], Symbol("qnext")))
+        set_configuration!(x, vs(results[:,n], Symbol("qnext")))
+        normalize_configuration!(x)
+        qnext = configuration(x)
+        push!(qtraj, qnext)
         push!(vtraj, vs(results[:,n], Symbol("vnext")))
         if relax_comp
             push!(slack_traj, vs(results[:,n], Symbol("slack")))
@@ -87,7 +91,7 @@ function extract_sol_sim_direct(sim_data::SimData, results::AbstractArray{T,2}) 
     ttraj = [(i-1)*sim_data.Δt for i = 1:N]
     qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
 
-    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat
+    qtraj, vtraj, utraj, contact_traj, slack_traj, ttraj, qv_mat, results
 end
 
 function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
@@ -137,6 +141,8 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
         setdirty!(xn)
+
+        normalize_configuration!(xn)
 
         if (num_contacts > 0)
             # compute normal forces

@@ -25,6 +25,7 @@ function trajopt(sim_data::SimData;
         # need a better way to do this...
         x0 = zeros(sim_data.vs.num_vars)
         
+        # TODO use the normalize_configuration!
         if quaternion_state
             for n = 1:sim_data.N
                 x0[sim_data.vs(Symbol("q", n))] .= [1., 0., 0., 0., 0., 0., 0.]
