@@ -7,10 +7,10 @@ uuid = "bf4720bc-e11a-5d0c-854e-bdca1663c893"
 version = "0.1.0"
 
 [[AxisAlgorithms]]
-deps = ["Compat", "WoodburyMatrices"]
-git-tree-sha1 = "99dabbe853e4f641ab21a676131f2cf9fb29937e"
+deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
+git-tree-sha1 = "a4d07a1c313392a77042855df46c5f534076fab9"
 uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
-version = "0.3.0"
+version = "1.0.0"
 
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -64,10 +64,10 @@ uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
 version = "0.5.7"
 
 [[ColorTypes]]
-deps = ["FixedPointNumbers", "Random", "Test"]
-git-tree-sha1 = "f73b0e10f2a5756de7019818a41654686da06b09"
+deps = ["FixedPointNumbers", "Random"]
+git-tree-sha1 = "10050a24b09e8e41b951e9976b109871ce98d965"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.7.5"
+version = "0.8.0"
 
 [[Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "InteractiveUtils", "Printf", "Reexport", "Test"]
@@ -145,10 +145,9 @@ version = "1.0.6"
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[FixedPointNumbers]]
-deps = ["Test"]
-git-tree-sha1 = "b8045033701c3b10bf2324d7203404be7aef88ba"
+git-tree-sha1 = "d14a6fa5890ea3a7e5dcab6811114f132fec2b4b"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.5.3"
+version = "0.6.1"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "InteractiveUtils", "LinearAlgebra", "NaNMath", "Random", "SparseArrays", "SpecialFunctions", "StaticArrays", "Test"]
@@ -169,10 +168,10 @@ uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 version = "0.39.1"
 
 [[GeometryTypes]]
-deps = ["ColorTypes", "FixedPointNumbers", "IterTools", "LinearAlgebra", "StaticArrays", "Test"]
-git-tree-sha1 = "a9bc71d5a7eb971b61db353eb66c4a1de0551d8c"
+deps = ["ColorTypes", "FixedPointNumbers", "IterTools", "LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "05796e9ac5a8fb8adfdcdf842fb8737d1cb5924e"
 uuid = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
-version = "0.7.3"
+version = "0.7.4"
 
 [[Graphics]]
 deps = ["Colors", "Compat", "NaNMath"]
@@ -270,9 +269,9 @@ version = "0.20.0"
 
 [[JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "553281260578bb50d6d550977f438754e7e93397"
+git-tree-sha1 = "599cc7c6683e54cd0b3786ee37800db037e22df4"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.5.1"
+version = "0.5.2"
 
 [[Knockout]]
 deps = ["JSExpr", "JSON", "Observables", "Pkg", "Test", "WebIO"]
@@ -287,10 +286,10 @@ uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
 version = "0.13.2"
 
 [[LibCURL]]
-deps = ["BinaryProvider", "Libdl", "Printf", "Test"]
-git-tree-sha1 = "d051c8057512ca38a273aaa514145a0b25f24d46"
+deps = ["BinaryProvider", "Libdl"]
+git-tree-sha1 = "5ee138c679fa202ebe211b2683d1eee2a87b3dbe"
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.5.0"
+version = "0.5.1"
 
 [[LibExpat]]
 deps = ["Compat"]
@@ -370,10 +369,10 @@ uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.3.0"
 
 [[MechanismGeometries]]
-deps = ["ColorTypes", "Compat", "CoordinateTransformations", "FileIO", "GeometryTypes", "LightXML", "MeshIO", "Pkg", "RigidBodyDynamics", "Rotations", "StaticArrays"]
-git-tree-sha1 = "05d1494cff08ea8863a45f001aa67dcfd07ac7a5"
+deps = ["ColorTypes", "CoordinateTransformations", "FileIO", "GeometryTypes", "LightXML", "LinearAlgebra", "MeshIO", "RigidBodyDynamics", "Rotations", "StaticArrays"]
+git-tree-sha1 = "43106733e3915d071fd1567e1b19d4b1b2394da0"
 uuid = "931e9471-e8fb-5385-a477-07ad12718aca"
-version = "0.2.0"
+version = "0.3.0"
 
 [[MeshCat]]
 deps = ["AssetRegistry", "Base64", "BinDeps", "Colors", "CoordinateTransformations", "DocStringExtensions", "GeometryTypes", "JSExpr", "Libdl", "LinearAlgebra", "MsgPack", "Mux", "Parameters", "Pkg", "Requires", "Rotations", "Sockets", "StaticArrays", "Test", "UUIDs", "WebIO"]
@@ -382,10 +381,10 @@ uuid = "283c5d60-a78f-5afe-a0af-af636b173e11"
 version = "0.6.0"
 
 [[MeshCatMechanisms]]
-deps = ["ColorTypes", "CoordinateTransformations", "GeometryTypes", "InteractBase", "Interpolations", "LoopThrottle", "MechanismGeometries", "MeshCat", "OrderedCollections", "Pkg", "Random", "RigidBodyDynamics", "Test"]
-git-tree-sha1 = "1e1aa1909a91c4db744097f1e96434ebe4633f14"
+deps = ["ColorTypes", "CoordinateTransformations", "GeometryTypes", "InteractBase", "Interpolations", "LoopThrottle", "MechanismGeometries", "MeshCat", "OrderedCollections", "RigidBodyDynamics"]
+git-tree-sha1 = "efab8e156448f388bd5ff02c60308179dd8b753c"
 uuid = "6ad125db-dd91-5488-b820-c1df6aab299d"
-version = "0.3.0"
+version = "0.4.0"
 
 [[MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryTypes", "Printf", "Test"]
@@ -468,9 +467,9 @@ version = "0.5.8"
 
 [[Plots]]
 deps = ["Base64", "Contour", "Dates", "FixedPointNumbers", "GR", "GeometryTypes", "JSON", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "Reexport", "Requires", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs"]
-git-tree-sha1 = "1367f50271508147104a8503365a793427e653cd"
+git-tree-sha1 = "c446e51959578de01b5a4efa72ca6f2460e38196"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "0.25.0"
+version = "0.25.1"
 
 [[Printf]]
 deps = ["Unicode"]
@@ -526,9 +525,9 @@ version = "0.5.2"
 
 [[Revise]]
 deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "UUIDs", "Unicode"]
-git-tree-sha1 = "f4cd86477685d5095f8cbce2a47f69ae9cf5c963"
+git-tree-sha1 = "0148fc4b3392778e09eb75c4971ce75424acd1d1"
 uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
-version = "2.1.4"
+version = "2.1.5"
 
 [[RigidBodyDynamics]]
 deps = ["DocStringExtensions", "LightXML", "LinearAlgebra", "LoopThrottle", "Profile", "Random", "Reexport", "Rotations", "SparseArrays", "StaticArrays", "Test", "TypeSortedCollections", "UnsafeArrays"]
@@ -628,10 +627,9 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[UnsafeArrays]]
-deps = ["Compat"]
-git-tree-sha1 = "460f4f7bab69dd47512ac8ec4b2c14b28c6cb4a0"
+git-tree-sha1 = "417100df8567333bff1b851008b1441a2be08da0"
 uuid = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
-version = "0.3.0"
+version = "0.4.0"
 
 [[WebIO]]
 deps = ["AssetRegistry", "Base64", "Compat", "FunctionalCollections", "JSON", "Logging", "Observables", "Random", "Requires", "Sockets", "Test", "UUIDs", "Widgets"]

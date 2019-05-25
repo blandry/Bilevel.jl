@@ -46,7 +46,7 @@ function get_trajopt_data_semidirect(mechanism::Mechanism,env::Environment,Δt::
     fric_options = []
 
     f_options = Dict{String, Any}()
-    f_options["num_fosteps"] = 1
+    f_options["num_fosteps"] = 0
     f_options["num_sosteps"] = 10
     f_options["c"] = 1.
     f_options["c_fos"] = 1.
@@ -162,7 +162,7 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
-            h = vs(x, Symbol("h", n))
+            h = vs(x, Symbol("h", n))[1]
             qnext = vs(x, Symbol("q", n+1))
             vnext = vs(x, Symbol("v", n+1))
             if relax_comp
@@ -192,12 +192,12 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
             contact_bias = Vector{T}(undef, num_vel)
             if (num_contacts > 0)
                 # compute friction forces
-                contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, n)
+                contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
             end
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
             g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias)
-            g[cs(Symbol("h_pos", n))] .= -h
+            g[cs(Symbol("h_pos", n))] .= [-h]
             for i = 1:num_contacts
                 c_n = vs(x, Symbol("c_n", i, "_", n))
                 g[cs(Symbol("c_n_pos", i, "_", n))] .= -c_n

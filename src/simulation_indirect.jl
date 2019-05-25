@@ -130,7 +130,7 @@ function generate_solver_fn_sim_indirect(sim_data,q0,v0,u0)
         set_configuration!(xn, qnext)
         set_velocity!(xn, vnext)
         setdirty!(xn)
-        
+
         normalize_configuration!(xn)
 
         config_derivative = configuration_derivative(xn) # TODO preallocate

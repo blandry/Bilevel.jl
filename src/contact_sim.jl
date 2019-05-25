@@ -1,10 +1,9 @@
-function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
+function contact_normal_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
     lower_vs = sim_data.normal_vs[n]
     lower_cs = sim_data.normal_cs[n]
     lower_options = sim_data.normal_options[n]
-    h = sim_data.Δt
 
     ϕAs = []
     ϕbs = []
@@ -60,14 +59,13 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJaco
     xopt
 end
 
-function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
+function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
     normal_vs = sim_data.normal_vs[n]
     lower_vs = sim_data.fric_vs[n]
     lower_cs = sim_data.fric_cs[n]
     lower_options = sim_data.fric_options[n]
-    h = sim_data.Δt
 
     Qds = []
     rds = []
@@ -126,14 +124,13 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJa
     xopt
 end
 
-function contact_friction_τ_direct!(τ,sim_data::SimData,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
+function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
     upper_vs = sim_data.vs
     lower_vs = sim_data.fric_vs[n]
     lower_cs = sim_data.fric_cs[n]
     lower_options = sim_data.fric_options[n]
-    h = sim_data.Δt
 
     Qds = []
     rds = []

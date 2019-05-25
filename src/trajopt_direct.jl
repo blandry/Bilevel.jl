@@ -168,7 +168,7 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
-            h = vs(x, Symbol("h", n))
+            h = vs(x, Symbol("h", n))[1]
             qnext = vs(x, Symbol("q", n+1))
             vnext = vs(x, Symbol("v", n+1))
             if relax_comp
@@ -199,9 +199,9 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             contact_bias = Vector{T}(undef, num_vel)
             if (num_contacts > 0)
                 # compute normal forces
-                x_normal = contact_normal_τ_direct!(normal_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, n)
+                x_normal = contact_normal_τ_direct!(normal_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
                 # compute friction forces
-                contact_friction_τ_direct!(contact_bias, sim_data, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)
+                contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)
             end
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
@@ -210,7 +210,7 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             else
                 g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias) .+ slack
             end
-            g[cs(Symbol("h_pos", n))] .= -h
+            g[cs(Symbol("h_pos", n))] .= [-h]
         end
 
         # extra user-defined constraints

@@ -122,7 +122,6 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             for n = 1:N-1
                 for i = 1:num_contacts
                     slack = vs(x, Symbol("slack", i, "_", n))
-                    # f += .5 * slack' * slack
                     f += sum(slack)
                 end
             end
@@ -165,30 +164,30 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             H = mass_matrix(x0)
             config_derivative = configuration_derivative(xn)
             dyn_bias = dynamics_bias(xn)
-            
+
             contact_bias = zeros(T, num_vel)
             if (num_contacts > 0)
                 contact_jacobian!(envj, xn)
                 contact_τ_indirect!(contact_bias, sim_data, envj, x, n)
             end
-            
+
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative
             g[cs(Symbol("dyn", n))] .= H * (vnext - v0) .- h .* (u0 .- dyn_bias .- contact_bias)
             g[cs(Symbol("h_pos", n))] .= -h
-            
+
             for i = 1:num_contacts
                 cj = envj.contact_jacobians[i]
                 c = cj.contact
-            
+
                 # TODO preallocate
                 contact_v = cj.contact_rot' * point_jacobian(xn, path(sim_data.mechanism, world, c.body), transform(xn, c.point, world_frame)).J * vnext
-            
+
                 β = vs(x, Symbol("β", i, "_", n))
                 λ = vs(x, Symbol("λ", i, "_", n))
                 c_n = vs(x, Symbol("c_n", i, "_", n))
-            
+
                 Dtv = c.obstacle.basis' * contact_v
-            
+
                 g[cs(Symbol("β_pos", i, "_", n))] .= -β
                 g[cs(Symbol("λ_pos", i, "_", n))] .= -λ
                 g[cs(Symbol("c_n_pos", i, "_", n))] .= -c_n

@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<robot name="box2d">
+
+  <link name="floor">
+    <visual>
+      <origin xyz=".5 0 -0.05"/>
+      <geometry>
+        <box size="4 3 0.1"/>
+      </geometry>
+      <material name="purple">
+        <color rgba=" .04 .2 .7 .9"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="box">
+  <visual>
+    <geometry>
+      <box size=".12 .12 .075"/>
+    </geometry>
+    <material name="green">
+      <color rgba=".5 0.75 .25 .8"/>
+    </material>
+  </visual>
+  <!-- <inertial>
+    <mass value=".165"/>
+    <inertia ixx=".1" iyy=".1" izz=".1" ixy="0." ixz="0." iyz="0."/>
+  </inertial> -->
+  <!-- contact points -->
+  <!-- <visual>
+    <origin xyz="-.06 0. -.0375"/>
+    <geometry>
+      <sphere radius=".015"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-.06 0. -.0375"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  <visual>
+    <origin xyz=".06 0. -.0375"/>
+    <geometry>
+      <sphere radius=".015"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz=".06 0. -.0375"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision> -->
+  <inertial>
+    <mass value=".165"/>
+    <inertia ixx="100." iyy="100." izz="100." ixy="0." ixz="0." iyz="0."/>
+  </inertial>
+  <visual>
+    <origin xyz="0. 0. -.0375"/>
+    <geometry>
+      <sphere radius=".015"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="0. 0. -.0375"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  </link>
+
+  <joint name="floor_to_box" type="planar">
+    <parent link="floor"/>
+    <child link="box"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+</robot>
