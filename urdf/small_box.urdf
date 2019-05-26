@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<robot name="small_box">
+
+  <link name="floor">
+    <visual>
+      <!-- <origin xyz=".5 0 -0.05"/> -->
+      <origin xyz="0 0 0.25865781307220465" rpy="-0.245984 0.0118291 0.00146228"/>
+      <geometry>
+        <box size=".5 1 0"/>
+      </geometry>
+      <material name="purple">
+        <color rgba=" .04 .2 .7 .9"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="box">
+  <inertial>
+    <mass value=".165"/>
+    <inertia ixx="10000." iyy="10000." izz="10000." ixy="0." ixz="0." iyz="0."/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 .0375"/>
+    <geometry>
+      <box size=".12 .12 .075"/>
+    </geometry>
+    <material name="green">
+      <color rgba=".5 0.75 .25 .8"/>
+    </material>
+  </visual>
+  <visual>
+    <origin xyz="0 0 0"/>
+    <geometry>
+      <sphere radius=".01"/>
+    </geometry>
+    <material name="yellow">
+      <color rgba=".9 .9 .2 1."/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0"/>
+    <geometry>
+      <sphere radius="0"/>
+    </geometry>
+  </collision>
+  </link>
+
+  <joint name="floor_to_box" type="floating">
+    <parent link="floor"/>
+    <child link="box"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
+</robot>
