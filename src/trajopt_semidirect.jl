@@ -47,7 +47,7 @@ function get_trajopt_data_semidirect(mechanism::Mechanism,env::Environment,Δt::
 
     f_options = Dict{String, Any}()
     f_options["num_fosteps"] = 0
-    f_options["num_sosteps"] = 10
+    f_options["num_sosteps"] = 20
     f_options["c"] = 1.
     f_options["c_fos"] = 1.
     f_options["c_sos"] = 1.
@@ -120,7 +120,7 @@ function extract_sol_trajopt_semidirect(sim_data::SimData, xopt::AbstractArray{T
     ttraj = vcat(0., cumsum(htraj)...)
     qv_mat = vcat(hcat(qtraj...),hcat(vtraj...))
 
-    qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat
+    qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat, xopt
 end
 
 function generate_solver_fn_trajopt_semidirect(sim_data::SimData)

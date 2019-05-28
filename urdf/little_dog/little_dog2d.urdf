@@ -1,4 +1,4 @@
-<robot name="little_dog">
+<robot name="little_dog2d">
 
   <link name="floor">
     <visual>

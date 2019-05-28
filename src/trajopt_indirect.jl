@@ -101,7 +101,7 @@ function extract_sol_trajopt_indirect(sim_data::SimData, xopt::AbstractArray{T})
     ttraj = vcat(0., cumsum(max.(0.,htraj))...)
     qv_mat = vcat(hcat(qtraj...), hcat(vtraj...))
 
-    qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat
+    qtraj, vtraj, utraj, htraj, contact_traj, slack_traj, ttraj, qv_mat, xopt
 end
 
 function generate_solver_fn_trajopt_indirect(sim_data::SimData)
