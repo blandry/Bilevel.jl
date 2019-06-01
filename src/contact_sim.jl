@@ -59,6 +59,50 @@ function contact_normal_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJa
     xopt
 end
 
+function contact_normal_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
+    num_contacts = length(sim_data.env.contacts)
+    env = sim_data.env
+    lower_vs = sim_data.normal_vs[n]
+    lower_cs = sim_data.normal_cs[n]
+    lower_options = sim_data.normal_options[n]
+
+    ϕAs = []
+    ϕbs = []
+    for i = 1:num_contacts
+        J = envj.contact_jacobians[i].J
+        ϕ = envj.contact_jacobians[i].ϕ
+        N = envj.contact_jacobians[i].N
+
+        ϕA = h^2*N*Hi*J
+        ϕb = N*(h^2*Hi*(dyn_bias - u0) .- h*v0) .- ϕ
+
+        push!(ϕAs,ϕA)
+        push!(ϕbs,ϕb)
+    end
+    
+    xopt = Array{U,1}(undef, lower_vs.num_vars)
+    P = ones(1,1)
+    q = [0.]
+    l = [0., -1e19]
+    for i = 1:num_contacts
+        A = Array{eltype(ϕAs[i]),2}(undef, 2, 1)
+        A[1,1] = 1.
+        A[2,1] = ϕAs[i][1,1]
+        u = Array{eltype(ϕbs[i]),1}(undef, 2)
+        u[1] = 1e19
+        u[2] = -ϕbs[i][1]
+        xopt_i = osqp(P,q,A,l,u)
+        xopt[lower_vs(Symbol("c_n", i))] = xopt_i
+    end
+
+    # TODO include the total weight here, not in J
+    τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
+        contact_τ(cj, lower_vs(xopt, Symbol("c_n", i)), zeros(4))
+    end
+
+    xopt
+end
+
 function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
@@ -262,7 +306,7 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
         c_n = upper_vs(x_upper, Symbol("c_n", i, "_", n))[1]
         P = Qds[i][2:end,2:end]
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
-        u = Array{eltype(x_normal), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
+        u = Array{eltype(x_upper), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
         xopt_i = osqp(P,q,A,l,u)
         xopt[lower_vs(Symbol("β", i))] = xopt_i
     end

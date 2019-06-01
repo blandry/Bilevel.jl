@@ -165,6 +165,7 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
         @threads for n = 1:(N-1)
+#         for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -186,9 +187,6 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             set_velocity!(xn, vnext)
             setdirty!(xn)
 
-            normalize_configuration!(x0)
-            normalize_configuration!(xn)
-
             H = mass_matrix(x0)
             Hi = inv(H)
             config_derivative = configuration_derivative(xn) # TODO preallocate
@@ -199,9 +197,12 @@ function generate_solver_fn_trajopt_direct(sim_data::SimData)
             contact_bias = Vector{T}(undef, num_vel)
             if (num_contacts > 0)
                 # compute normal forces
-                x_normal = contact_normal_τ_direct!(normal_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
+#                 x_normal = contact_normal_τ_direct!(normal_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
+                x_normal = contact_normal_τ_direct_osqp!(normal_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
+                
                 # compute friction forces
-                contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)
+#                 contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)
+                contact_friction_τ_direct_osqp!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, x_normal, n)  
             end
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative

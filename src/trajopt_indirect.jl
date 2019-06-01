@@ -140,6 +140,7 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
         @threads for n = 1:(N-1)
+#         for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
@@ -157,9 +158,6 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
             set_configuration!(xn, qnext)
             set_velocity!(xn, vnext)
             setdirty!(xn)
-
-            normalize_configuration!(x0)
-            normalize_configuration!(xn)
 
             H = mass_matrix(x0)
             config_derivative = configuration_derivative(xn)
