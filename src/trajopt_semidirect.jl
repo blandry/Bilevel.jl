@@ -192,7 +192,8 @@ function generate_solver_fn_trajopt_semidirect(sim_data::SimData)
             contact_bias = Vector{T}(undef, num_vel)
             if (num_contacts > 0)
                 # compute friction forces
-                contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
+                # contact_friction_τ_direct!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
+                contact_friction_τ_direct_osqp!(contact_bias, sim_data, h, Hi, envj, dyn_bias, u0, v0, x, n)
             end
 
             g[cs(Symbol("kin", n))] .= qnext .- q0 .- h .* config_derivative

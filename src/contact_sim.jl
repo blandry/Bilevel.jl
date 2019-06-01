@@ -211,21 +211,65 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
         push!(rds,rd)
     end
 
-    # TODO this needs to use the variable selectors
-    # TODO need to support multiple contacts
+    xopt = Array{U,1}(undef, lower_vs.num_vars)
+    # TODO use the β selector
+    A = [1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.]
+    l = [0., 0., 0., 0., -1e19]
     for i = 1:num_contacts
         c_n = normal_vs(x_normal, Symbol("c_n", i))[1]
-        P = SparseMatrixCSC(Qds[i][2:end,2:end])
+        P = Qds[i][2:end,2:end]
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
-        A = SparseMatrixCSC([1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.])
-        l = Array{Float64, 1}([0., 0., 0., 0., -1e19])
-        u = Array{Float64, 1}([1e19, 1e19, 1e19, 1e19, c_n])
-        xopt = osqp(P,q,A,l,u)
+        u = Array{eltype(x_normal), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
+        xopt_i = osqp(P,q,A,l,u)
+        xopt[lower_vs(Symbol("β", i))] = xopt_i
     end
 
     # TODO include the total weight here, not in J
     τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
         contact_τ(cj, normal_vs(x_normal, Symbol("c_n", i)), lower_vs(xopt, Symbol("β", i)))
+    end
+
+    xopt
+end
+
+function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},n::Int) where U
+    num_contacts = length(sim_data.env.contacts)
+    env = sim_data.env
+    upper_vs = sim_data.vs
+    lower_vs = sim_data.fric_vs[n]
+    lower_cs = sim_data.fric_cs[n]
+    lower_options = sim_data.fric_options[n]
+
+    Qds = []
+    rds = []
+    for i = 1:num_contacts
+        J = envj.contact_jacobians[i].J
+        ϕ = envj.contact_jacobians[i].ϕ
+        N = envj.contact_jacobians[i].N
+
+        Qd = h^2*J'*Hi*J
+        rd = J'*(h^2*Hi*(dyn_bias - u0) .- h*v0)
+
+        push!(Qds,Qd)
+        push!(rds,rd)
+    end
+
+    xopt = Array{U,1}(undef, lower_vs.num_vars)
+    # TODO use the β selector
+    A = [1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.]
+    l = [0., 0., 0., 0., -1e19]
+    for i = 1:num_contacts
+        c_n = upper_vs(x_upper, Symbol("c_n", i, "_", n))[1]
+        P = Qds[i][2:end,2:end]
+        q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
+        u = Array{eltype(x_normal), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
+        xopt_i = osqp(P,q,A,l,u)
+        xopt[lower_vs(Symbol("β", i))] = xopt_i
+    end
+
+    # TODO include the total weight here, not in J
+    τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
+        contact_τ(cj, upper_vs(x_upper, Symbol("c_n", i, "_", n)), lower_vs(xopt, Symbol("β", i)))
     end
 
     xopt

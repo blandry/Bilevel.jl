@@ -1,4 +1,4 @@
-function osqp_solve(P::AbstractArray{T},q::AbstractArray{U},
+function osqp(P::AbstractArray{T},q::AbstractArray{U},
               A::AbstractArray{V},l::AbstractArray{W},u::AbstractArray{S}) where {T,U,V,W,S}
 
      # TODO store and update this
@@ -6,39 +6,56 @@ function osqp_solve(P::AbstractArray{T},q::AbstractArray{U},
 
      if  (T<:ForwardDiff.Dual || U<:ForwardDiff.Dual ||  V<:ForwardDiff.Dual || W<:ForwardDiff.Dual || S<:ForwardDiff.Dual)
          if (T<:ForwardDiff.Dual)
+             Dtype = eltype(P)
+             Ptype = typeof(P[1,1].partials)
+         elseif (U<:ForwardDiff.Dual)
+             Dtype = eltype(q)
+             Ptype = typeof(q[1].partials)
+         elseif (V<:ForwardDiff.Dual)
+             Dtype = eltype(A)
+             Ptype = typeof(A[1,1].partials)
+         elseif (W<:ForwardDiff.Dual)
+             Dtype = eltype(l)
+             Ptype = typeof(l[1].partials)
+         else
+             Dtype = eltype(u)
+             Ptype = typeof(u[1].partials)
+         end
+              
+         if (T<:ForwardDiff.Dual)
              Pv = map(ForwardDiff.value, P)
              Pp = map(ForwardDiff.partials, P)
          else
              Pv = P
-             Pp = zeros(size(P))
+             Pp = zeros(Ptype, size(P))
          end
          if (U<:ForwardDiff.Dual)
              qv = map(ForwardDiff.value, q)
              qp = map(ForwardDiff.partials, q)
          else
              qv = q
-             qp = zeros(size(q))
+             qp = zeros(Ptype, size(q))
          end
          if (V<:ForwardDiff.Dual)
              Av = map(ForwardDiff.value, A)
              Ap = map(ForwardDiff.partials, A)
          else
              Av = A
-             Ap = zeros(size(A))
+             Ap = zeros(Ptype, size(A))
          end
          if (W<:ForwardDiff.Dual)
              lv = map(ForwardDiff.value, l)
              lp = map(ForwardDiff.partials, l)
          else
              lv = l
-             lp = zeros(size(l))
+             lp = zeros(Ptype, size(l))
          end
          if (S<:ForwardDiff.Dual)
              uv = map(ForwardDiff.value, u)
              up = map(ForwardDiff.partials, u)
          else
              uv = u
-             up = zeros(size(u))
+             up = zeros(Ptype, size(u))
          end
 
          m,n = size(Av)
@@ -63,12 +80,12 @@ function osqp_solve(P::AbstractArray{T},q::AbstractArray{U},
          hp = vcat(up, -lp)
 
          dres = vcat(Pp*xv + qp + Gpt*λv,
-         Diagonal(λv)*(Gp*xv - hp))
+                     Diagonal(λv)*(Gp*xv - hp))
 
          xp = (-pinv(Matrix(M)) * dres)[1:n]
 
          # TODO you have to use the right type here...
-         sol = map(T, xv, xp)
+         sol = map(Dtype, xv, xp)
      else
          OSQP.setup!(prob; P=sparse(P), q=q, A=sparse(A), l=l, u=u, alpha=1., verbose=0)
          results = OSQP.solve!(prob)

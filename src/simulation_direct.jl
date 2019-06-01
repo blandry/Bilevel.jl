@@ -149,7 +149,8 @@ function generate_solver_fn_sim_direct(sim_data,q0,v0,u0)
             x_normal = contact_normal_τ_direct!(normal_bias, sim_data, sim_data.Δt, Hi, envj, dyn_bias0, u0, v0, x, 1)
 
             # compute friction forces
-            contact_friction_τ_direct!(contact_bias, sim_data, sim_data.Δt, Hi, envj, dyn_bias0, u0, v0, x, x_normal, 1)
+            # contact_friction_τ_direct!(contact_bias, sim_data, sim_data.Δt, Hi, envj, dyn_bias0, u0, v0, x, x_normal, 1)
+            contact_friction_τ_direct_osqp!(contact_bias, sim_data, sim_data.Δt, Hi, envj, dyn_bias0, u0, v0, x, x_normal, 1)
         end
         config_derivative = configuration_derivative(xn) # TODO preallocate
         dyn_bias = dynamics_bias(xn) # TODO preallocate
