@@ -189,6 +189,48 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::Environment
     xopt
 end
 
+function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
+    num_contacts = length(sim_data.env.contacts)
+    env = sim_data.env
+    normal_vs = sim_data.normal_vs[n]
+    lower_vs = sim_data.fric_vs[n]
+    lower_cs = sim_data.fric_cs[n]
+    lower_options = sim_data.fric_options[n]
+
+    Qds = []
+    rds = []
+    for i = 1:num_contacts
+        J = envj.contact_jacobians[i].J
+        ϕ = envj.contact_jacobians[i].ϕ
+        N = envj.contact_jacobians[i].N
+
+        Qd = h^2*J'*Hi*J
+        rd = J'*(h^2*Hi*(dyn_bias - u0) .- h*v0)
+
+        push!(Qds,Qd)
+        push!(rds,rd)
+    end
+
+    # TODO this needs to use the variable selectors
+    # TODO need to support multiple contacts
+    for i = 1:num_contacts
+        c_n = normal_vs(x_normal, Symbol("c_n", i))[1]
+        P = SparseMatrixCSC(Qds[i][2:end,2:end])
+        q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
+        A = SparseMatrixCSC([1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.])
+        l = Array{Float64, 1}([0., 0., 0., 0., -1e19])
+        u = Array{Float64, 1}([1e19, 1e19, 1e19, 1e19, c_n])
+        xopt = osqp(P,q,A,l,u)
+    end
+
+    # TODO include the total weight here, not in J
+    τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)
+        contact_τ(cj, normal_vs(x_normal, Symbol("c_n", i)), lower_vs(xopt, Symbol("β", i)))
+    end
+
+    xopt
+end
+
 function contact_τ_indirect!(τ::AbstractArray{T},sim_data::SimData,envj::EnvironmentJacobian{T},x::AbstractArray{T}) where T
     # TODO: parallel
     τ .= mapreduce(+, enumerate(envj.contact_jacobians)) do (i,cj)

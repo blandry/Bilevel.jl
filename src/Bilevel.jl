@@ -33,6 +33,8 @@ using RigidBodyDynamics
 using MechanismGeometries
 using Compat
 using Base.Threads
+using OSQP
+using SparseArrays
 
 include("obstacle.jl")
 include("contact.jl")
@@ -53,5 +55,6 @@ include(joinpath("solvers", "autodiff.jl"))
 include(joinpath("solvers", "svd_finite.jl"))
 include(joinpath("solvers", "least_squares.jl"))
 include(joinpath("solvers", "pinv.jl"))
+include(joinpath("solvers", "osqp.jl"))
 
 end # module
