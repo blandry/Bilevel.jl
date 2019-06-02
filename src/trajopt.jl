@@ -44,7 +44,6 @@ function trajopt(sim_data::SimData;
     options["Major feasibility tolerance"] = major_feas
     options["Minor feasibility tolerance"] = minor_feas
     options["Iterations limit"] = max_iter
-    options["Scale option"] = 2
     
     xopt, info = snopt(solver_fn, sim_data.cs.num_eqs, sim_data.cs.num_ineqs, x0, options, x_min=x_min,x_max=x_max,callback_fn=callback_fn)
 
