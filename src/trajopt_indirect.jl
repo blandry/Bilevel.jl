@@ -204,7 +204,8 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
                 else
                     slack = vs(x, Symbol("slack", i, "_", n))
                     g[cs(Symbol("slack_pos", i, "_", n))] .= -slack
-                    g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack[1]
+#                     g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n .- slack[1]
+                    g[cs(Symbol("ϕ_c_n_comp", i, "_", n))] .= envj.contact_jacobians[i].ϕ .* c_n
                     g[cs(Symbol("fric_β_comp", i, "_", n))] .= (λ .+ Dtv) .* β .- slack[2]
                     g[cs(Symbol("cone_λ_comp", i, "_", n))] .= (c.obstacle.μ .* c_n .- sum(β)) .* λ .- slack[3]
                 end
