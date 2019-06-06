@@ -262,6 +262,7 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
     for i = 1:num_contacts
         c_n = normal_vs(x_normal, Symbol("c_n", i))[1]
         P = Qds[i][2:end,2:end]
+#         P = .5 * P' * P
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
         u = Array{eltype(x_normal), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
         xopt_i = osqp(P,q,A,l,u,sim_data.fric_osqp_models[n])
@@ -305,6 +306,7 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
     for i = 1:num_contacts
         c_n = upper_vs(x_upper, Symbol("c_n", i, "_", n))[1]
         P = Qds[i][2:end,2:end]
+#         P = .5 * P' * P
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
         u = Array{eltype(x_upper), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
         xopt_i = osqp(P,q,A,l,u,sim_data.fric_osqp_models[n])
