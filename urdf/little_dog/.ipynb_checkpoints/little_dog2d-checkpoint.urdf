@@ -9,6 +9,12 @@
     </visual>
   </link>
 
+
+
+
+
+
+
   <link name="body">
     <inertial>
       <mass value="1.800000" />
@@ -30,6 +36,11 @@
     <origin xyz="0 0 0"/>
     <axis xyz="0 1 0"/>
   </joint>
+
+
+
+
+
 
   <link name="front_left_hip">
     <inertial>
@@ -95,7 +106,7 @@
       <sphere radius="0"/>
     </geometry>
   </collision>
-  </link>
+</link>
 
 <joint name="front_left_knee" type="revolute">
   <parent link="front_left_upper_leg" />
@@ -104,6 +115,10 @@
   <axis xyz="0 1 0" />
   <limit lower="-3.1" upper="1.0"/>
 </joint>
+
+
+
+
 
 <link name="front_right_hip">
   <inertial>
@@ -179,6 +194,8 @@
   <limit lower="-3.1" upper="1.0"/>
 </joint>
 
+
+
 <link name="back_left_hip">
   <inertial>
     <origin xyz="0.000000 0.002900 0.000000" rpy="0 0 0" />
@@ -252,6 +269,10 @@
   <axis xyz="0 1 0" />
   <limit lower="-1.0" upper="3.1"/>
 </joint>
+
+
+
+
 
 <link name="back_right_hip">
   <inertial>

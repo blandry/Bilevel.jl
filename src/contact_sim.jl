@@ -257,14 +257,17 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
 
     xopt = Array{U,1}(undef, lower_vs.num_vars)
     # TODO use the β selector
+    β_max = 1e8
     A = [1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.]
-    l = [0., 0., 0., 0., -1e19]
+    l = [0., 0., 0., 0., -4. * β_max]
     for i = 1:num_contacts
         c_n = normal_vs(x_normal, Symbol("c_n", i))[1]
         P = Qds[i][2:end,2:end]
-#         P = .5 * P' * P
+        P = .5 * P' * P
+        P[abs.(P) .< 1e-6] .= 0.
+        P += I*1e-8
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
-        u = Array{eltype(x_normal), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
+        u = Array{eltype(x_normal), 1}([β_max, β_max, β_max, β_max, env.contacts[i].obstacle.μ*c_n])
         xopt_i = osqp(P,q,A,l,u,sim_data.fric_osqp_models[n])
         xopt[lower_vs(Symbol("β", i))] = xopt_i
     end
@@ -301,14 +304,17 @@ function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Enviro
 
     xopt = Array{U,1}(undef, lower_vs.num_vars)
     # TODO use the β selector
+    β_max = 1e8
     A = [1. 0. 0. 0.; 0. 1. 0. 0.; 0. 0. 1. 0.; 0. 0. 0. 1.; 1. 1. 1. 1.]
-    l = [0., 0., 0., 0., -1e19]
+    l = [0., 0., 0., 0., -4. * β_max]
     for i = 1:num_contacts
         c_n = upper_vs(x_upper, Symbol("c_n", i, "_", n))[1]
         P = Qds[i][2:end,2:end]
-#         P = .5 * P' * P
+        P = .5 * P' * P
+        P[abs.(P) .< 1e-6] .= 0.
+        P += I*1e-8
         q = (rds[i][2:end] + .5*Qds[i][1,2:end]*c_n + .5*Qds[i][2:end,1]*c_n)
-        u = Array{eltype(x_upper), 1}([1e19, 1e19, 1e19, 1e19, env.contacts[i].obstacle.μ*c_n])
+        u = Array{eltype(x_upper), 1}([β_max, β_max, β_max, β_max, env.contacts[i].obstacle.μ*c_n])
         xopt_i = osqp(P,q,A,l,u,sim_data.fric_osqp_models[n])
         xopt[lower_vs(Symbol("β", i))] = xopt_i
     end

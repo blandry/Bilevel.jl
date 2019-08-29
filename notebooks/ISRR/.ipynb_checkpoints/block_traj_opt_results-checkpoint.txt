@@ -1,0 +1,191 @@
+params:
+q1 = [0., 0.2, 0.]
+Δt = 0.1
+con_tol = 1e-5
+obj_tol = 1e-5
+max_iter = 5000
+PARALLEL EVALUATION: OFF (for both)
+
+results:
+
+qN = [3.0, 0., 0.]
+N = 10
+Indirect:
+  memory estimate:  53.57 MiB
+  allocs estimate:  396595
+  --------------
+  minimum time:     55.665 ms (13.65% GC)
+  median time:      58.140 ms (14.16% GC)
+  mean time:        69.977 ms (28.83% GC)
+  maximum time:     177.896 ms (66.67% GC)
+  --------------
+  samples:          72
+  evals/sample:     1
+Semidirect:
+  memory estimate:  35.97 MiB
+  allocs estimate:  185661
+  --------------
+  minimum time:     47.200 ms (9.92% GC)
+  median time:      53.564 ms (17.41% GC)
+  mean time:        53.826 ms (14.69% GC)
+  maximum time:     119.691 ms (15.79% GC)
+  --------------
+  samples:          94
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 15
+Indirect:
+  memory estimate:  146.89 MiB
+  allocs estimate:  951247
+  --------------
+  minimum time:     152.573 ms (19.81% GC)
+  median time:      232.781 ms (45.79% GC)
+  mean time:        231.664 ms (46.71% GC)
+  maximum time:     308.166 ms (59.14% GC)
+  --------------
+  samples:          22
+  evals/sample:     1
+Semidirect:
+  memory estimate:  83.53 MiB
+  allocs estimate:  402919
+  --------------
+  minimum time:     107.648 ms (14.56% GC)
+  median time:      115.579 ms (18.00% GC)
+  mean time:        140.103 ms (29.51% GC)
+  maximum time:     273.479 ms (17.21% GC)
+  --------------
+  samples:          36
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 20
+Indirect:
+  memory estimate:  307.84 MiB
+  allocs estimate:  1804743
+  --------------
+  minimum time:     452.521 ms (47.42% GC)
+  median time:      455.895 ms (47.74% GC)
+  mean time:        456.339 ms (47.65% GC)
+  maximum time:     465.372 ms (46.73% GC)
+  --------------
+  samples:          11
+  evals/sample:     1
+Semidirect:
+  memory estimate:  144.46 MiB
+  allocs estimate:  685935
+  --------------
+  minimum time:     188.272 ms (16.61% GC)
+  median time:      196.387 ms (17.37% GC)
+  mean time:        228.848 ms (29.89% GC)
+  maximum time:     349.350 ms (53.81% GC)
+  --------------
+  samples:          22
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 25
+Indirect:
+  memory estimate:  554.55 MiB
+  allocs estimate:  3073910
+  --------------
+  minimum time:     675.921 ms (39.06% GC)
+  median time:      686.831 ms (39.98% GC)
+  mean time:        686.277 ms (39.85% GC)
+  maximum time:     695.949 ms (39.65% GC)
+  --------------
+  samples:          8
+  evals/sample:     1
+Semidirect:
+  memory estimate:  231.06 MiB
+  allocs estimate:  1081520
+  --------------
+  minimum time:     303.650 ms (17.50% GC)
+  median time:      310.793 ms (18.73% GC)
+  mean time:        358.737 ms (29.55% GC)
+  maximum time:     464.667 ms (45.75% GC)
+  --------------
+  samples:          15
+  evals/sample:     1
+---
+
+qN = [5.0, 0., 0.]
+N = 30
+Indirect:
+  memory estimate:  903.57 MiB
+  allocs estimate:  4772889
+  --------------
+  minimum time:     1.007 s (34.36% GC)
+  median time:      1.016 s (34.28% GC)
+  mean time:        1.036 s (36.04% GC)
+  maximum time:     1.134 s (41.97% GC)
+  --------------
+  samples:          5
+  evals/sample:     1
+Semidirect:
+  memory estimate:  338.18 MiB
+  allocs estimate:  1569805
+  --------------
+  minimum time:     446.340 ms (17.80% GC)
+  median time:      526.376 ms (29.41% GC)
+  mean time:        524.495 ms (29.51% GC)
+  maximum time:     608.071 ms (37.80% GC)
+  --------------
+  samples:          10
+  evals/sample:     1
+---
+
+qN = [10.0, 0., 0.]
+N = 35
+Indirect:
+  memory estimate:  1.34 GiB
+  allocs estimate:  6972815
+  --------------
+  minimum time:     1.432 s (31.51% GC)
+  median time:      1.440 s (31.41% GC)
+  mean time:        1.470 s (32.90% GC)
+  maximum time:     1.567 s (36.92% GC)
+  --------------
+  samples:          4
+  evals/sample:     1
+Semidirect:
+  memory estimate:  453.19 MiB
+  allocs estimate:  2102577
+  --------------
+  minimum time:     607.199 ms (17.56% GC)
+  median time:      685.850 ms (26.40% GC)
+  mean time:        686.352 ms (26.61% GC)
+  maximum time:     767.426 ms (33.12% GC)
+  --------------
+  samples:          8
+  evals/sample:     1
+---
+
+qN = [15.0, 0., 0.]
+N = 40
+Indirect: CURRENT POINT CANNOT BE IMPROVED
+  memory estimate:  1.93 GiB
+  allocs estimate:  9678447
+  --------------
+  minimum time:     2.194 s (26.85% GC)
+  median time:      2.212 s (26.90% GC)
+  mean time:        2.247 s (28.30% GC)
+  maximum time:     2.337 s (31.00% GC)
+  --------------
+  samples:          3
+  evals/sample:     1
+Semidirect: INFEASIBILITY MINIMIZED
+  memory estimate:  599.24 MiB
+  allocs estimate:  2769182
+  --------------
+  minimum time:     1.163 s (31.74% GC)
+  median time:      1.265 s (36.62% GC)
+  mean time:        1.258 s (37.50% GC)
+  maximum time:     1.338 s (44.17% GC)
+  --------------
+  samples:          4
+  evals/sample:     1
+---

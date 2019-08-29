@@ -139,8 +139,8 @@ function generate_solver_fn_trajopt_indirect(sim_data::SimData)
     function eval_cons(x::AbstractArray{T}) where T
         g = Vector{T}(undef, cs.num_eqs + cs.num_ineqs) # TODO preallocate
 
-        @threads for n = 1:(N-1)
-#         for n = 1:(N-1)
+#         @threads for n = 1:(N-1)
+        for n = 1:(N-1)
             q0 = vs(x, Symbol("q", n))
             v0 = vs(x, Symbol("v", n))
             u0 = vs(x, Symbol("u", n))
