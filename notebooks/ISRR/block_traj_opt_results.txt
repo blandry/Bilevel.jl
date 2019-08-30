@@ -189,3 +189,201 @@ Semidirect: INFEASIBILITY MINIMIZED
   samples:          4
   evals/sample:     1
 ---
+
+
+
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+
+
+
+params:
+q1 = [0., 0.2, 0.]
+Δt = 0.1
+con_tol = 1e-5
+obj_tol = 1e-5
+max_iter = 5000
+PARALLEL EVALUATION: ON (for both)
+
+results:
+
+qN = [3.0, 0., 0.]
+N = 10
+Indirect:
+  memory estimate:  48.59 MiB
+  allocs estimate:  357481
+  --------------
+  minimum time:     40.489 ms (0.00% GC)
+  median time:      41.489 ms (0.00% GC)
+  mean time:        41.886 ms (0.00% GC)
+  maximum time:     83.633 ms (0.00% GC)
+  --------------
+  samples:          120
+  evals/sample:     1
+Semidirect:
+  memory estimate:  28.97 MiB
+  allocs estimate:  158503
+  --------------
+  minimum time:     18.224 ms (0.00% GC)
+  median time:      23.414 ms (0.00% GC)
+  mean time:        30.922 ms (0.00% GC)
+  maximum time:     141.214 ms (0.00% GC)
+  --------------
+  samples:          162
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 15
+Indirect:
+  memory estimate:  129.59 MiB
+  allocs estimate:  823992
+  --------------
+  minimum time:     104.005 ms (0.00% GC)
+  median time:      105.113 ms (0.00% GC)
+  mean time:        105.535 ms (0.00% GC)
+  maximum time:     121.945 ms (0.00% GC)
+  --------------
+  samples:          48
+  evals/sample:     1
+Semidirect:
+  memory estimate:  52.17 MiB
+  allocs estimate:  290122
+  --------------
+  minimum time:     30.659 ms (0.00% GC)
+  median time:      65.048 ms (0.00% GC)
+  mean time:        105.022 ms (0.00% GC)
+  maximum time:     542.565 ms (0.00% GC)
+  --------------
+  samples:          48
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 20
+Indirect:
+  memory estimate:  278.11 MiB
+  allocs estimate:  1586486
+  --------------
+  minimum time:     215.272 ms (0.00% GC)
+  median time:      216.277 ms (0.00% GC)
+  mean time:        218.569 ms (0.00% GC)
+  maximum time:     252.701 ms (0.00% GC)
+  --------------
+  samples:          23
+  evals/sample:     1
+Semidirect:
+  memory estimate:  114.48 MiB
+  allocs estimate:  562000
+  --------------
+  minimum time:     88.233 ms (0.00% GC)
+  median time:      97.426 ms (0.00% GC)
+  mean time:        192.523 ms (0.00% GC)
+  maximum time:     803.471 ms (0.00% GC)
+  --------------
+  samples:          27
+  evals/sample:     1
+---
+
+qN = [3.0, 0., 0.]
+N = 25
+Indirect:
+  memory estimate:  508.61 MiB
+  allocs estimate:  2731273
+  --------------
+  minimum time:     359.299 ms (0.00% GC)
+  median time:      378.704 ms (0.00% GC)
+  mean time:        382.904 ms (0.00% GC)
+  maximum time:     457.030 ms (0.00% GC)
+  --------------
+  samples:          14
+  evals/sample:     1
+Semidirect:
+  memory estimate:  155.63 MiB
+  allocs estimate:  805739
+  --------------
+  minimum time:     79.073 ms (0.00% GC)
+  median time:      195.236 ms (0.00% GC)
+  mean time:        219.768 ms (0.00% GC)
+  maximum time:     762.122 ms (0.00% GC)
+  --------------
+  samples:          25
+  evals/sample:     1
+---
+
+qN = [5.0, 0., 0.]
+N = 30
+Indirect:
+  memory estimate:  826.61 MiB
+  allocs estimate:  4200458
+  --------------
+  minimum time:     568.793 ms (0.00% GC)
+  median time:      625.231 ms (0.00% GC)
+  mean time:        625.876 ms (0.00% GC)
+  maximum time:     683.703 ms (0.00% GC)
+  --------------
+  samples:          8
+  evals/sample:     1
+Semidirect:
+  memory estimate:  207.92 MiB
+  allocs estimate:  1096660
+  --------------
+  minimum time:     101.838 ms (0.00% GC)
+  median time:      205.189 ms (0.00% GC)
+  mean time:        292.699 ms (0.00% GC)
+  maximum time:     824.392 ms (0.00% GC)
+  --------------
+  samples:          18
+  evals/sample:     1
+---
+
+qN = [10.0, 0., 0.]
+N = 35
+Indirect:
+  memory estimate:  1.24 GiB
+  allocs estimate:  6197379
+  --------------
+  minimum time:     886.551 ms (0.00% GC)
+  median time:      974.718 ms (0.00% GC)
+  mean time:        960.337 ms (0.00% GC)
+  maximum time:     978.218 ms (0.00% GC)
+  --------------
+  samples:          6
+  evals/sample:     1
+Semidirect:
+  memory estimate:  275.04 MiB
+  allocs estimate:  1460256
+  --------------
+  minimum time:     184.007 ms (0.00% GC)
+  median time:      345.071 ms (0.00% GC)
+  mean time:        434.686 ms (0.00% GC)
+  maximum time:     1.222 s (0.00% GC)
+  --------------
+  samples:          12
+  evals/sample:     1
+---
+
+qN = [15.0, 0., 0.]
+N = 40
+Indirect: NO RUN
+
+Semidirect: NO RUN
+
+---
+
+
+
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+
+
+
+N -> NUM VARS IND, NUM VARS SEMI
+10 -> 177, 105
+15 -> 272, 160
+20 -> 367, 215
+25 -> 462, 270
+30 -> 557, 325
+35 -> 652, 380
