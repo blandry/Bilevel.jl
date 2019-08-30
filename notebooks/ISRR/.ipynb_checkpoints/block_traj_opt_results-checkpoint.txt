@@ -379,7 +379,7 @@ Semidirect: NO RUN
 ++++++++++++++++
 
 
-
+BRICK NUMBER OF VARIABLES
 N -> NUM VARS IND, NUM VARS SEMI
 10 -> 177, 105
 15 -> 272, 160
@@ -387,3 +387,14 @@ N -> NUM VARS IND, NUM VARS SEMI
 25 -> 462, 270
 30 -> 557, 325
 35 -> 652, 380
+
+
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+
+
+LITTLE DOG RUN TIMES
+41.06
+41.01
+
