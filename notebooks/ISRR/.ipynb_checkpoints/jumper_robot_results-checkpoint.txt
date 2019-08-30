@@ -1,0 +1,81 @@
+q_nom = copy(traj_sim[1][end])
+q_min = min.(q_nom, [-20., -10., -pi, -pi])
+q_max = max.(q_nom, [20., -0.25, pi, pi])
+
+dt = 0.05
+N = 10
+Indirect
+  memory estimate:  79.87 MiB
+  allocs estimate:  527166
+  --------------
+  minimum time:     96.581 ms (20.66% GC)
+  median time:      106.556 ms (25.77% GC)
+  mean time:        152.078 ms (48.16% GC)
+  maximum time:     273.527 ms (69.85% GC)
+  --------------
+  samples:          33
+  evals/sample:     1
+Semidirect
+  memory estimate:  55.84 MiB
+  allocs estimate:  269618
+  --------------
+  minimum time:     115.166 ms (10.72% GC)
+  median time:      122.784 ms (15.13% GC)
+  mean time:        126.785 ms (15.65% GC)
+  maximum time:     259.967 ms (56.77% GC)
+  --------------
+  samples:          40
+  evals/sample:     1
+----
+
+dt = 0.05
+N = 15
+Indirect:
+  memory estimate:  306.11 MiB
+  allocs estimate:  2147034
+  --------------
+  minimum time:     378.815 ms (23.11% GC)
+  median time:      450.395 ms (22.51% GC)
+  mean time:        474.267 ms (35.35% GC)
+  maximum time:     575.140 ms (45.26% GC)
+  --------------
+  samples:          11
+  evals/sample:     1
+Semidirect:
+  memory estimate:  120.75 MiB
+  allocs estimate:  563070
+  --------------
+  minimum time:     215.861 ms (15.44% GC)
+  median time:      223.936 ms (17.94% GC)
+  mean time:        255.105 ms (27.06% GC)
+  maximum time:     399.581 ms (50.32% GC)
+  --------------
+  samples:          20
+  evals/sample:     1
+----
+
+dt = 0.025
+N = 20
+Indirect:
+  memory estimate:  438.55 MiB
+  allocs estimate:  2382486
+  --------------
+  minimum time:     673.517 ms (43.02% GC)
+  median time:      677.252 ms (42.84% GC)
+  mean time:        678.270 ms (42.82% GC)
+  maximum time:     687.413 ms (42.48% GC)
+  --------------
+  samples:          8
+  evals/sample:     1
+Semidirect:
+  memory estimate:  219.24 MiB
+  allocs estimate:  1001848
+  --------------
+  minimum time:     326.573 ms (20.44% GC)
+  median time:      328.166 ms (20.50% GC)
+  mean time:        374.348 ms (30.21% GC)
+  maximum time:     490.841 ms (46.37% GC)
+  --------------
+  samples:          14
+  evals/sample:     1
+----
