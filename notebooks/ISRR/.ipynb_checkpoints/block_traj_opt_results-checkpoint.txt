@@ -395,6 +395,14 @@ N -> NUM VARS IND, NUM VARS SEMI
 
 
 LITTLE DOG RUN TIMES
-41.06
-41.01
+  memory estimate:  1.28 GiB
+  allocs estimate:  4306577
+  --------------
+  minimum time:     1.780 s (37.86% GC)
+  median time:      1.833 s (37.52% GC)
+  mean time:        1.839 s (37.23% GC)
+  maximum time:     1.904 s (36.37% GC)
+  --------------
+  samples:          3
+  evals/sample:     1
 
