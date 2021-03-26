@@ -39,3 +39,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Tokenize = "0796e94c-ce3b-5d07-9a54-7f471281c624"
 TranscodingStreams = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 WebIO = "0f1e0344-ec1d-5b48-a673-e5cf874b6c29"
+
+[compat]
+RigidBodyDynamics = "= 1.4.0"

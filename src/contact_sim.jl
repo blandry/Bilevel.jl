@@ -103,7 +103,7 @@ function contact_normal_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::Environm
     xopt
 end
 
-function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
+function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{K},n::Int) where {U,K}
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
     normal_vs = sim_data.normal_vs[n]
@@ -233,7 +233,7 @@ function contact_friction_τ_direct!(τ,sim_data::SimData,h,Hi,envj::Environment
     xopt
 end
 
-function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{N},n::Int) where {U,N}
+function contact_friction_τ_direct_osqp!(τ,sim_data::SimData,h,Hi,envj::EnvironmentJacobian,dyn_bias,u0,v0,x_upper::AbstractArray{U},x_normal::AbstractArray{K},n::Int) where {U,K}
     num_contacts = length(sim_data.env.contacts)
     env = sim_data.env
     normal_vs = sim_data.normal_vs[n]

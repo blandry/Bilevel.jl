@@ -16,7 +16,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/body.obj"/>
+        <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/body.obj"/>
       </geometry>
       <material name="black">
       	<color rgba="0.1 0.1 0.1 1" />
@@ -56,7 +56,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_upper.obj"/>
+        <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/front_left_upper.obj"/>
       </geometry>
       <material name="black" />
     </visual>
@@ -79,7 +79,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_left_lower.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/front_left_lower.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -130,7 +130,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_upper.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/front_right_upper.obj"/>
     </geometry>
     <material name="black"/>
   </visual>
@@ -153,7 +153,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/front_right_lower.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/front_right_lower.obj"/>
     </geometry>
     <material name="black"/>
   </visual>
@@ -204,7 +204,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_upper.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/back_left_upper.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -227,7 +227,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_left_lower.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/back_left_lower.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -278,7 +278,7 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_upper.obj"/>
+      <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/back_right_upper.obj"/>
     </geometry>
     <material name="black" />
   </visual>
@@ -301,7 +301,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="/home/blandry/.julia/dev/Bilevel/urdf/little_dog/meshes/back_right_lower.obj"/>
+        <mesh filename="/home/blandry/Code/Bilevel.jl/urdf/little_dog/meshes/back_right_lower.obj"/>
       </geometry>
       <material name="black" />
     </visual>
